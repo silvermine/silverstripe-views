@@ -79,11 +79,17 @@ class ViewHost extends DataObjectDecorator {
     * portion of the view searching functionality.  This function checks only
     * its owner object to see if it contains the given view.
     *
+    * NOTE: even though this is an internal function it must be declared public
+    * because other functions in this class call
+    * $ownerObject->getViewWithoutTraversal.  Since they are calling the
+    * function on the owner object and not directly on this class it must be
+    * public.
+    *
     * @see GetView()
     * @param string $name the name of the view to find
     * @return View the found view or null if not found
     */
-   private function getViewWithoutTraversal($name) {
+   public function getViewWithoutTraversal($name) {
       $allViews = $this->owner->getAllViews();
       if ($allViews == null) {
          return null;
