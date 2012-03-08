@@ -1,6 +1,7 @@
 <?php
 
-/* The simplest type of results retriever, this class allows a content manager
+/**
+ * The simplest type of results retriever, this class allows a content manager
  * to manually select pages that should appear within the result set and order
  * them as they wish.
  *
@@ -23,7 +24,8 @@ class HandPickedResultsRetriever extends ViewResultsRetriever {
       ),
    );
 
-   /* @see ViewResultsRetriever#getReadOnlySummary
+   /**
+    * @see ViewResultsRetriever->getReadOnlySummary()
     */
    public function getReadOnlySummary() {
       $html = '';
@@ -37,17 +39,19 @@ class HandPickedResultsRetriever extends ViewResultsRetriever {
       return $html;
    }
 
-   /* Deletes the associated many_many rows for hand-picked pages before
+   /**
+    * Deletes the associated many_many rows for hand-picked pages before
     * deleting this results retriever.
     *
-    * @see DataObject#onBeforeDelete()
+    * @see DataObject->onBeforeDelete()
     */
    protected function onBeforeDelete() {
       parent::onBeforeDelete();
       parent::Pages()->removeAll();
    }
 
-   /* Override the default "Pages" function built by SS to enable retrieval of
+   /**
+    * Override the default "Pages" function built by SS to enable retrieval of
     * pages linked to this results retriever without a locale filter.  This
     * enables the hierarchy-traversal code that looks on the default locale's
     * translation for a view where it doesn't appear on the translation that a
@@ -65,13 +69,15 @@ class HandPickedResultsRetriever extends ViewResultsRetriever {
       return $pages;
    }
 
-   /* @see ViewResultsRetriever#Results
+   /**
+    * @see ViewResultsRetriever->Results()
     */
    public function Results($maxResults = 0) {
       return $this->Pages();
    }
 
-   /* @see ViewResultsRetriever#updateCMSFields
+   /**
+    * @see ViewResultsRetriever->updateCMSFields()
     */
    public function updateCMSFields(&$view, &$fields) {
       $picker = new ManyManyPickerField(

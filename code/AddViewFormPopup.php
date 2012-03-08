@@ -1,6 +1,7 @@
 <?php
 
-/* A custom popup form for adding a new (transient instance) view.
+/**
+ * A custom popup form for adding a new (transient instance) view.
  *
  * @author Jeremy Thomerson <jeremy@thomersonfamily.com>
  * @copyright (c) 2012 Jeremy Thomerson <jeremy@thomersonfamily.com>
@@ -9,7 +10,8 @@
  */
 class AddViewFormPopup extends ComplexTableField_Popup {
 
-   /* @see ComplexTableField_Popup#__construct()
+   /**
+    * @see ComplexTableField_Popup->__construct()
     */
    function __construct($controller, $name, $fields, $validator, $readonly, $dataObject) {
       parent::__construct($controller, $name, $fields, $validator, $readonly, $dataObject);
@@ -34,7 +36,8 @@ class AddViewFormPopup extends ComplexTableField_Popup {
       }
    }
 
-   /* Action function called by the only button on the "add view" form. Creates
+   /**
+    * Action function called by the only button on the "add view" form. Creates
     * a new view based on the form inputs and persists the view (and associated
     * results retriever) to the database.
     *
@@ -60,7 +63,8 @@ class AddViewFormPopup extends ComplexTableField_Popup {
       return $this->afterViewAdded($view, $form);
    }
 
-   /* Handles displaying a success message to the user and re-painting the form
+   /**
+    * Handles displaying a success message to the user and re-painting the form
     *
     * @param View &$view the view that was added
     * @param Form &$form the form being submitted

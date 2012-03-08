@@ -1,6 +1,7 @@
 <?php
 
-/* A ViewHost is a DataObjectDecorator that can be added to DataObjects to
+/**
+ * A ViewHost is a DataObjectDecorator that can be added to DataObjects to
  * allow them to have view definitions added to them.  With the default module
  * configuration all SiteTree nodes have the ViewHost DOD added to them.
  *
@@ -17,7 +18,8 @@
  */
 class ViewHost extends DataObjectDecorator {
 
-   /* @see DataObjectDecorator#extraStatics
+   /**
+    * @see DataObjectDecorator->extraStatics()
     * @todo this really isn't used since we use HostID on View for this
     *       relationship but the HasManyComplexTableField breaks if we remove
     *       this.  We should probably find a way to remove it and make the
@@ -31,13 +33,15 @@ class ViewHost extends DataObjectDecorator {
       );
    }
 
-   /* Accessor for retrieving all views attached to the owning data object.
+   /**
+    * Accessor for retrieving all views attached to the owning data object.
     */
    public function getAllViews() {
       return DataObject::get('View', '"HostID" = ' . $this->owner->ID);
    }
 
-   /* Used by templates in a control block to retrieve a view by name.  The
+   /**
+    * Used by templates in a control block to retrieve a view by name.  The
     * maximum number of results can optionally be passed in (default: infinite)
     * Additionally, a boolean can be passed in to indicate whether or not the
     * hierarchy should be traversed to find the view on translations and
@@ -70,7 +74,8 @@ class ViewHost extends DataObjectDecorator {
       return $view;
    }
 
-   /* Internal function used by GetView to actually implement the non-recursive
+   /**
+    * Internal function used by GetView to actually implement the non-recursive
     * portion of the view searching functionality.  This function checks only
     * its owner object to see if it contains the given view.
     *
@@ -78,7 +83,7 @@ class ViewHost extends DataObjectDecorator {
     * @param string $name the name of the view to find
     * @return View the found view or null if not found
     */
-   public function getViewWithoutTraversal($name) {
+   private function getViewWithoutTraversal($name) {
       $allViews = $this->owner->getAllViews();
       if ($allViews == null) {
          return null;
@@ -91,7 +96,8 @@ class ViewHost extends DataObjectDecorator {
       return null;
    }
 
-   /* Used by templates in a conditional block to see if there is a view with a
+   /**
+    * Used by templates in a conditional block to see if there is a view with a
     * given name defined on this page (or, if traversing, a translation or
     * parent)
     *
@@ -104,7 +110,8 @@ class ViewHost extends DataObjectDecorator {
       return ($this->GetView($name, $max, $traverse) != null);
    }
 
-   /* Used by templates in a conditional block to see if there is a view with a
+   /**
+    * Used by templates in a conditional block to see if there is a view with a
     * given name defined on this page (or, if traversing, a translation or
     * parent) AND the view has results in the language of the page that is
     * being viewed.
@@ -123,7 +130,8 @@ class ViewHost extends DataObjectDecorator {
       return !empty($firstResult);
    }
 
-   /* @see DataObjectDecorator#updateCMSFields
+   /**
+    * @see DataObjectDecorator->updateCMSFields()
     */
    public function updateCMSFields(FieldSet &$fields) {
       // TODO: make this show more than 10 results (it's paginated)

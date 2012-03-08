@@ -1,6 +1,7 @@
 <?php
 
-/* A view is a definition of an object that retrieves pages from the CMS.  It
+/**
+ * A view is a definition of an object that retrieves pages from the CMS.  It
  * can also be conceptualized as a placeholder in a template where one or more
  * pages/nodes are referenced.  The actual content that appears in these place-
  * holders is defined in a view that is added to a SiteTree node through the
@@ -25,7 +26,8 @@ class View extends DataObject {
 
    static $default_sort = 'Name';
 
-   /* @see DataObject#getCMSFields()
+   /**
+    * @see DataObject->getCMSFields()
     */
    function getCMSFields() {
       $fields = new FieldSet(
@@ -45,14 +47,17 @@ class View extends DataObject {
       return $fields;
    }
 
-   /* Used in the current configuration of the views UI */
+   /**
+    * Used in the current configuration of the views UI
+    */
    public function getReadOnlySummary() {
       $html = '<strong style="font-size: 1.1em;">' . $this->Name . '</strong> <em>(' . get_class($this->ResultsRetriever()) . ')</em><br />';
       $html .= '<span style="font-size: 0.9em;">' . $this->ResultsRetriever()->getReadOnlySummary() . '</span>';
       return $html;
    }
 
-   /* Used by ComplexTableField to validate objects added in the CMS UI
+   /**
+    * Used by ComplexTableField to validate objects added in the CMS UI
     *
     * @todo add a unique-per-hosting-object validation rule to "Name"
     */
@@ -60,7 +65,8 @@ class View extends DataObject {
       return new RequiredFields('Name', 'ResultsRetrieverID');
    }
 
-   /* Deletes the associated results retriever before deleting this view.
+   /**
+    * Deletes the associated results retriever before deleting this view.
     *
     * @see DataObject#onBeforeDelete()
     */
@@ -70,7 +76,8 @@ class View extends DataObject {
       $this->ResultsRetriever()->delete();
    }
 
-   /* Used in templates to get the correct translation (if available) of
+   /**
+    * Used in templates to get the correct translation (if available) of
     * results retrieved by the results retriever for this view.
     *
     * @todo better documentation for this function

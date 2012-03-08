@@ -1,6 +1,7 @@
 <?php
 
-/* The silverstripe-views module provides a way for UI (theme) designers and
+/**
+ * The silverstripe-views module provides a way for UI (theme) designers and
  * content organizers to define dynamic "views", or queries into the content
  * system, to utilize in their templates.  These views can then power any
  * number of interface features and widgets without a developer needing to
@@ -16,5 +17,7 @@
  * This is because there are additional features in jthomerson's itemsetfield
  * that have not yet been merged to ajshort's original version.
  */
+
+// TODO: review all uses of the _t() function in this module
 
 DataObject::add_extension('SiteTree', 'ViewHost');
