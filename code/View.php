@@ -60,6 +60,7 @@ class View extends DataObject {
     * Used by ComplexTableField to validate objects added in the CMS UI
     *
     * @todo add a unique-per-hosting-object validation rule to "Name"
+    *       (can probably use UniqueTextField for this)
     */
    public function getValidator() {
       return new RequiredFields('Name', 'ResultsRetrieverID');
