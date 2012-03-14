@@ -51,22 +51,13 @@ class HandPickedResultsRetriever extends ViewResultsRetriever {
    }
 
    /**
-    * Override the default "Pages" function built by SS to enable retrieval of
-    * pages linked to this results retriever without a locale filter.  This
-    * enables the hierarchy-traversal code that looks on the default locale's
-    * translation for a view where it doesn't appear on the translation that a
-    * user is actually viewing.
-    *
-    * Additionally this sorts them in the correct sort order (based on the
-    * many_many_extraFields column).
+    * Override the default Pages implementation to sort the pages in the
+    * correct sort order (based on the many_many_extraFields column).
     *
     * @return DataObjectSet or null the pages associated with this results retriever
     */
    public function Pages() {
-      Translatable::disable_locale_filter();
-      $pages = parent::Pages(null, 'SortOrder ASC');
-      Translatable::enable_locale_filter();
-      return $pages;
+      return parent::Pages(null, 'SortOrder ASC');
    }
 
    /**

@@ -78,38 +78,26 @@ class View extends DataObject {
    }
 
    /**
-    * Used in templates to get the correct translation (if available) of
-    * results retrieved by the results retriever for this view.
+    * Helper function for templates so they can call the Results function from
+    * the view itself without having to get the results retriever as well.
     *
-    * @todo better documentation for this function
-    * @todo test $maxResults functionality... by passing it to the results
-    *            retriever we are really breaking this.  The results retriever
-    *            might return 5 of 10 actual results (if we pass 5), and we
-    *            might only have three translations of those five results.  But
-    *            if we retrieved all results and then checked for translations
-    *            we might be able to get up to our real max.
+    * @param int $maxResults maximum number of results to retriever, or 0 for infinite (default 0)
+    * @return DataObjectSet the results in the current locale or null if none found
+    */
+   public function Results($maxResults = 0) {
+      return $this->ResultsRetriever()->Results($maxResults);
+   }
+
+   /**
+    * Helper function for templates so they can call the TranslatedResults
+    * function from the view itself without having to get the results retriever
+    * as well.
     *
     * @param int $maxResults maximum number of results to retriever, or 0 for infinite (default 0)
     * @return DataObjectSet the results in the current locale or null if none found
     */
    public function TranslatedResults($maxResults = 0) {
-      $results = $this->ResultsRetriever()->Results($maxResults);
-      if (empty($results)) {
-         return null;
-      }
-      $currentPage = Director::get_current_page();
-      if ($currentPage == null || !$currentPage->hasExtension('Translatable')) {
-         return $results;
-      }
-      $locale = $currentPage->Locale;
-      $translatedResults = array();
-      foreach ($results as $result) {
-         $translatedResult = $result->hasExtension('Translatable') ? $result->getTranslation($locale) : null;
-         if ($translatedResult != null) {
-            $translatedResults[] = $translatedResult;
-         }
-      }
-      return empty($translatedResults) ? null : new DataObjectset($translatedResults);
+      return $this->ResultsRetriever()->TranslatedResults($maxResults);
    }
 
 }
