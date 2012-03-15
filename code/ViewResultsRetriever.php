@@ -32,7 +32,7 @@ class ViewResultsRetriever extends DataObject {
     * @return DataObjectSet|null the results or null if none found
     */
    public function Results($maxResults = 0) {
-      throw new UnsupportedOperationException('The ' . get_class($this) . ' class needs to implement Results(int).');
+      throw new RuntimeException('The ' . get_class($this) . ' class needs to implement Results(int).');
    }
 
    /**
