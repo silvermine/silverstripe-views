@@ -26,7 +26,14 @@ class QueryResultsRetriever extends ViewResultsRetriever {
     * @see ViewResultsRetriever#getReadOnlySummary
     */
    public function getReadOnlySummary() {
-      $html = 'TODO: not yet implemented';
+      $html = '';
+      $html .= $this->RootPredicate()->getReadOnlySummary() . '<br />';
+      $html .= 'ORDER BY<br />';
+      $prefix = '';
+      foreach ($this->Sorts() as $sort) {
+         $html .= $prefix . $sort->getReadOnlySummary();
+         $prefix = ', ';
+      }
       return $html;
    }
 

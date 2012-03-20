@@ -22,21 +22,34 @@ class FieldPredicate extends QueryPredicate {
       'Values' => 'FieldPredicateValue',
    );
 
-   public function updateQuery(&$query) {
+   private function buildWhere($translateSQLValues = true) {
       // TODO: prototype only implements a couple types.  This function
       //       needs to be re-worked to implement all types
+      $where = '';
       if ($this->Qualifier == 'equals') {
          $value = $this->Values()->first();
-         $query->where(sprintf("%s = '%s'", Convert::raw2sql($this->FieldName), $value->getSQLValue()));
+         $where = sprintf("%s = '%s'", Convert::raw2sql($this->FieldName), $value->getSQLValue($translateSQLValues));
       } elseif ($this->Qualifier == 'in') {
          $sqlValues = array();
          foreach ($this->Values() as $value) {
-            array_push($sqlValues, $value->getSQLValue());
+            array_push($sqlValues, $value->getSQLValue($translateSQLValues));
          }
-         $query->where(sprintf("%s IN ('%s')", Convert::raw2sql($this->FieldName), implode("', '", $sqlValues)));
+         $where = sprintf("%s IN ('%s')", Convert::raw2sql($this->FieldName), implode("', '", $sqlValues));
       } else {
          throw new RuntimeException("TODO: implement FieldPredicate->updateQuery for '{$this->Qualifier}' qualifier types");
       }
+      return $where;
+   }
+
+   /**
+    * @see QueryResultsRetriever#getReadOnlySummary
+    */
+   public function getReadOnlySummary() {
+      return $this->buildWhere(false);
+   }
+
+   public function updateQuery(&$query, $conjunctive) {
+      $query->where($this->buildWhere(), $conjunctive);
    }
 }
 

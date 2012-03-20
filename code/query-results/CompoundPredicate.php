@@ -19,6 +19,23 @@ class CompoundPredicate extends QueryPredicate {
       'Predicates' => 'QueryPredicate',
    );
 
+   /**
+    * @see QueryResultsRetriever#getReadOnlySummary
+    */
+   public function getReadOnlySummary($linePrefix = '') {
+      $end = '<br />' . $linePrefix . ')';
+      $linePrefix = $linePrefix . '&nbsp;&nbsp&nbsp;';
+      $html = '';
+      $html .= '(<br />';
+      $prefix = $linePrefix;
+      foreach ($this->Predicates() as $pred) {
+         $html .= $prefix . $pred->getReadOnlySummary($linePrefix);
+         $prefix = '<br />' . $linePrefix . ($this->IsConjunctive ? 'AND ' : 'OR ');
+      }
+      $html .= $end;
+      return $html;
+   }
+
    public function updateQuery(&$query) {
       $internalQuery = new QueryBuilder();
       $internalQuery->selectObjects('SiteTree');

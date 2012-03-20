@@ -20,6 +20,13 @@ class QuerySort extends DataObject {
       'ResultsRetriever' => 'QueryResultsRetriever',
    );
 
+   /**
+    * @see QueryResultsRetriever#getReadOnlySummary
+    */
+   public function getReadOnlySummary() {
+      return $this->FieldName . ' ' . ($this->IsAscending ? 'ASC' : 'DESC');
+   }
+
    public function updateQuery(&$query) {
       $query->orderBy($this->FieldName, $this->IsAscending);
    }

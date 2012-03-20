@@ -20,6 +20,10 @@ class QueryPredicate extends DataObject {
       'CompoundParent' => 'CompoundPredicate',
    );
 
+   public function getReadOnlySummary($linePrefix = '') {
+      throw new RuntimeException(get_class($this) . ' needs to implement QueryPredicate->getReadOnlySummary($linePrefix = \'\')');
+   }
+
    public function updateQuery(&$query) {
       throw new RuntimeException(get_class($this) . ' needs to implement QueryPredicate->updateQuery(&$query)');
    }
