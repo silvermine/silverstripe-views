@@ -21,3 +21,14 @@
 // TODO: review all uses of the _t() function in this module
 
 DataObject::add_extension('SiteTree', 'ViewHost');
+
+// add built-in special values that can be used by FieldPredicate objects
+FieldPredicateValue::add_special_value('%%CurrentPageLocale%%', function($fpv) {
+   $page = Director::currentPage();
+   return $page ? $page->Locale : null;
+});
+
+FieldPredicateValue::add_special_value('%%CurrentPageID%%', function($fpv) {
+   $page = Director::currentPage();
+   return $page ? $page->ID : 0;
+});

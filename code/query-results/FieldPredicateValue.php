@@ -10,6 +10,8 @@
  */
 class FieldPredicateValue extends DataObject {
 
+   static $special_values = array();
+
    static $db = array(
       'Value' => 'VARCHAR(256)',
    );
@@ -18,15 +20,14 @@ class FieldPredicateValue extends DataObject {
       'Predicate' => 'FieldPredicate',
    );
 
-   public function getSQLValue() {
-      // TODO: this is not a good way of providing for custom value meanings
-      //       these need to be driven by a dynamic list of custom values that
-      //       can be added at configuration-time
-      // OR: are they not even needed and instead we have custom subclasses of
-      //       FieldPredicateValue that have their own special meanings?
-      if ($this->Value == '%%CurrentPageID%%') {
-         $page = Director::currentPage();
-         return $page ? $page->ID : 0;
+   public static function add_special_value($valueString, $retriever) {
+      self::$special_values[$valueString] = $retriever;
+   }
+
+   public function getSQLValue($translateSQLValues = true) {
+      if ($translateSQLValues && array_key_exists($this->Value, self::$special_values)) {
+         $func = self::$special_values[$this->Value];
+         return $func($this);
       }
 
       return Convert::raw2sql($this->Value);
