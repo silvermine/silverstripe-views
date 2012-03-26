@@ -46,7 +46,7 @@
  *    $qb->where("{$mainTable}.ClassName IN ('NewsPage', 'BlogPage')");
  *
  *    // limit to children of the page we are on
- *    $page = Director::currentPage();
+ *    $page = Director::get_current_page();
  *    $qb->where(sprintf("{$mainTable}.ParentID = %d", Convert::raw2sql($page->ID)));
  *
  *    // sort appropriately
