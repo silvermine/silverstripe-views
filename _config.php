@@ -22,13 +22,22 @@
 
 DataObject::add_extension('SiteTree', 'ViewHost');
 
-// add built-in special values that can be used by FieldPredicate objects
-FieldPredicateValue::add_special_value('%%CurrentPageLocale%%', function($fpv) {
+// add built-in special tokens that can be used by FieldPredicate objects
+FieldPredicateValue::add_value_token('CurrentPageLocale', function(&$fpv) {
    $page = Director::get_current_page();
    return ($page instanceof SiteTree && $page->hasExtension('Translatable')) ? $page->Locale : null;
 });
 
-FieldPredicateValue::add_special_value('%%CurrentPageID%%', function($fpv) {
+FieldPredicateValue::add_value_token('CurrentPageID', function(&$fpv) {
    $page = Director::get_current_page();
    return ($page instanceof SiteTree) ? $page->ID : null;
 });
+
+FieldPredicateValue::add_value_token('QueryParam', function(&$fpv, $tokenParam) {
+   if (Controller::curr() && Controller::curr()->getRequest()) {
+      return Convert::raw2sql(Controller::curr()->getRequest()->getVar($tokenParam));
+   }
+
+   return null;
+});
+

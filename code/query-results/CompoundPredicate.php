@@ -22,7 +22,7 @@ class CompoundPredicate extends QueryPredicate {
    /**
     * @see QueryResultsRetriever#getReadOnlySummary
     */
-   public function getReadOnlySummary($linePrefix = '') {
+   public function getReadOnlySummaryImpl($linePrefix = '') {
       $end = '<br />' . $linePrefix . ')';
       $linePrefix = $linePrefix . '&nbsp;&nbsp&nbsp;';
       $html = '';
@@ -36,17 +36,22 @@ class CompoundPredicate extends QueryPredicate {
       return $html;
    }
 
-   public function updateQuery(&$query) {
+   public function updateQueryImpl(&$query, $conjunctive) {
       $internalQuery = new QueryBuilder();
       $internalQuery->selectObjects('SiteTree');
 
       $preds = $this->Predicates();
+      $updated = false;
       foreach ($preds as $pred) {
-         $pred->updateQuery($internalQuery, $this->IsConjunctive);
+         $updated |= $pred->updateQuery($internalQuery, $this->IsConjunctive);
       }
 
       $sqlParts = $internalQuery->getSQLParts();
-      $query->where("(" . $sqlParts['wheres'] . ")");
+      if ($updated) {
+         $query->where("(" . $sqlParts['wheres'] . ")");
+      }
+
+      return $updated;
    }
 }
 

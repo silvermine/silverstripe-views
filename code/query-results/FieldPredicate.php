@@ -14,7 +14,7 @@
 class FieldPredicate extends QueryPredicate {
 
    static $db = array(
-      'FieldName' => 'VARCHAR(64)',
+      'FieldName' => 'VARCHAR(128)',
       'Qualifier' => "ENUM('equals,notequal,like,in,notin', 'equals')",
    );
 
@@ -22,34 +22,52 @@ class FieldPredicate extends QueryPredicate {
       'Values' => 'FieldPredicateValue',
    );
 
+   static $qualifier_symbols = array(
+      'equals'   => '=',
+      'notequal' => '<>',
+      'like'     => 'LIKE',
+      'in'       => 'IN',
+      'notin'    => 'NOT IN',
+   );
+
    private function buildWhere($translateSQLValues = true) {
-      // TODO: prototype only implements a couple types.  This function
-      //       needs to be re-worked to implement all types
-      $where = '';
-      if ($this->Qualifier == 'equals') {
-         $value = $this->Values()->first();
-         $where = sprintf("%s = '%s'", Convert::raw2sql($this->FieldName), $value->getSQLValue($translateSQLValues));
-      } elseif ($this->Qualifier == 'in') {
-         $sqlValues = array();
-         foreach ($this->Values() as $value) {
-            array_push($sqlValues, $value->getSQLValue($translateSQLValues));
-         }
-         $where = sprintf("%s IN ('%s')", Convert::raw2sql($this->FieldName), implode("', '", $sqlValues));
-      } else {
-         throw new RuntimeException("TODO: implement FieldPredicate->updateQuery for '{$this->Qualifier}' qualifier types");
+      if (!array_key_exists($this->Qualifier, self::$qualifier_symbols)) {
+         throw new RuntimeException("FieldPredicate does not have a qualifier symbol for qualifier '{$this->Qualifier}'");
       }
-      return $where;
+
+      $values = '';
+
+      switch ($this->Qualifier) {
+         case 'equals':
+         case 'notequal':
+         case 'like':
+            $values = "'" . $this->Values()->first()->getSQLValue($translateSQLValues) . "'";
+            break;
+         case 'in':
+         case 'notin':
+            $sqlValues = array();
+            foreach ($this->Values() as $value) {
+               array_push($sqlValues, $value->getSQLValue($translateSQLValues));
+            }
+            $values = "('" . implode("', '", $sqlValues) . "')";
+            break;
+         default:
+            throw new RuntimeException("FieldPredicate->buildWhere does not implement a qualifier '{$this->Qualifier}'");
+      }
+
+      return sprintf("%s %s %s", Convert::raw2sql($this->FieldName), self::$qualifier_symbols[$this->Qualifier], $values);
    }
 
    /**
     * @see QueryResultsRetriever#getReadOnlySummary
     */
-   public function getReadOnlySummary() {
+   public function getReadOnlySummaryImpl() {
       return $this->buildWhere(false);
    }
 
-   public function updateQuery(&$query, $conjunctive) {
+   public function updateQueryImpl(&$query, $conjunctive) {
       $query->where($this->buildWhere(), $conjunctive);
+      return true;
    }
 }
 

@@ -10,7 +10,7 @@
  */
 class FieldPredicateValue extends DataObject {
 
-   static $special_values = array();
+   static $value_tokens = array();
 
    static $db = array(
       'Value' => 'VARCHAR(256)',
@@ -20,14 +20,27 @@ class FieldPredicateValue extends DataObject {
       'Predicate' => 'FieldPredicate',
    );
 
-   public static function add_special_value($valueString, $retriever) {
-      self::$special_values[$valueString] = $retriever;
+   public static function add_value_token($identifier, $retriever) {
+      self::$value_tokens[$identifier] = $retriever;
    }
 
    public function getSQLValue($translateSQLValues = true) {
-      if ($translateSQLValues && array_key_exists($this->Value, self::$special_values)) {
-         $func = self::$special_values[$this->Value];
-         return $func($this);
+      if ($translateSQLValues) {
+         $fpv = $this;
+         return preg_replace_callback(
+            '/\$\$([A-Za-z]+):{0,1}([A-Za-z0-9]*)\$\$/',
+            function(&$matches) use (&$fpv)  {
+               $tokenName = $matches[1];
+               $tokenParam = $matches[2];
+               if (!array_key_exists($tokenName, FieldPredicateValue::$value_tokens)) {
+                  user_error("FieldPredicateValue found something that appeared to be a token ('{$matches[0]}') but did not have a value token for the token name ('{$tokenName}')", E_USER_WARNING);
+                  return $matches[0];
+               }
+
+               $func = FieldPredicateValue::$value_tokens[$tokenName];
+               return $func($fpv, $tokenParam);
+            }, $this->Value
+         );
       }
 
       return Convert::raw2sql($this->Value);

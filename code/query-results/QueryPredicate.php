@@ -20,12 +20,44 @@ class QueryPredicate extends DataObject {
       'CompoundParent' => 'CompoundPredicate',
    );
 
-   public function getReadOnlySummary($linePrefix = '') {
-      throw new RuntimeException(get_class($this) . ' needs to implement QueryPredicate->getReadOnlySummary($linePrefix = \'\')');
+   static $has_many = array(
+      'PredicateConditions' => 'PredicateCondition',
+   );
+
+   protected function getConditionsReadOnlySummary($linePrefix = '') {
+      $conditions = $this->PredicateConditions();
+      if ($conditions->exists()) {
+         $html = '<em>This predicate is conditional:<br />';
+         foreach ($conditions as $cond) {
+            $html .= $cond->getReadOnlySummary($linePrefix);
+         }
+         return $html . '</em>' . $linePrefix;
+      }
+      return '';
    }
 
-   public function updateQuery(&$query) {
-      throw new RuntimeException(get_class($this) . ' needs to implement QueryPredicate->updateQuery(&$query)');
+   public function getReadOnlySummary($linePrefix = '') {
+      $html = $this->getConditionsReadOnlySummary($linePrefix);
+      $html .= $this->getReadOnlySummaryImpl($linePrefix);
+      return $html;
+   }
+
+   public function updateQuery(&$query, $conjunctive) {
+      foreach ($this->PredicateConditions() as $cond) {
+         if (!$cond->conditionIsMet()) {
+            return false;
+         }
+      }
+
+      return $this->updateQueryImpl($query, $conjunctive);
+   }
+
+   public function getReadOnlySummaryImpl($linePrefix = '') {
+      throw new RuntimeException(get_class($this) . ' needs to implement QueryPredicate->getReadOnlySummaryImpl($linePrefix = \'\')');
+   }
+
+   public function updateQueryImpl(&$query, $conjunctive) {
+      throw new RuntimeException(get_class($this) . ' needs to implement QueryPredicate->updateQueryImpl(&$query, $conjunctive)');
    }
 }
 

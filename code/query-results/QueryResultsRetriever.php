@@ -56,7 +56,7 @@ class QueryResultsRetriever extends ViewResultsRetriever {
       $query->selectObjects('SiteTree');
 
       $root = $this->RootPredicate();
-      $root->updateQuery($query);
+      $root->updateQuery($query, true);
 
       $sorts = $this->Sorts();
       foreach ($sorts as $sort) {
