@@ -63,7 +63,10 @@ class QueryResultsRetriever extends ViewResultsRetriever {
          $sort->updateQuery($query);
       }
 
-      return $query->execute();
+      Translatable::disable_locale_filter();
+      $results = $query->execute();
+      Translatable::enable_locale_filter();
+      return $results;
    }
 
    /**

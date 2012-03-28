@@ -23,6 +23,9 @@
 DataObject::add_extension('SiteTree', 'ViewHost');
 
 // add built-in special tokens that can be used by FieldPredicate objects
+// TODO: document these and their potential uses
+// TODO: also look into moving them out into classes or something rather than having
+//       them all here in the _config file
 FieldPredicateValue::add_value_token('CurrentPageLocale', function(&$fpv) {
    $page = Director::get_current_page();
    return ($page instanceof SiteTree && $page->hasExtension('Translatable')) ? $page->Locale : null;
@@ -30,6 +33,22 @@ FieldPredicateValue::add_value_token('CurrentPageLocale', function(&$fpv) {
 
 FieldPredicateValue::add_value_token('CurrentPageID', function(&$fpv) {
    $page = Director::get_current_page();
+   return ($page instanceof SiteTree) ? $page->ID : null;
+});
+
+FieldPredicateValue::add_value_token('CurrentPageTransID', function(&$fpv, $tokenParam) {
+   $page = Director::get_current_page();
+
+   $locale = '';
+   if (Controller::curr() && Controller::curr()->getRequest()) {
+      $locale = Controller::curr()->getRequest()->getVar($tokenParam);
+   }
+
+   if (!empty($locale) && $page instanceof SiteTree && $page->hasExtension('Translatable')) {
+      $translatedPage = $page->getTranslation($locale);
+      return ($translatedPage instanceof SiteTree) ? $translatedPage->ID : $page->ID;
+   }
+
    return ($page instanceof SiteTree) ? $page->ID : null;
 });
 

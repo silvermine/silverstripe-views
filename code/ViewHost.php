@@ -119,6 +119,25 @@ class ViewHost extends DataObjectDecorator {
    /**
     * Used by templates in a conditional block to see if there is a view with a
     * given name defined on this page (or, if traversing, a translation or
+    * parent) AND the view has results.
+    *
+    * @param string $name the name of the view to find
+    * @param int $max the max results (or 0 for infinite) (optional: default 0)
+    * @param boolean $traverse traverse hierarchy looking for view? (default: true)
+    * @return View the found view or null if not found
+    */
+   public function HasViewWithResults($name, $max = 0, $traverse = true) {
+      $view = $this->GetView($name, $max, $traverse);
+      if ($view == null) {
+         return false;
+      }
+      $firstResult = $view->Results(1);
+      return !empty($firstResult);
+   }
+
+   /**
+    * Used by templates in a conditional block to see if there is a view with a
+    * given name defined on this page (or, if traversing, a translation or
     * parent) AND the view has results in the language of the page that is
     * being viewed.
     *
