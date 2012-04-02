@@ -33,6 +33,16 @@ class ViewHost extends DataObjectDecorator {
       );
    }
 
+   public function Views_original() {
+      // TODO: this is an ugly hack, but the Translatable module creates a form
+      // field called "Views_original" for the admin UI.  The
+      // HasManyComplexTableField will then try to call $owner->$fieldname(),
+      // which means a call to a function that doesn't exist.  This breaks all
+      // admin pages in any non-default locale.  Adding this function will
+      // workaround that issue until the underlying cause is fixed.
+      return array();
+   }
+
    /**
     * Accessor for retrieving all views attached to the owning data object.
     */
