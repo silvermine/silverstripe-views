@@ -51,18 +51,18 @@ class ViewHost extends DataObjectDecorator {
    }
 
    /**
-    * Used by templates in a control block to retrieve a view by name.  The
-    * maximum number of results can optionally be passed in (default: infinite)
+    * Used by templates in a control block to retrieve a view by name.
     * Additionally, a boolean can be passed in to indicate whether or not the
     * hierarchy should be traversed to find the view on translations and
     * parents (default: true).
     *
     * @param string $name the name of the view to find
-    * @param int $max the max results (or 0 for infinite) (optional: default 0)
+    * @param int $resultsPerPage (optional, default 0) - zero for unlimited results, otherwise how many to show per page
+    * @param string $paginationURLParam the query string key to use for pagination (default: start)
     * @param boolean $traverse traverse hierarchy looking for view? (default: true)
     * @return View the found view or null if not found
     */
-   public function GetView($name, $max = 0, $traverse = true) {
+   public function GetView($name, $resultsPerPage = 0, $paginationURLParam = 'start', $traverse = true) {
       // ATTEMPT 1: Do I have the view on this page?
       $view = $this->owner->getViewWithoutTraversal($name);
 
@@ -77,11 +77,11 @@ class ViewHost extends DataObjectDecorator {
 
          // ATTEMPT 3: go to my parent page and try to get the view (and allow it to continue traversing)
          if ($view == null && $this->owner->ParentID != 0 && ($parent = $this->owner->Parent()) != null && $parent->hasExtension('ViewHost')) {
-            return $parent->GetView($name, $max, $traverse);
+            return $parent->GetView($name, $resultsPerPage, $paginationURLParam, $traverse);
          }
       }
 
-      return $view;
+      return $view->setTransientPaginationConfig($resultsPerPage, $paginationURLParam);
    }
 
    /**
@@ -118,12 +118,11 @@ class ViewHost extends DataObjectDecorator {
     * parent)
     *
     * @param string $name the name of the view to find
-    * @param int $max the max results (or 0 for infinite) (optional: default 0)
     * @param boolean $traverse traverse hierarchy looking for view? (default: true)
     * @return View the found view or null if not found
     */
-   public function HasView($name, $max = 0, $traverse = true) {
-      return ($this->GetView($name, $max, $traverse) != null);
+   public function HasView($name, $traverse = true) {
+      return ($this->GetView($name, $traverse) != null);
    }
 
    /**
@@ -132,17 +131,17 @@ class ViewHost extends DataObjectDecorator {
     * parent) AND the view has results.
     *
     * @param string $name the name of the view to find
-    * @param int $max the max results (or 0 for infinite) (optional: default 0)
     * @param boolean $traverse traverse hierarchy looking for view? (default: true)
     * @return View the found view or null if not found
     */
-   public function HasViewWithResults($name, $max = 0, $traverse = true) {
-      $view = $this->GetView($name, $max, $traverse);
+   public function HasViewWithResults($name, $traverse = true) {
+      $view = $this->GetView($name, $traverse);
       if ($view == null) {
          return false;
       }
-      $firstResult = $view->Results(1);
-      return !empty($firstResult);
+
+      $results = $view->Results();
+      return is_null($results) ? false : ($results->Count() > 0);
    }
 
    /**
@@ -152,17 +151,17 @@ class ViewHost extends DataObjectDecorator {
     * being viewed.
     *
     * @param string $name the name of the view to find
-    * @param int $max the max results (or 0 for infinite) (optional: default 0)
     * @param boolean $traverse traverse hierarchy looking for view? (default: true)
     * @return View the found view or null if not found
     */
-   public function HasViewWithTranslatedResults($name, $max = 0, $traverse = true) {
-      $view = $this->GetView($name, $max, $traverse);
+   public function HasViewWithTranslatedResults($name, $traverse = true) {
+      $view = $this->GetView($name, $traverse);
       if ($view == null) {
          return false;
       }
-      $firstResult = $view->TranslatedResults(1);
-      return !empty($firstResult);
+
+      $results = $view->TranslatedResults();
+      return is_null($results) ? false : ($results->Count() > 0);
    }
 
    /**

@@ -26,6 +26,10 @@ class View extends DataObject {
 
    static $default_sort = 'Name';
 
+   // these are transient - set by the template when using the view
+   private $resultsPerPage = 0;
+   private $paginationURLParam = 'start';
+
    /**
     * @see DataObject->getCMSFields()
     */
@@ -78,14 +82,70 @@ class View extends DataObject {
    }
 
    /**
+    * Paginates a DataObjectSet according to the current transient pagination
+    * config.
+    *
+    * @todo - obviously loading all results just to paginate them and return a
+    * a portion of them is not a great architectural decision.  This needs to
+    * be revisited to see how this can be improved without making the API for
+    * results retrievers too complex.  Part of the complexity comes from the
+    * TranslatedResults function.  If the translated results function only
+    * loads one page of results and then translates them (finding equivalents
+    * in the current locale), it can end up with less results.  Thus, it must
+    * really load all results to even know which one to start from (each page
+    * could have less results).  Because of this we will just load all results
+    * for now and come back to visit this problem later.
+    *
+    * @param DataObjectSet $all a set containing all possible results to be paginated
+    * @return null|DataObjectSet null if null is passed in, otherwise an appropriately paginated DataObjectSet
+    */
+   private function paginate($all) {
+      if (is_null($all)) {
+         return null;
+      }
+
+      if ($this->resultsPerPage <= 0) {
+         $all->setPageLimits(0, PHP_INT_MAX, $all->Count());
+         return $all;
+      }
+
+      $start = 0;
+      if (Controller::curr() && Controller::curr()->getRequest() && Controller::curr()->getRequest()->getVar($this->paginationURLParam)) {
+         $startVal = Controller::curr()->getRequest()->getVar($this->paginationURLParam);
+         $start = is_numeric($startVal) ? ((int) $startVal) : $start;
+      }
+
+      $results = new DataObjectSet(array_slice($all->toArray(), $start, $this->resultsPerPage));
+      $results->setPaginationGetVar($this->paginationURLParam);
+      $results->setPageLimits($start, $this->resultsPerPage, $all->Count());
+      return $results;
+   }
+
+   /**
     * Helper function for templates so they can call the Results function from
     * the view itself without having to get the results retriever as well.
     *
-    * @param int $maxResults maximum number of results to retriever, or 0 for infinite (default 0)
     * @return DataObjectSet the results in the current locale or null if none found
     */
-   public function Results($maxResults = 0) {
-      return $this->ResultsRetriever()->Results($maxResults);
+   public function Results() {
+      return $this->paginate($this->ResultsRetriever()->Results());
+   }
+
+   /**
+    * When a view is retrieved by a template, the template can specify
+    * pagination configuration like how many results to show on each page and
+    * what URL parameter to use for pagination.  The view host then calls this
+    * function to set that transient config on this view so it can be used in
+    * the results in the template.
+    *
+    * @param int $resultsPerPage number of results per page (zero means unlimited)
+    * @param string $paginationURLParam the URL parameter to use for pagination
+    * @return this view for chaining function calls
+    */
+   public function setTransientPaginationConfig($resultsPerPage, $paginationURLParam) {
+      $this->resultsPerPage = $resultsPerPage;
+      $this->paginationURLParam = $paginationURLParam;
+      return $this;
    }
 
    /**
@@ -93,11 +153,10 @@ class View extends DataObject {
     * function from the view itself without having to get the results retriever
     * as well.
     *
-    * @param int $maxResults maximum number of results to retriever, or 0 for infinite (default 0)
     * @return DataObjectSet the results in the current locale or null if none found
     */
-   public function TranslatedResults($maxResults = 0) {
-      return $this->ResultsRetriever()->TranslatedResults($maxResults);
+   public function TranslatedResults() {
+      return $this->paginate($this->ResultsRetriever()->TranslatedResults());
    }
 
 }
