@@ -54,10 +54,19 @@ class AddViewFormPopup extends ComplexTableField_Popup {
    public function addView($data, $form) {
       $view = new View();
       $view->Name = $data['Name'];
+
       $rr = new $data['ResultsRetrieverType']();
       $rr->write();
       $view->ResultsRetrieverID = $rr->ID;
-      $view->HostID = $data['ctf']['sourceID'];
+
+      $coll = $this->getParentController()->controller;
+      if (!$coll->ID) {
+         $parent = $this->getParentController()->getParentRecord();
+         $coll->write();
+         $parent->ViewCollectionID = $coll->ID;
+         $parent->write();
+      }
+      $view->ViewCollectionID = $coll->ID;
       $view->write();
 
       return $this->afterViewAdded($view, $form);

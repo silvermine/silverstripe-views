@@ -20,34 +20,25 @@ class ViewHost extends DataObjectDecorator {
 
    /**
     * @see DataObjectDecorator->extraStatics()
-    * @todo this really isn't used since we use HostID on View for this
-    *       relationship but the HasManyComplexTableField breaks if we remove
-    *       this.  We should probably find a way to remove it and make the
-    *       field work.
     */
    function extraStatics() {
       return array(
-         'has_many' => array(
-            'Views' => 'View',
+         'has_one' => array(
+            'ViewCollection' => 'ViewCollection',
          ),
       );
-   }
-
-   public function Views_original() {
-      // TODO: this is an ugly hack, but the Translatable module creates a form
-      // field called "Views_original" for the admin UI.  The
-      // HasManyComplexTableField will then try to call $owner->$fieldname(),
-      // which means a call to a function that doesn't exist.  This breaks all
-      // admin pages in any non-default locale.  Adding this function will
-      // workaround that issue until the underlying cause is fixed.
-      return array();
    }
 
    /**
     * Accessor for retrieving all views attached to the owning data object.
     */
-   public function getAllViews() {
-      return DataObject::get('View', '"HostID" = ' . $this->owner->ID);
+   public function Views() {
+      $coll = $this->owner->ViewCollection();
+      if (is_null($coll)) {
+         return null;
+      }
+
+      return $coll->Views();
    }
 
    /**
@@ -100,7 +91,7 @@ class ViewHost extends DataObjectDecorator {
     * @return View the found view or null if not found
     */
    public function getViewWithoutTraversal($name) {
-      $allViews = $this->owner->getAllViews();
+      $allViews = $this->Views();
       if ($allViews == null) {
          return null;
       }
@@ -170,15 +161,16 @@ class ViewHost extends DataObjectDecorator {
    public function updateCMSFields(FieldSet &$fields) {
       // TODO: make this show more than 10 results (it's paginated)
       // TODO: make this not show the checkboxes since we're limiting it to the views on this page
+      $viewCollection = $this->owner->ViewCollection();
       $viewsTable = new HasManyComplexTableField(
-         $this->owner,
+         $viewCollection,
          'Views',
          'View',
          array(
             'ReadOnlySummary' => 'Name',
          ),
          'getCMSFields',
-         sprintf('"View"."HostID" = %d', $this->owner->ID)
+         sprintf('"View"."ViewCollectionID" = %d', $viewCollection->ID)
       );
 
       // use our custom form for add/edit:

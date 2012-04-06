@@ -21,7 +21,7 @@ class View extends DataObject {
 
    static $has_one = array(
       'ResultsRetriever' => 'ViewResultsRetriever',
-      'Host'             => 'DataObject',
+      'ViewCollection'   => 'ViewCollection',
    );
 
    static $default_sort = 'Name';
