@@ -136,7 +136,7 @@ class QueryBuilder {
     * @return QueryBuilder this instance for chaining function calls together
     */
    public function addColumn($column) {
-      $this->verifyConfiguredFor(ACTION_ADD_COLUMN);
+      $this->verifyConfiguredFor(self::ACTION_ADD_COLUMN);
       array_push($this->columns, $column);
       return $this;
    }
@@ -165,7 +165,7 @@ class QueryBuilder {
     * @param string $joinClause the clause used to join the table to others
     */
    private function addJoin($type, $tableAlias, $joinClause) {
-      if (array_key_exists($tableName, $this->joins)) {
+      if (array_key_exists($tableAlias, $this->joins)) {
          user_error("Join already existed for $tableAlias", E_USER_WARNING);
       }
       $this->joins[$tableAlias] = array(
@@ -209,7 +209,7 @@ class QueryBuilder {
     */
    public function execute() {
       $sql = $this->getSQLParts();
-      if ($this->mode == MODE_SELECT_COLUMNS) {
+      if ($this->mode == self::MODE_SELECT_COLUMNS) {
          return $this->convertQueryToDataObjectSet(DB::query($sql['complete']));
       }
       return DataObject::get($this->objectName, $sql['wheres'], $sql['sorts'], $sql['joins']);
@@ -231,7 +231,7 @@ class QueryBuilder {
     * @return array the array of SQL parts.  See above.
     */
    public function getSQLParts() {
-      $this->verifyConfiguredFor(ACTION_MAKE_SQL);
+      $this->verifyConfiguredFor(self::ACTION_MAKE_SQL);
       $parts = array();
 
       // Build $parts['columns']
@@ -316,7 +316,7 @@ class QueryBuilder {
     * @return QueryBuilder this instance for chaining function calls together
     */
    public function innerJoin($tableAlias, $joinClause) {
-      $this->verifyConfiguredFor(ACTION_ADD_ANYTHING);
+      $this->verifyConfiguredFor(self::ACTION_ADD_ANYTHING);
       $this->addJoin(' INNER', $tableAlias, $joinClause);
       return $this;
    }
@@ -334,7 +334,7 @@ class QueryBuilder {
     * @return QueryBuilder this instance for chaining function calls together
     */
    public function leftJoin($tableAlias, $joinClause) {
-      $this->verifyConfiguredFor(ACTION_ADD_ANYTHING);
+      $this->verifyConfiguredFor(self::ACTION_ADD_ANYTHING);
       $this->addJoin('  LEFT OUTER', $tableAlias, $joinClause);
       return $this;
    }
@@ -349,7 +349,7 @@ class QueryBuilder {
     * @return QueryBuilder this instance for chaining function calls together
     */
    public function orderBy($field, $ascending = true) {
-      $this->verifyConfiguredFor(ACTION_ADD_ANYTHING);
+      $this->verifyConfiguredFor(self::ACTION_ADD_ANYTHING);
       array_push($this->sorts, "{$field} " . ($ascending ? 'ASC' : 'DESC'));
       return $this;
    }
@@ -370,8 +370,8 @@ class QueryBuilder {
     * @return string the alias that should be used for this primary table in all join, where, and sort column references
     */
    public function selectColumns($from, $resolveTableName = true) {
-      $this->verifyConfiguredFor(ACTION_SELECT_COLS);
-      $this->mode = MODE_SELECT_COLUMNS;
+      $this->verifyConfiguredFor(self::ACTION_SELECT_COLS);
+      $this->mode = self::MODE_SELECT_COLUMNS;
       $this->tableName = $resolveTableName ? self::get_table_name($from) : $from;
       $this->tableNameAlias = $this->getTableAlias($from);
       $this->columns = array();
@@ -394,8 +394,8 @@ class QueryBuilder {
     * @return string the alias that should be used for this primary table in all join, where, and sort column references
     */
    public function selectObjects($objectName) {
-      $this->verifyConfiguredFor(ACTION_SELECT_OBJ);
-      $this->mode = MODE_SELECT_OBJECTS;
+      $this->verifyConfiguredFor(self::ACTION_SELECT_OBJ);
+      $this->mode = self::MODE_SELECT_OBJECTS;
       $this->objectName = $objectName;
       $this->tableNameAlias = self::get_table_name($objectName);
       // tableName isn't *really* used by selectObjects queries, but
@@ -424,33 +424,33 @@ class QueryBuilder {
     */
    private function verifyConfiguredFor($action) {
       switch ($action) {
-         case ACTION_SELECT_COLS:
-            if ($this->mode == MODE_SELECT_OBJECTS) {
+         case self::ACTION_SELECT_COLS:
+            if ($this->mode == self::MODE_SELECT_OBJECTS) {
                user_error("You can not call selectColumns after calling selectObjects", E_USER_ERROR);
-            } elseif ($this->mode == MODE_SELECT_COLUMNS) {
+            } elseif ($this->mode == self::MODE_SELECT_COLUMNS) {
                user_error("selectColumns can only be called once on each QueryBuilder", E_USER_ERROR);
             }
             break;
-         case ACTION_SELECT_OBJ:
-            if ($this->mode == MODE_SELECT_OBJECTS) {
+         case self::ACTION_SELECT_OBJ:
+            if ($this->mode == self::MODE_SELECT_OBJECTS) {
                user_error("selectObjects can only be called once on each QueryBuilder", E_USER_ERROR);
-            } elseif ($this->mode == MODE_SELECT_COLUMNS) {
+            } elseif ($this->mode == self::MODE_SELECT_COLUMNS) {
                user_error("You can not call selectObjects after calling selectColumns", E_USER_ERROR);
             }
             break;
-         case ACTION_ADD_COLUMN:
+         case self::ACTION_ADD_COLUMN:
             if ($this->mode == null) {
                user_error("Can not add a column when you have not called selectColumns first", E_USER_ERROR);
-            } elseif ($this->mode == MODE_SELECT_OBJECTS) {
+            } elseif ($this->mode == self::MODE_SELECT_OBJECTS) {
                user_error("Can not add a column when you are selecting objects (must use selectColumns instead of selectObjects)", E_USER_ERROR);
             }
             break;
-         case ACTION_ADD_ANYTHING:
+         case self::ACTION_ADD_ANYTHING:
             if ($this->mode == null) {
                user_error("You must call either selectObjects or selectColumns before calling any other modifying methods", E_USER_ERROR);
             }
             break;
-         case ACTION_MAKE_SQL:
+         case self::ACTION_MAKE_SQL:
             if ($this->mode == null) {
                user_error("You must call either selectObjects or selectColumns before creating SQL with QueryBuilder", E_USER_ERROR);
             }
@@ -472,7 +472,7 @@ class QueryBuilder {
     * @return QueryBuilder this instance for chaining function calls together
     */
    public function where($clause, $conjunctive = true) {
-      $this->verifyConfiguredFor(ACTION_ADD_ANYTHING);
+      $this->verifyConfiguredFor(self::ACTION_ADD_ANYTHING);
       $join = $conjunctive ? '   AND ' : '    OR ';
       array_push($this->wheres, (empty($this->wheres) ? '' : $join) . $clause);
       return $this;
