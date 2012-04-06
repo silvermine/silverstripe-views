@@ -83,6 +83,7 @@ class QueryBuilder {
    const MODE_SELECT_COLUMNS = 'select-columns';
 
    private $mode = null;
+   private $distinct = false;
    private $columns = null;
    private $objectName = null;
    private $tableName = null;
@@ -235,6 +236,9 @@ class QueryBuilder {
 
       // Build $parts['columns']
       $parts['columns'] = "";
+      if ($this->distinct) {
+         $parts['columns'] .= "DISTINCT ";
+      }
       $prefix = "";
       $columns = $this->columns;
       if (empty($columns)) {
@@ -399,6 +403,17 @@ class QueryBuilder {
       // returned from getSQLParts();
       $this->tableName = $this->tableNameAlias;
       return $this->tableNameAlias;
+   }
+   
+   /**
+    * Add a DISTINCT clause to the query.
+    *
+    * @param boolean $distinct (optional - default true) true for DISTINCT, false for normal query
+    * @return QueryBuilder this instance for chaining function calls together
+    */
+   public function setDistinct($distinct = true) {
+      $this->distinct = $distinct;
+      return $this;
    }
 
    /**
