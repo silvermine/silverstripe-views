@@ -72,7 +72,10 @@ class ViewHost extends DataObjectDecorator {
          }
       }
 
-      return $view->setTransientPaginationConfig($resultsPerPage, $paginationURLParam);
+      if (is_object($view)) {
+         $view->setTransientPaginationConfig($resultsPerPage, $paginationURLParam);
+      }
+      return $view;
    }
 
    /**
