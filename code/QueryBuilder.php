@@ -404,7 +404,7 @@ class QueryBuilder {
       $this->tableName = $this->tableNameAlias;
       return $this->tableNameAlias;
    }
-   
+
    /**
     * Add a DISTINCT clause to the query.
     *

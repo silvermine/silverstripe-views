@@ -5,12 +5,6 @@
  * allow them to have view definitions added to them.  With the default module
  * configuration all SiteTree nodes have the ViewHost DOD added to them.
  *
- * @todo test adding this to SiteConfig to allow for the definition of site-
- *       wide views available from all pages.  The view traversal code will
- *       need to be modified to look at SiteConfig after exhausting all other
- *       options (and look at both translations of SiteConfig like it does for
- *       pages)
- *
  * @author Jeremy Thomerson <jeremy@thomersonfamily.com>
  * @copyright (c) 2012 Jeremy Thomerson <jeremy@thomersonfamily.com>
  * @package silverstripe-views
@@ -67,8 +61,22 @@ class ViewHost extends DataObjectDecorator {
          }
 
          // ATTEMPT 3: go to my parent page and try to get the view (and allow it to continue traversing)
-         if ($view == null && $this->owner->ParentID != 0 && ($parent = $this->owner->Parent()) != null && $parent->hasExtension('ViewHost')) {
-            return $parent->GetView($name, $resultsPerPage, $paginationURLParam, $traverse);
+         if ($view == null && $this->owner->hasExtension('Hierarchy') && $this->owner->ParentID != 0 && ($parent = $this->owner->Parent()) != null && $parent->hasExtension('ViewHost')) {
+            $view = $parent->GetView($name, $resultsPerPage, $paginationURLParam, $traverse);
+         }
+
+         // ATTEMPT 4: try to get global view from the SiteConfig object
+         if ($view == null && singleton('SiteConfig')->hasExtension('ViewHost')) {
+            if (singleton('SiteConfig')->hasExtension('Translatable') && $this->owner->hasExtension('Translatable')) {
+               $locale = $this->owner->Locale;
+               $view = $this->getViewFromSiteConfig($locale, $name);
+               if ($view == null && $defaultLocale != null && $locale != $defaultLocale) {
+                  $view = $this->getViewFromSiteConfig($defaultLocale, $name);
+               }
+            } else {
+               // not translatable:
+               $view = $this->getViewFromSiteConfig($locale = null, $name);
+            }
          }
       }
 
@@ -76,6 +84,26 @@ class ViewHost extends DataObjectDecorator {
          $view->setTransientPaginationConfig($resultsPerPage, $paginationURLParam);
       }
       return $view;
+   }
+
+   /**
+    * Internal function used by GetView to search for a view on a SiteConfig
+    * object after all parents in the hierarchy have been exhausted.
+    *
+    * @param string $locale the locale, or null if none, to lookup a SiteConfig for
+    * @param string $name the name of the view to find
+    * @return View the found view, or null if none
+    */
+   private function getViewFromSiteConfig($locale, $name) {
+      $config = ($locale == null) ?
+         SiteConfig::get_one('SiteConfig') :
+         SiteConfig::get_one('SiteConfig', sprintf('"Locale" = \'%s\'', Convert::raw2sql($locale)));
+
+      if ($config && $config->hasExtension('ViewHost')) {
+         return $config->getViewWithoutTraversal($name);
+      }
+
+      return null;
    }
 
    /**

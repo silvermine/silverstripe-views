@@ -21,6 +21,7 @@
 // TODO: review all uses of the _t() function in this module
 
 DataObject::add_extension('SiteTree', 'ViewHost');
+DataObject::add_extension('SiteConfig', 'ViewHost');
 
 // add built-in special tokens that can be used by FieldPredicate objects
 // TODO: document these and their potential uses
