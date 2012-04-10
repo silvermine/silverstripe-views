@@ -45,7 +45,13 @@ class QueryResultsRetriever extends ViewResultsRetriever {
     */
    protected function onBeforeDelete() {
       parent::onBeforeDelete();
-      // TODO: delete all child objects (sorts and criteria)
+      $this->RootPredicate()->delete();
+      $sorts = $this->Sorts();
+      if ($sorts) {
+         foreach ($sorts as $sort) {
+            $sort->delete();
+         }
+      }
    }
 
    /**

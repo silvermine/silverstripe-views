@@ -36,6 +36,21 @@ class CompoundPredicate extends QueryPredicate {
       return $html;
    }
 
+   /**
+    * Deletes the associated child objects before deleting this object.
+    *
+    * @see DataObject->onBeforeDelete()
+    */
+   protected function onBeforeDelete() {
+      parent::onBeforeDelete();
+      $predicates = $this->Predicates();
+      if ($predicates) {
+         foreach ($predicates as $predicate) {
+            $predicate->delete();
+         }
+      }
+   }
+
    public function updateQueryImpl(&$query, $conjunctive) {
       $internalQuery = new QueryBuilder();
       $internalQuery->selectObjects('SiteTree');

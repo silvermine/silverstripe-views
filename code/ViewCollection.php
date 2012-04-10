@@ -22,4 +22,18 @@ class ViewCollection extends DataObject {
       'Views' => 'View',
    );
 
+   /**
+    * Deletes the associated child objects before deleting this object.
+    *
+    * @see DataObject->onBeforeDelete()
+    */
+   protected function onBeforeDelete() {
+      parent::onBeforeDelete();
+      $views = $this->Views();
+      if ($views) {
+         foreach ($views as $view) {
+            $view->delete();
+         }
+      }
+   }
 }

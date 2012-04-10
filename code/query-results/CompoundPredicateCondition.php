@@ -58,5 +58,20 @@ class CompoundPredicateCondition extends PredicateCondition {
       }
       return false;
    }
+
+   /**
+    * Deletes the associated child objects before deleting this object.
+    *
+    * @see DataObject->onBeforeDelete()
+    */
+   protected function onBeforeDelete() {
+      parent::onBeforeDelete();
+      $conditions = $this->Conditions();
+      if ($conditions) {
+         foreach ($conditions as $condition) {
+            $condition->delete();
+         }
+      }
+   }
 }
 

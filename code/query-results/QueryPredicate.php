@@ -56,6 +56,21 @@ class QueryPredicate extends DataObject {
       throw new RuntimeException(get_class($this) . ' needs to implement QueryPredicate->getReadOnlySummaryImpl($linePrefix = \'\')');
    }
 
+   /**
+    * Deletes the associated child objects before deleting this object.
+    *
+    * @see DataObject->onBeforeDelete()
+    */
+   protected function onBeforeDelete() {
+      parent::onBeforeDelete();
+      $conditions = $this->PredicateConditions();
+      if ($conditions) {
+         foreach ($conditions as $condition) {
+            $condition->delete();
+         }
+      }
+   }
+
    public function updateQueryImpl(&$query, $conjunctive) {
       throw new RuntimeException(get_class($this) . ' needs to implement QueryPredicate->updateQueryImpl(&$query, $conjunctive)');
    }

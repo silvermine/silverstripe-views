@@ -65,6 +65,21 @@ class FieldPredicate extends QueryPredicate {
       return $this->buildWhere(false);
    }
 
+   /**
+    * Deletes the associated child objects before deleting this object.
+    *
+    * @see DataObject->onBeforeDelete()
+    */
+   protected function onBeforeDelete() {
+      parent::onBeforeDelete();
+      $values = $this->Values();
+      if ($values) {
+         foreach ($values as $value) {
+            $value->delete();
+         }
+      }
+   }
+
    public function updateQueryImpl(&$query, $conjunctive) {
       $query->where($this->buildWhere(), $conjunctive);
       return true;
