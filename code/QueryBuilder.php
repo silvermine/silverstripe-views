@@ -206,7 +206,18 @@ class QueryBuilder {
     * startCompoundWhere() is complete and this grouping can end.
     */
    public function endCompoundWhere() {
-      array_push($this->wheres, ')');
+      if (!$this->hasPreviousWhereClause) {
+         // sometimes a compound where clause is started, but then where is not
+         // called before it is ended (maybe a predicate condition stopped the
+         // predicate from updating it).  In the case that end is called and we
+         // don't have a previous where clause, the entire wheres array is
+         // either empty or else the previous call was to startCompoundWhere and
+         // where was not called.  In either case we can pop the last thing (or
+         // nothing if wheres is empty) off the array to be safe.
+         array_pop($this->wheres);
+      } else {
+         array_push($this->wheres, ')');
+      }
       $this->hasPreviousWhereClause = true;
    }
 
