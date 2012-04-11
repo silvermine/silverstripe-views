@@ -104,7 +104,7 @@ class QueryBuilder {
     * @param string $tableName the name of the table (or class name)
     * @return string either the original $tableName or an alternate table for the object (see above)
     */
-   public function get_table_name($tableName) {
+   public static function get_table_name($tableName) {
       // TODO: this function will break if you have abnormal stages
       // this means that it may not work with some plugins if they modify
       // the stages that are normally used by SS.
