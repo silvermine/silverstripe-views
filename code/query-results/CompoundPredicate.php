@@ -52,19 +52,13 @@ class CompoundPredicate extends QueryPredicate {
    }
 
    public function updateQueryImpl(&$query, $conjunctive) {
-      $internalQuery = new QueryBuilder();
-      $internalQuery->selectObjects('SiteTree');
-
       $preds = $this->Predicates();
       $updated = false;
+      $query->startCompoundWhere();
       foreach ($preds as $pred) {
-         $updated |= $pred->updateQuery($internalQuery, $this->IsConjunctive);
+         $updated |= $pred->updateQuery($query, $this->IsConjunctive);
       }
-
-      $sqlParts = $internalQuery->getSQLParts();
-      if ($updated) {
-         $query->where("(" . $sqlParts['wheres'] . ")");
-      }
+      $query->endCompoundWhere();
 
       return $updated;
    }

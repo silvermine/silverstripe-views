@@ -92,6 +92,7 @@ class QueryBuilder {
    private $joins = array();
    private $sorts = array();
    private $wheres = array();
+   private $hasPreviousWhereClause = false;
 
    private $tableAliasCount = 0;
 
@@ -201,6 +202,15 @@ class QueryBuilder {
    }
 
    /**
+    * Tells QueryBuilder that the previous compound where started with
+    * startCompoundWhere() is complete and this grouping can end.
+    */
+   public function endCompoundWhere() {
+      array_push($this->wheres, ')');
+      $this->hasPreviousWhereClause = true;
+   }
+
+   /**
     * Execute the query that you have built and return the results as a
     * DataObjectSet.  A DOS is returned regardless of whether you are selecting
     * columns or objects.
@@ -259,7 +269,7 @@ class QueryBuilder {
       }
 
       // Build $parts['wheres']
-      $parts['wheres'] = "";
+      $parts['wheres'] = '';
       foreach ($this->wheres as $where) {
          $parts['wheres'] .= "{$where}\n";
       }
@@ -417,6 +427,15 @@ class QueryBuilder {
    }
 
    /**
+    * Tells QueryBuilder to start a compound where clause and continue grouping
+    * calls to where() until endCompoundWhere() is called.
+    */
+   public function startCompoundWhere() {
+      array_push($this->wheres, ($this->hasPreviousWhereClause ? '   AND (' : '('));
+      $this->hasPreviousWhereClause = false;
+   }
+
+   /**
     * Internal helper function to make sure that the QueryBuilder functions
     * have been called in the proper order.
     *
@@ -473,9 +492,11 @@ class QueryBuilder {
     */
    public function where($clause, $conjunctive = true) {
       $this->verifyConfiguredFor(self::ACTION_ADD_ANYTHING);
-      $join = $conjunctive ? '   AND ' : '    OR ';
-      array_push($this->wheres, (empty($this->wheres) ? '' : $join) . $clause);
+      if ($this->hasPreviousWhereClause) {
+         $clause = ($conjunctive ? '   AND ' : '    OR ') . $clause;
+      }
+      array_push($this->wheres, $clause);
+      $this->hasPreviousWhereClause = true;
       return $this;
    }
-
 }
