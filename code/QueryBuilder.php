@@ -226,6 +226,16 @@ class QueryBuilder {
    }
 
    /**
+    * Returns the alias to be used in join clauses, etc, when needing to
+    * reference the primary table that this query is selecting from.
+    *
+    * @return string the table alias for the primary select table
+    */
+   public function getPrimaryTableAlias() {
+      return $this->tableNameAlias;
+   }
+
+   /**
     * Builds the various pieces of a SQL query based on the current QB
     * configuration.  Also builds a complete SQL query - even if objects are
     * being selected (in which case execute() will only use the parts and not
