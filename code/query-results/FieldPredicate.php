@@ -55,7 +55,7 @@ class FieldPredicate extends QueryPredicate {
             throw new RuntimeException("FieldPredicate->buildWhere does not implement a qualifier '{$this->Qualifier}'");
       }
 
-      return sprintf("%s %s %s", Convert::raw2sql($this->FieldName), self::$qualifier_symbols[$this->Qualifier], $values);
+      return sprintf("%s %s %s", $this->FieldName, self::$qualifier_symbols[$this->Qualifier], $values);
    }
 
    /**
