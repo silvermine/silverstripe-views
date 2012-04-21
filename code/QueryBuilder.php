@@ -81,6 +81,9 @@ class QueryBuilder {
 
    const MODE_SELECT_OBJECTS = 'select-objects';
    const MODE_SELECT_COLUMNS = 'select-columns';
+   
+   const START_COMPOUND = '(';
+   const END_COMPOUND = ')';
 
    private $mode = null;
    private $distinct = false;
@@ -216,9 +219,11 @@ class QueryBuilder {
          // nothing if wheres is empty) off the array to be safe.
          array_pop($this->wheres);
       } else {
-         array_push($this->wheres, ')');
+         array_push($this->wheres, self::END_COMPOUND);
       }
-      $this->hasPreviousWhereClause = true;
+      
+      $lastChar = substr(end($this->wheres), -1);
+      $this->hasPreviousWhereClause = ($lastChar !== self::START_COMPOUND);
    }
 
    /**
@@ -452,7 +457,7 @@ class QueryBuilder {
     * calls to where() until endCompoundWhere() is called.
     */
    public function startCompoundWhere() {
-      array_push($this->wheres, ($this->hasPreviousWhereClause ? '   AND (' : '('));
+      array_push($this->wheres, ($this->hasPreviousWhereClause ? '   AND ' : '') . self::START_COMPOUND);
       $this->hasPreviousWhereClause = false;
    }
 
