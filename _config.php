@@ -27,16 +27,6 @@ DataObject::add_extension('SiteConfig', 'ViewHost');
 // TODO: document these and their potential uses
 // TODO: also look into moving them out into classes or something rather than having
 //       them all here in the _config file
-FieldPredicateValue::add_value_token('ContentLocale', function(&$fpv, $tokenParam) {
-   $page = Director::get_current_page();
-   if (!$page instanceof SiteTree || !$page->hasExtension('Translatable'))
-      return null;
-   
-   if (Controller::curr() && Controller::curr()->getRequest() && Controller::curr()->getRequest()->getVar($tokenParam))
-      return Convert::raw2sql(Controller::curr()->getRequest()->getVar($tokenParam));
-   return $page->Locale;
-});
-
 FieldPredicateValue::add_value_token('CurrentPageLocale', function(&$fpv) {
    $page = Director::get_current_page();
    return ($page instanceof SiteTree && $page->hasExtension('Translatable')) ? $page->Locale : null;
