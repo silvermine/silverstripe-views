@@ -23,6 +23,9 @@
 DataObject::add_extension('SiteTree', 'ViewHost');
 DataObject::add_extension('SiteConfig', 'ViewHost');
 
+// configure RSS feeds based on views
+Object::add_extension('ContentController', 'RSSContentControllerExtension');
+
 // add built-in special tokens that can be used by FieldPredicate objects
 // TODO: document these and their potential uses
 // TODO: also look into moving them out into classes or something rather than having

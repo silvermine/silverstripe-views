@@ -15,8 +15,37 @@
  */
 class View extends DataObject {
 
+   /**
+    * RSS auto-link settings control which pages an RSS feed is automatically
+    * added to as a <link> tag in the header.
+    */
+   // never automatically appears
+   const RSS_AUTO_LINK_NONE = 'None';
+
+   // automatically appears only on the host page
+   const RSS_AUTO_LINK_PAGE_ONLY = 'PageOnly';
+
+   // automatically appears on page and direct children of the host page
+   const RSS_AUTO_LINK_PAGE_AND_CHILDREN = 'PageAndChildren';
+
+   // automatically appears on direct children of the host page (only - not on the host page itself)
+   const RSS_AUTO_LINK_CHILDREN = 'Children';
+
+   // automatically appears on page and all descendants of the host page - no matter their depth
+   const RSS_AUTO_LINK_PAGE_AND_DESCENDANTS = 'PageAndDescendants';
+
+   // automatically appears on all descendants of the host page - no matter their depth (but not on the host page itself)
+   const RSS_AUTO_LINK_DESCENDANTS = 'Descendants';
+
    static $db = array(
       'Name'        => 'VARCHAR(32)',
+      'RSSEnabled'  => 'BOOLEAN',
+      'RSSAutoLink' => "ENUM('None,PageOnly,PageAndChildren,Children,PageAndDescendants,Descendants')",
+      'RSSItems'    => 'Int',
+   );
+
+   static $defaults = array(
+      'RSSItems'    => 20,
    );
 
    static $has_one = array(
@@ -27,6 +56,7 @@ class View extends DataObject {
    static $default_sort = 'Name';
 
    // these are transient - set by the template when using the view
+   private $owner;
    private $resultsPerPage = 0;
    private $paginationURLParam = 'start';
 
@@ -37,7 +67,21 @@ class View extends DataObject {
       $fields = new FieldSet(
          new TabSet('Root',
             new Tab('Main',
-               new TextField('Name', _t('Views.Name.Label', 'Name'))
+               new TextField('Name', _t('Views.Name.Label', 'Name')),
+               new CheckboxField('RSSEnabled', _t('Views.RSSEnabled.Label', 'RSS Enabled')),
+               new TextField('RSSItems', _t('Views.RSSItems.Label', 'RSS Number of Items')),
+               new DropDownField(
+                  'RSSAutoLink',
+                  _t('Views.RSSAutoLink.Label', 'RSS Auto Link'),
+                  array(
+                     self::RSS_AUTO_LINK_NONE => _t('Views.RSSAutoLink.' . self::RSS_AUTO_LINK_NONE . '.Label', 'None'),
+                     self::RSS_AUTO_LINK_PAGE_ONLY => _t('Views.RSSAutoLink.' . self::RSS_AUTO_LINK_PAGE_ONLY . '.Label', 'Page only'),
+                     self::RSS_AUTO_LINK_PAGE_AND_CHILDREN => _t('Views.RSSAutoLink.' . self::RSS_AUTO_LINK_PAGE_AND_CHILDREN . '.Label', 'Page and children'),
+                     self::RSS_AUTO_LINK_CHILDREN => _t('Views.RSSAutoLink.' . self::RSS_AUTO_LINK_CHILDREN . '.Label', 'Direct children only'),
+                     self::RSS_AUTO_LINK_PAGE_AND_DESCENDANTS => _t('Views.RSSAutoLink.' . self::RSS_AUTO_LINK_PAGE_AND_DESCENDANTS . '.Label', 'Page and descendants'),
+                     self::RSS_AUTO_LINK_DESCENDANTS => _t('Views.RSSAutoLink.' . self::RSS_AUTO_LINK_DESCENDANTS . '.Label', 'All descendants'),
+                  )
+               )
             )
          )
       );
@@ -65,9 +109,36 @@ class View extends DataObject {
     *
     * @todo add a unique-per-hosting-object validation rule to "Name"
     *       (can probably use UniqueTextField for this)
+    * @todo "Name" should also be only alphanumeric characters because of the
+    *       way it is used in templates as well as by RSS feeds with i18n to
+    *       get the title of a feed
     */
    public function getValidator() {
       return new RequiredFields('Name', 'ResultsRetrieverID');
+   }
+
+   /**
+    * Returns a URL relative to the owner.  The owner must have been set (this
+    * is generally done already by ViewHost) and it must have a Link function
+    * itself for this to work.
+    *
+    * @todo support varying URL formats - but these will also need to be
+    * supported by the RSS serving coden RSSContentControllerExtension
+    *
+    * @return string URL to this View as an RSS feed
+    */
+   public function Link() {
+      if (!$this->owner || !$this->owner->hasMethod('Link')) {
+         throw new Exception("can not make link to a view if we don't have an owner with a Link function");
+      }
+      $url = $this->owner->Link();
+      if ($this->RSSEnabled) {
+         $url .= (substr($url, -1) == '/' ? '' : '/');
+         $url .= 'rss/';
+         $url .= urlencode($this->Name);
+         $url .= '/feed.xml';
+      }
+      return $url;
    }
 
    /**
@@ -129,6 +200,17 @@ class View extends DataObject {
     */
    public function Results() {
       return $this->paginate($this->ResultsRetriever()->Results());
+   }
+
+   /**
+    * When a ViewHost retrieves a view from the database it should call
+    * setOwner on the view and pass its own owner in so that the View can use
+    * this to create links.
+    *
+    * @param DataObject (typically Page) the owner of this view
+    */
+   public function setOwner($owner) {
+      $this->owner = $owner;
    }
 
    /**

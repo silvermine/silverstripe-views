@@ -52,8 +52,7 @@ class AddViewFormPopup extends ComplexTableField_Popup {
     * @return void
     */
    public function addView($data, $form) {
-      $view = new View();
-      $view->Name = $data['Name'];
+      $view = new View($data);
 
       $rr = new $data['ResultsRetrieverType']();
       $rr->write();

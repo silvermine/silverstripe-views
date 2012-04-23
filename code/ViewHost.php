@@ -12,6 +12,23 @@
  */
 class ViewHost extends DataObjectDecorator {
 
+   const TRAVERSAL_LEVEL_OWNER = 1;
+   const TRAVERSAL_LEVEL_OWNER_DEFAULT_LOCALE = 2;
+   const TRAVERSAL_LEVEL_PARENT = 3;
+   const TRAVERSAL_LEVEL_PARENT_DEFAULT_LOCALE = 4;
+   const TRAVERSAL_LEVEL_ANCESTORS_START = 5;
+   const TRAVERSAL_LEVEL_SITE_CONFIG = 20000;
+   const TRAVERSAL_LEVEL_DEFAULT_LOCALE_SITE_CONFIG = 20001;
+
+   /**
+    * This function is called by ContentController while it is initalizing
+    * itself and is used to include the RSS links in the head of the page for
+    * those views that should be automatically included in the page as links.
+    */
+   public function contentcontrollerInit($controller) {
+      $this->includeRSSAutoLinkTags();
+   }
+
    /**
     * @see DataObjectDecorator->extraStatics()
     */
@@ -24,15 +41,60 @@ class ViewHost extends DataObjectDecorator {
    }
 
    /**
-    * Accessor for retrieving all views attached to the owning data object.
+    * Given a ViewHost this will take all views on that host and pass each to
+    * the callback so that it has the opportunity to add it to the list of
+    * allViews if it meets whatever criteria the callback contains.
+    *
+    * The callback should take the following parameters:
+    *   $host - the ViewHost passed in here
+    *   $view - a single view from this host
+    *   &$allViews - the reference to the array of views that is being build
+    *   $traversalLevel - the current level of traversal
+    *
+    * The callback will contain the logic to see if a view should be added to
+    * the array of views that is being built.  If it should, it is the
+    * responsibility of the callback to add it to the array (allViews).
+    *
+    * The callback should return boolean - true if traversal should continue,
+    * or false otherwise.  If it returns false not only will traversal through
+    * the hierarchy stop, but the looping over the views on this host will also
+    * immediately stop.
+    *
+    * @param ViewHost $host the host that contains views
+    * @param function $calback the callback to pass the views to
+    * @param array &$allViews the array of views that is being built by the callbacks
+    * @param int $traversalLevel the current level we are at in the traversal
+    * @return boolean if traversal should continue, false otherwise
     */
-   public function Views() {
-      $coll = $this->owner->ViewCollection();
-      if (is_null($coll)) {
-         return null;
+   private function filterViews($host, $callback, &$allViews, $traversalLevel) {
+      if (!$host) {
+         return true;
       }
 
-      return $coll->Views();
+      $views = $host->Views();
+      if ($views) {
+         foreach ($views as $view) {
+            if (!$callback($host, $view, $allViews, $traversalLevel)) {
+               return false;
+            }
+         }
+      }
+
+      return true;
+   }
+
+   /**
+    * Internal function used to get a SiteConfig object.
+    *
+    * @param string $locale the locale, or null if none, to lookup a SiteConfig for
+    * @return SiteConfig the config for the locale, or null if none
+    */
+   private function getSiteConfig($locale) {
+      $config = ($locale == null) ?
+         SiteConfig::get_one('SiteConfig') :
+         SiteConfig::get_one('SiteConfig', sprintf('"Locale" = \'%s\'', Convert::raw2sql($locale)));
+
+      return $config;
    }
 
    /**
@@ -48,34 +110,28 @@ class ViewHost extends DataObjectDecorator {
     * @return View the found view or null if not found
     */
    public function GetView($name, $resultsPerPage = 0, $paginationURLParam = 'start', $traverse = true) {
-      // ATTEMPT 1: Do I have the view on this page?
-      $view = $this->owner->getViewWithoutTraversal($name);
+      $view = null;
 
-      if ($view == null && $traverse) {
-         $defaultLocale = class_exists('Translatable') ? Translatable::default_locale() : null;
+      if ($traverse) {
+         $callback = function($host, $view, &$allViews, $traversalLevel) use(&$name) {
+            if ($view->Name == $name) {
+               array_push($allViews, $view);
+               return false; // found it, don't continue traversal
+            }
+            return true; // still need to find it, continue traversal
+         };
 
-         // ATTEMPT 2: if we're translatable get the page of the default locale and see if it has the view
-         if ($this->owner->hasExtension('Translatable') && $this->owner->Locale != $defaultLocale) {
-            $master = $this->owner->getTranslation($defaultLocale);
-            $view = ($master != null && $master->hasExtension('ViewHost')) ? $master->getViewWithoutTraversal($name) : null;
+         $views = $this->traverseViews($callback);
+         $view = count($views) ? $views[0] : null;
+      } else {
+         $allViews = $this->Views();
+         if ($allViews == null) {
+            return null;
          }
-
-         // ATTEMPT 3: go to my parent page and try to get the view (and allow it to continue traversing)
-         if ($view == null && $this->owner->hasExtension('Hierarchy') && $this->owner->ParentID != 0 && ($parent = $this->owner->Parent()) != null && $parent->hasExtension('ViewHost')) {
-            $view = $parent->GetView($name, $resultsPerPage, $paginationURLParam, $traverse);
-         }
-
-         // ATTEMPT 4: try to get global view from the SiteConfig object
-         if ($view == null && singleton('SiteConfig')->hasExtension('ViewHost')) {
-            if (singleton('SiteConfig')->hasExtension('Translatable') && $this->owner->hasExtension('Translatable')) {
-               $locale = $this->owner->Locale;
-               $view = $this->getViewFromSiteConfig($locale, $name);
-               if ($view == null && $defaultLocale != null && $locale != $defaultLocale) {
-                  $view = $this->getViewFromSiteConfig($defaultLocale, $name);
-               }
-            } else {
-               // not translatable:
-               $view = $this->getViewFromSiteConfig($locale = null, $name);
+         foreach ($allViews as $aView) {
+            if ($aView->Name == $name) {
+               $view = $aView;
+               break;
             }
          }
       }
@@ -83,55 +139,8 @@ class ViewHost extends DataObjectDecorator {
       if (is_object($view)) {
          $view->setTransientPaginationConfig($resultsPerPage, $paginationURLParam);
       }
+
       return $view;
-   }
-
-   /**
-    * Internal function used by GetView to search for a view on a SiteConfig
-    * object after all parents in the hierarchy have been exhausted.
-    *
-    * @param string $locale the locale, or null if none, to lookup a SiteConfig for
-    * @param string $name the name of the view to find
-    * @return View the found view, or null if none
-    */
-   private function getViewFromSiteConfig($locale, $name) {
-      $config = ($locale == null) ?
-         SiteConfig::get_one('SiteConfig') :
-         SiteConfig::get_one('SiteConfig', sprintf('"Locale" = \'%s\'', Convert::raw2sql($locale)));
-
-      if ($config && $config->hasExtension('ViewHost')) {
-         return $config->getViewWithoutTraversal($name);
-      }
-
-      return null;
-   }
-
-   /**
-    * Internal function used by GetView to actually implement the non-recursive
-    * portion of the view searching functionality.  This function checks only
-    * its owner object to see if it contains the given view.
-    *
-    * NOTE: even though this is an internal function it must be declared public
-    * because other functions in this class call
-    * $ownerObject->getViewWithoutTraversal.  Since they are calling the
-    * function on the owner object and not directly on this class it must be
-    * public.
-    *
-    * @see GetView()
-    * @param string $name the name of the view to find
-    * @return View the found view or null if not found
-    */
-   public function getViewWithoutTraversal($name) {
-      $allViews = $this->Views();
-      if ($allViews == null) {
-         return null;
-      }
-      foreach ($allViews as $view) {
-         if ($view->Name == $name) {
-            return $view;
-         }
-      }
-      return null;
    }
 
    /**
@@ -187,6 +196,109 @@ class ViewHost extends DataObjectDecorator {
    }
 
    /**
+    * Used by templates to add the automatically linked RSS links to the head of
+    * a page for views that are automatically added to a page.
+    */
+   public function includeRSSAutoLinkTags($includeDefaultLocale = true) {
+      $callback = function($host, $view, &$allViews, $traversalLevel) use (&$includeDefaultLocale) {
+         if ($view->RSSEnabled && $view->RSSAutoLink != View::RSS_AUTO_LINK_NONE) {
+            $add = false;
+            switch ($view->RSSAutoLink) {
+               case View::RSS_AUTO_LINK_PAGE_ONLY:
+                  $add = in_array($traversalLevel, array(ViewHost::TRAVERSAL_LEVEL_OWNER, ViewHost::TRAVERSAL_LEVEL_OWNER_DEFAULT_LOCALE));
+                  break;
+               case View::RSS_AUTO_LINK_PAGE_AND_CHILDREN:
+                  $add = in_array($traversalLevel, array(ViewHost::TRAVERSAL_LEVEL_OWNER, ViewHost::TRAVERSAL_LEVEL_OWNER_DEFAULT_LOCALE, ViewHost::TRAVERSAL_LEVEL_PARENT, ViewHost::TRAVERSAL_LEVEL_PARENT_DEFAULT_LOCALE));
+                  break;
+               case View::RSS_AUTO_LINK_CHILDREN:
+                  $add = in_array($traversalLevel, array(ViewHost::TRAVERSAL_LEVEL_PARENT, ViewHost::TRAVERSAL_LEVEL_PARENT_DEFAULT_LOCALE));
+                  break;
+               case View::RSS_AUTO_LINK_PAGE_AND_DESCENDANTS:
+                  $add = true;
+                  break;
+               case View::RSS_AUTO_LINK_DESCENDANTS:
+                  $add = (false === in_array($traversalLevel, array(ViewHost::TRAVERSAL_LEVEL_OWNER, ViewHost::TRAVERSAL_LEVEL_OWNER_DEFAULT_LOCALE)));
+                  break;
+            }
+            if ($add) {
+               array_push($allViews, $view);
+            }
+         }
+         return true;
+      };
+
+      $views = $this->traverseViews($callback, $includeDefaultLocale);
+
+      foreach ($views as $view) {
+         $url = Director::absoluteURL($view->Link());
+         RSSFeed::linkToFeed($url);
+      }
+   }
+
+   /**
+    * Used internally to traverse views through the hierarchy of the site to
+    * find one or more views.  Uses a callback to determine which views should
+    * be included in the return array.
+    *
+    * See filterViews() for a description of the callback function that must be
+    * passed into this function.
+    *
+    * @see filterViews()
+    * @param function $callback the function that is used to filter which views are added
+    * @param boolean $includeDefaultLocale (optional: default true) true if you want traversal to check the default locale for a view after checking a translated page
+    * @param boolean $includeSiteconfig used internally for recursive calls - true if you want to look at SiteConfig for views too
+    * @param array &$views used internally for recursive calls - the array of all views found in traversal
+    * @param int &$level used internally for recursive calls - the current traversal level
+    * @param boolean &$continue used internally for recursive calls - whether traversal should continue
+    */
+   private function traverseViews($callback, $includeDefaultLocale = true, $includeSiteConfig = true, &$views = array(), &$level = 1, &$continue = true) {
+      // ATTEMPT 1: look on the owner of this object itself
+      $continue = $this->filterViews($this->owner, $callback, $views, $level);
+
+      // ATTEMPT 2: look on default locale translation (if possible and requested)
+      $incremented = false;
+      if ($continue && $includeDefaultLocale && class_exists('Translatable')) {
+         $defaultLocale = Translatable::default_locale();
+         if ($this->owner->hasExtension('Translatable') && $this->owner->Locale != $defaultLocale) {
+            $master = $this->owner->getTranslation($defaultLocale);
+            if ($master && $master->hasExtension('ViewHost')) {
+               $incremented = true;
+               $continue = $this->filterViews($master, $callback, $views, ++$level);
+            }
+         }
+      }
+
+      if (!$incremented) {
+         $level++; // so that we'll still increment for the default locale traversal level
+      }
+
+      // ATTEMPT 3: go to my parent page and continue traversal
+      if ($continue && $this->owner->hasExtension('Hierarchy') && $this->owner->ParentID && ($parent = $this->owner->Parent()) && $parent->hasExtension('ViewHost')) {
+         $ext = $parent->getExtensionInstance('ViewHost');
+         $ext->setOwner($parent);
+         $ext->traverseViews($callback, $includeDefaultLocale, false, $views, ++$level, &$continue);
+      }
+
+      // ATTEMPT 4: try to get global view from the SiteConfig object
+      if ($continue && $includeSiteConfig && singleton('SiteConfig')->hasExtension('Viewhost')) {
+         if (singleton('SiteConfig')->hasExtension('Translatable') && $this->owner->hasExtension('Translatable')) {
+            $config = $this->getSiteConfig($this->owner->Locale);
+            if ($config) {
+               $continue = $this->filterViews($config, $callback, $views, ViewHost::TRAVERSAL_LEVEL_SITE_CONFIG);
+            }
+            if ($continue && $includeDefaultLocale && (!$config || $config->Locale != Translatable::default_locale())) {
+               $config = $this->getSiteConfig(Translatable::default_locale());
+               if ($config) {
+                  $continue = $this->filterViews($config, $callback, $views, ViewHost::TRAVERSAL_LEVEL_DEFAULT_LOCALE_SITE_CONFIG);
+               }
+            }
+         }
+      }
+
+      return $views;
+   }
+
+   /**
     * @see DataObjectDecorator->updateCMSFields()
     */
    public function updateCMSFields(FieldSet &$fields) {
@@ -208,6 +320,24 @@ class ViewHost extends DataObjectDecorator {
       $viewsTable->popupClass = 'AddViewFormPopup';
 
       $fields->addFieldToTab('Root.Views', $viewsTable);
+   }
+
+   /**
+    * Accessor for retrieving all views attached to the owning data object.
+    */
+   public function Views() {
+      $coll = $this->owner->ViewCollection();
+      if (is_null($coll)) {
+         return null;
+      }
+
+      $views = $coll->Views();
+      if ($views) {
+         foreach ($views as $view) {
+            $view->setOwner($this->owner);
+         }
+      }
+      return $views;
    }
 
 }
