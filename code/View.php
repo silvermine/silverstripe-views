@@ -186,9 +186,10 @@ class View extends DataObject {
          $start = is_numeric($startVal) ? ((int) $startVal) : $start;
       }
 
-      $results = new DataObjectSet(array_slice($all->toArray(), $start, $this->resultsPerPage));
+      $results = new ViewPaginator(array_slice($all->toArray(), $start, $this->resultsPerPage));
       $results->setPaginationGetVar($this->paginationURLParam);
       $results->setPageLimits($start, $this->resultsPerPage, $all->Count());
+      
       return $results;
    }
 
