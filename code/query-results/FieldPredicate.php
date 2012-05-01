@@ -47,7 +47,8 @@ class FieldPredicate extends QueryPredicate {
          case 'notin':
             $sqlValues = array();
             foreach ($this->Values() as $value) {
-               array_push($sqlValues, $value->getSQLValue($translateSQLValues));
+               $sql = $value->getSQLValue($translateSQLValues);
+               $sqlValues = array_merge($sqlValues, explode(FieldPredicateValue::VALUE_SEP, $sql));
             }
             $values = "('" . implode("', '", $sqlValues) . "')";
             break;

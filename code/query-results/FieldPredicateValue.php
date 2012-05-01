@@ -9,6 +9,8 @@
  * @subpackage query-results
  */
 class FieldPredicateValue extends DataObject {
+   
+   const VALUE_SEP = ',';
 
    static $value_tokens = array();
 
@@ -38,7 +40,12 @@ class FieldPredicateValue extends DataObject {
                }
 
                $func = FieldPredicateValue::$value_tokens[$tokenName];
-               return $func($fpv, $tokenParam);
+               $value = $func($fpv, $tokenParam);
+               
+               if (is_array($value))
+                  $value = implode($fpv::VALUE_SEP, $value);
+               
+               return $value;
             }, $this->Value
          );
       }
