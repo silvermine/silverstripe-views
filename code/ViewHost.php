@@ -112,29 +112,21 @@ class ViewHost extends DataObjectDecorator {
    public function GetView($name, $resultsPerPage = 0, $paginationURLParam = 'start', $traverse = true) {
       $view = null;
 
-      if ($traverse) {
-         $callback = function($host, $view, &$allViews, $traversalLevel) use(&$name) {
-            if ($view->Name == $name) {
-               array_push($allViews, $view);
-               return false; // found it, don't continue traversal
-            }
-            return true; // still need to find it, continue traversal
-         };
+      $callback = function($host, $view, &$allViews, $traversalLevel) use(&$name, $traverse) {
+         if (!$traverse && $traversalLevel > ViewHost::TRAVERSAL_LEVEL_OWNER_DEFAULT_LOCALE) {
+            // without traversing we only look to the owner and owner in default locale
+            return false;
+         }
 
-         $views = $this->traverseViews($callback);
-         $view = count($views) ? $views[0] : null;
-      } else {
-         $allViews = $this->Views();
-         if ($allViews == null) {
-            return null;
+         if ($view->Name == $name) {
+            array_push($allViews, $view);
+            return false; // found it, don't continue traversal
          }
-         foreach ($allViews as $aView) {
-            if ($aView->Name == $name) {
-               $view = $aView;
-               break;
-            }
-         }
-      }
+         return true; // still need to find it, continue traversal
+      };
+
+      $views = $this->traverseViews($callback);
+      $view = count($views) ? $views[0] : null;
 
       if (is_object($view)) {
          $view->setTransientPaginationConfig($resultsPerPage, $paginationURLParam);
@@ -153,7 +145,7 @@ class ViewHost extends DataObjectDecorator {
     * @return View the found view or null if not found
     */
    public function HasView($name, $traverse = true) {
-      return ($this->GetView($name, $traverse) != null);
+      return ($this->GetView($name, $resultsPerPage = 0, $paginationURLParam = 'start', $traverse) != null);
    }
 
    /**
@@ -166,7 +158,7 @@ class ViewHost extends DataObjectDecorator {
     * @return View the found view or null if not found
     */
    public function HasViewWithResults($name, $traverse = true) {
-      $view = $this->GetView($name, $traverse);
+      $view = $this->GetView($name, $resultsPerPage = 0, $paginationURLParam = 'start', $traverse);
       if ($view == null) {
          return false;
       }
@@ -199,7 +191,7 @@ class ViewHost extends DataObjectDecorator {
     * @return View the found view or null if not found
     */
    public function HasViewWithTranslatedResults($name, $traverse = true) {
-      $view = $this->GetView($name, $traverse);
+      $view = $this->GetView($name, $resultsPerPage = 0, $paginationURLParam = 'start', $traverse);
       if ($view == null) {
          return false;
       }
