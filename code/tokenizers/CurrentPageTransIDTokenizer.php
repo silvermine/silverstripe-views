@@ -14,9 +14,9 @@
 class CurrentPageTransIDTokenizer extends ViewsStringTokenizer {
 
    /**
-    * @see ViewsStringTokenizer::getValueFor($tokenName, $params)
+    * @see ViewsStringTokenizer::getValueFor($tokenName, $params, $owner)
     */
-   public function getValueFor($tokenName, $params) {
+   public function getValueFor($tokenName, $params, &$owner) {
       $page = Director::get_current_page();
 
       $locale = '';

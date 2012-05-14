@@ -28,7 +28,8 @@ class QuerySort extends DataObject {
    }
 
    public function updateQuery(&$query) {
-      $query->orderBy(ViewsStringTokenizers::tokenize($this->FieldName), $this->IsAscending);
+      $field = ViewsStringTokenizers::tokenize($this->FieldName, $this);
+      $query->orderBy($field, $this->IsAscending);
    }
 }
 

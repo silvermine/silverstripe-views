@@ -20,8 +20,9 @@ class ViewsStringTokenizer {
     *
     * @param string $tokenName the name of the token that caused this tokenizer to get invoked
     * @param string $params the parameters that were configured for this tokenizer when the string was stored
+    * @param mixed &$owner the thing that owns the string being tokenized
     */
-   public function getValueFor($tokenName, $params) {
+   public function getValueFor($tokenName, $params, &$owner) {
       throw new Exception(get_class($this) . " must implement the getValueFor(\$tokenName, \$params) function");
    }
 

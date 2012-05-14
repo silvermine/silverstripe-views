@@ -26,7 +26,7 @@ class FieldPredicateValue extends DataObject {
 
    public function getSQLValue($translateSQLValues = true) {
       if ($translateSQLValues) {
-         return ViewsStringTokenizers::tokenize($this->Value);
+         return ViewsStringTokenizers::tokenize($this->Value, $this);
       }
 
       return $this->Value;

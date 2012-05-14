@@ -11,15 +11,19 @@
  */
 class QueryParamTokenizer extends ViewsStringTokenizer {
 
-   /**
-    * @see ViewsStringTokenizer::getValueFor($tokenName, $params)
-    */
-   public function getValueFor($tokenName, $params) {
-      if (count($params) >= 1 && Controller::curr() && Controller::curr()->getRequest()) {
-         return Convert::raw2sql(Controller::curr()->getRequest()->getVar($params[0]));
+   public static function get_value($queryParamName) {
+      if (Controller::curr() && Controller::curr()->getRequest()) {
+         return Convert::raw2sql(Controller::curr()->getRequest()->getVar($queryParamName));
       }
 
       return null;
+   }
+
+   /**
+    * @see ViewsStringTokenizer::getValueFor($tokenName, $params, $owner)
+    */
+   public function getValueFor($tokenName, $params, &$owner) {
+      return count($params) ? self::get_value($params[0]) : null;
    }
 
 }

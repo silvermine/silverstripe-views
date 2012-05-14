@@ -99,11 +99,12 @@ class ViewsStringTokenizers {
     *
     * @param string $string the string to tokenize
     * @param string the modified string
+    * @param mixed &$owner the thing that owns the string being tokenized
     */
-   public static function tokenize($string) {
+   public static function tokenize($string, &$owner) {
       return preg_replace_callback(
          self::$token_regex,
-         function(&$matches) {
+         function(&$matches) use (&$owner) {
             $tokenName = $matches[1];
             $tokenParams = explode(ViewsStringTokenizers::$token_param_separator, $matches[2]);
             $tokenizer = ViewsStringTokenizers::get_tokenizer($tokenName);
@@ -116,7 +117,7 @@ class ViewsStringTokenizers {
                return $matches[0];
             }
 
-            return $tokenizer->getValueFor($tokenName, $tokenParams);
+            return $tokenizer->getValueFor($tokenName, $tokenParams, $owner);
          }, $string);
    }
 }
