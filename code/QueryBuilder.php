@@ -191,22 +191,7 @@ class QueryBuilder {
    private function convertQueryToDataObjectSet(SS_Query $query) {
       $cols = array();
       foreach ($this->columns as $col) {
-         $matches = array();
-         
-         // Use "as" to find the column name
-         if (preg_match("/\bas\s(?P<columnName>[\w0-9]+)\b/i", $col, $matches)) {
-            $colName = $matches['columnName'];
-         
-         // Find column name from "<table>.<column>"
-         } elseif (preg_match("/\b(?P<tableName>[\w0-9]+)\.(?P<columnName>[\w0-9]+)\b/i", $col, $matches)) {
-            $colName = $matches['columnName'];
-         
-         // Must just be "<column>"
-         } else {
-            $colName = $col;
-         }
-         
-         array_push($cols, $colName);
+         array_push($cols, array_pop(explode('.', $col)));
       }
 
       $rows = array();
