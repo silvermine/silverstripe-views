@@ -96,6 +96,7 @@ class QueryBuilder {
    private $sorts = array();
    private $wheres = array();
    private $hasPreviousWhereClause = false;
+   private $limit = 0;
 
    private $tableAliasCount = 0;
 
@@ -323,6 +324,9 @@ class QueryBuilder {
          $prefix = ", ";
       }
 
+      // Build $parts['limit']
+      $parts['limit'] = ($this->limit && is_numeric($this->limit)) ? "\n LIMIT {$this->limit}\n" : "";
+
       // Build $parts['complete']
       $sql  = "SELECT {$parts['columns']}";
       $sql .= "  FROM {$this->tableName} AS {$this->tableNameAlias}\n";
@@ -333,6 +337,7 @@ class QueryBuilder {
       if (!empty($this->sorts)) {
          $sql .= " ORDER BY {$parts['sorts']}";
       }
+      $sql .= $parts['limit'];
       $parts['complete'] = $sql;
 
       return $parts;
@@ -388,6 +393,15 @@ class QueryBuilder {
       $this->verifyConfiguredFor(self::ACTION_ADD_ANYTHING);
       $this->addJoin('  LEFT OUTER', $tableAlias, $joinClause);
       return $this;
+   }
+
+   /**
+    * Limits the query to $count rows.
+    *
+    * @param int $count the max rows to return
+    */
+   public function limit($count) {
+      $this->limit = $count;
    }
 
    /**
