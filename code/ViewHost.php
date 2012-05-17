@@ -294,7 +294,7 @@ class ViewHost extends DataObjectDecorator {
       if ($continue && $this->owner->hasExtension('Hierarchy') && $this->owner->ParentID && ($parent = $this->owner->Parent()) && $parent->hasExtension('ViewHost')) {
          $ext = $parent->getExtensionInstance('ViewHost');
          $ext->setOwner($parent);
-         $ext->traverseViews($callback, $includeDefaultLocale, false, $views, ++$level, &$continue);
+         $ext->traverseViews($callback, $includeDefaultLocale, false, $views, ++$level, $continue);
       }
 
       // ATTEMPT 4: try to get global view from the SiteConfig object
