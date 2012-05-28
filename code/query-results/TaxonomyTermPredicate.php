@@ -36,10 +36,10 @@ class TaxonomyTermPredicate extends QueryPredicate {
       $mainTable = $query->getPrimaryTableAlias();
       $stvt = $query->getTableAlias('SiteTree_VocabularyTerms');
 
+      $query->leftJoin($stvt, "{$mainTable}.ID = {$stvt}.SiteTreeID AND {$stvt}.VocabularyTermID = {$this->Term()->ID}");
       if ($this->Inclusive) {
-         $query->innerJoin($stvt, "{$mainTable}.ID = {$stvt}.SiteTreeID AND {$stvt}.VocabularyTermID = {$this->Term()->ID}");
+         $query->where("{$stvt}.ID IS NOT NULL", $conjunctive);
       } else {
-         $query->leftJoin($stvt, "{$mainTable}.ID = {$stvt}.SiteTreeID AND {$stvt}.VocabularyTermID = {$this->Term()->ID}");
          $query->where("{$vt}.ID IS NULL", $conjunctive);
       }
 
