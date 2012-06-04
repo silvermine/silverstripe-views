@@ -25,7 +25,12 @@ class TaxonomyTermPredicate extends QueryPredicate {
     */
    public function getReadOnlySummaryImpl() {
       $term = $this->Term();
-      return "Has vocabulary term '{$term->Term}' from vocabulary '{$term->Vocabulary()->Name}'";
+
+      if($this->Inclusive) {
+         return "Has vocabulary term '{$term->Term}' from vocabulary '{$term->Vocabulary()->Name}'";
+      } else {
+         return "Does not have vocabulary term '{$term->Term}' from vocabulary '{$term->Vocabulary()->Name}'";         
+      }
    }
 
    public function updateQueryImpl(&$query, $conjunctive) {
@@ -40,7 +45,7 @@ class TaxonomyTermPredicate extends QueryPredicate {
       if ($this->Inclusive) {
          $query->where("{$stvt}.ID IS NOT NULL", $conjunctive);
       } else {
-         $query->where("{$vt}.ID IS NULL", $conjunctive);
+         $query->where("{$stvt}.ID IS NULL", $conjunctive);
       }
 
       return true;
