@@ -29,6 +29,21 @@ class RSSContentControllerExtension extends Extension {
    }
 
    /**
+    * Create the RSS feed for a given view.  This function is designed to be
+    * overridden by any client code that wants to customize the behavior of the
+    * feed for a view.
+    *
+    * @param View &$view the view to create a feed from
+    * @param ContentController the controller that owns this extension and is currently responding to this request
+    * @return RSSFeed the RSS feed for the view
+    */
+   protected function createFeed(&$view, $controller) {
+      $function = $this->getResultsFunction($view);
+      $items = $view->$function();
+      return new RSSFeed($items, $controller->request->getURL(), _t('Views.' . $view->Name . 'RSSTitle'));
+   }
+
+   /**
     * Returns the name of the results function that should be used to retrieve
     * results from a view.  See set_results_function() for more details.
     *
@@ -66,10 +81,8 @@ class RSSContentControllerExtension extends Extension {
          $controller->httpError(404);
       }
 
-      $function = $this->getResultsFunction($view);
       $view->setTransientPaginationConfig($view->RSSItems, 'startItem');
-      $items = $view->$function();
-      $rss = new RSSFeed($items, $controller->request->getURL(), _t('Views.' . $view->Name . 'RSSTitle'));
+      $rss = $this->createFeed($view, $controller);
       $rss->outputToBrowser();
 
       // TODO: (review) this is a bit of a hack to get ContentController to stop

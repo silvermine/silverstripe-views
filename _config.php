@@ -23,6 +23,11 @@
 DataObject::add_extension('SiteTree', 'ViewHost');
 DataObject::add_extension('SiteConfig', 'ViewHost');
 
-// configure RSS feeds based on views
-Object::add_extension('ContentController', 'RSSContentControllerExtension');
+/**
+ * If you want to enable the RSS functionality for views, you can add this
+ * extension as shown here, or to customize the functionality you can create
+ * your own subclass of RSSContentControllerExtension and override functions
+ * within it.
+ * Object::add_extension('ContentController', 'RSSContentControllerExtension');
+ */
 
