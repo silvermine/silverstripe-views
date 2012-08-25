@@ -20,7 +20,7 @@ class CurrentPageTransIDTokenizer extends ViewsStringTokenizer {
       $page = Director::get_current_page();
 
       $locale = (count($params) >= 1) ? QueryParamTokenizer::get_value($params[0]) : '';
-      $locale = i18n::validate_locale($locale) ? $locale : i18n::default_locale();
+      $locale = empty($locale) || i18n::validate_locale($locale) ? $locale : i18n::default_locale();
 
       if (!empty($locale) && $page instanceof SiteTree && $page->hasExtension('Translatable')) {
          $translatedPage = $page->getTranslation($locale);
