@@ -313,6 +313,18 @@ class ViewHost extends DataObjectDecorator {
          }
       }
 
+      // We say that the current host is the owner because it is the reference point
+      // where the view was found.  It may not actually be the "owner" in the sense
+      // that it belongs to this host's view collection.  However, if it was found
+      // based on this host then it should be able to be found the same way in the
+      // future.  Or, this host could potentially get its own view that it actually
+      // owns (in the sense that it belongs to this host's view collection) by the
+      // same name later on, in which case that new view would usurp this view, which
+      // could potentially have come from this host's master translation, parent, etc.
+      // The owner of a view is used to compute owner-relative info like RSS links.
+      foreach ($views as $view) {
+         $view->setOwner($this->owner);
+      }
       return $views;
    }
 
