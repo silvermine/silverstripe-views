@@ -75,6 +75,14 @@ class QueryResultsRetriever extends ViewResultsRetriever {
       return $results;
    }
 
+   public function Sorts() {
+      $sorts = parent::Sorts();
+      if ($sorts) {
+         $sorts->sort('ID');
+      }
+      return $sorts;
+   }
+
    /**
     * @see ViewResultsRetriever->updateCMSFields()
     */
