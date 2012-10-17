@@ -11,6 +11,13 @@
 class ViewResultsRetriever extends DataObject {
 
    /**
+    * Allows users of this module to define the name of a param used by
+    * their code to show results in a locale other than the locale of the
+    * page.  Used by TranslatedResults.
+    */
+   static $content_locale_param = false;
+
+   /**
     * All subclasses should implement this function, which provides a read-only
     * summary of the results retriever in an HTML format.  This can be used to
     * display to the user when describing the View that uses this
@@ -20,6 +27,25 @@ class ViewResultsRetriever extends DataObject {
     */
    public function getReadOnlySummary() {
       return 'The ' . get_class($this) . ' class needs to implement getReadOnlySummary().';
+   }
+
+   /**
+    * Returns the locale to get translated results in.  Designed so that
+    * subclasses can override this with custom logic as needed.
+    */
+   protected function getTranslatedResultsLocale() {
+      if (self::$content_locale_param) {
+         $locale = QueryParamTokenizer::get_value(self::$content_locale_param);
+         if ($locale !== null && i18n::validate_locale($locale)) {
+            return $locale;
+         }
+      }
+      $currentPage = Director::get_current_page();
+      if ($currentPage == null || !$currentPage->hasExtension('Translatable')) {
+         return false;
+      }
+
+      return $currentPage->Locale;
    }
 
    /**
@@ -66,12 +92,10 @@ class ViewResultsRetriever extends DataObject {
          return null;
       }
 
-      $currentPage = Director::get_current_page();
-      if ($currentPage == null || !$currentPage->hasExtension('Translatable')) {
+      $locale = $this->getTranslatedResultsLocale();
+      if ($locale === false) {
          return $results;
       }
-
-      $locale = $currentPage->Locale;
       $translatedResults = array();
       foreach ($results as $result) {
          if (!$result->hasExtension('Translatable')) {
