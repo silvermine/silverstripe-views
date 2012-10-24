@@ -181,39 +181,6 @@ class ViewHost extends DataObjectDecorator {
    }
 
    /**
-    * Used by templates in a conditional block to see if there is a view with a
-    * given name defined on this page (or, if traversing, a translation or
-    * parent) AND the view has results in the language of the page that is
-    * being viewed.
-    *
-    * @param string $name the name of the view to find
-    * @param boolean $traverse traverse hierarchy looking for view? (default: true)
-    * @return View the found view or null if not found
-    */
-   public function HasViewWithTranslatedResults($name, $traverse = true) {
-      $view = $this->GetView($name, $resultsPerPage = 0, $paginationURLParam = 'start', $traverse);
-      if ($view == null) {
-         return false;
-      }
-
-      $results = $view->TranslatedResults();
-      return is_null($results) ? false : ($results->Count() > 0);
-   }
-
-   /**
-    * Just a helper function for templates because SS template parsing doesn't
-    * allow multiple parameters to a function call in an if statement.
-    * Calls HasViewWithTranslatedResults and passes false as second arg.
-    *
-    * @see HasViewWithTranslatedResults()
-    * @param string $name the name of the view to find
-    * @return View the found view or null if not found
-    */
-   public function HasViewWithTranslatedResultsWithoutTraversal($name) {
-      return $this->HasViewWithTranslatedResults($name, false);
-   }
-
-   /**
     * Used by templates to add the automatically linked RSS links to the head of
     * a page for views that are automatically added to a page.
     */

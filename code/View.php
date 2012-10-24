@@ -123,7 +123,7 @@ class View extends DataObject {
     * itself for this to work.
     *
     * @todo support varying URL formats - but these will also need to be
-    * supported by the RSS serving coden RSSContentControllerExtension
+    * supported by the RSS serving code in RSSContentControllerExtension
     *
     * @return string URL to this View as an RSS feed
     */
@@ -150,6 +150,20 @@ class View extends DataObject {
       parent::onBeforeDelete();
 
       $this->ResultsRetriever()->delete();
+   }
+
+   /**
+    * Since SS form fields do not currently allow dot notation, child objects
+    * such as the ResultsRetriever have no way of really adding fields to the
+    * form that edits the view.  The only way they can do it is to add the
+    * field and then check for the value in the request manually at some point
+    * in the form submission process.  By calling ResultsRetriever->write() we
+    * give it the ability to use onBeforeWrite to get fields from the submitted
+    * form and set those values on itself and then write the updates.
+    */
+   public function onBeforeWrite() {
+      parent::onBeforeWrite();
+      $this->ResultsRetriever()->write();
    }
 
    /**
@@ -229,16 +243,4 @@ class View extends DataObject {
       $this->paginationURLParam = $paginationURLParam;
       return $this;
    }
-
-   /**
-    * Helper function for templates so they can call the TranslatedResults
-    * function from the view itself without having to get the results retriever
-    * as well.
-    *
-    * @return DataObjectSet the results in the current locale or null if none found
-    */
-   public function TranslatedResults() {
-      return $this->paginate($this->ResultsRetriever()->TranslatedResults());
-   }
-
 }

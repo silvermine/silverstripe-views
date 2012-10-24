@@ -61,9 +61,9 @@ class HandPickedResultsRetriever extends ViewResultsRetriever {
    }
 
    /**
-    * @see ViewResultsRetriever->Results()
+    * @see ViewResultsRetriever->resultsImpl()
     */
-   public function Results($maxResults = 0) {
+   protected function resultsImpl($maxResults = 0) {
       return $this->Pages();
    }
 
@@ -71,6 +71,7 @@ class HandPickedResultsRetriever extends ViewResultsRetriever {
     * @see ViewResultsRetriever->updateCMSFields()
     */
    public function updateCMSFields(&$view, &$fields) {
+      parent::updateCMSFields($view, $fields);
       $picker = new ManyManyPickerField(
          $view,
          'ResultsRetriever.Pages',

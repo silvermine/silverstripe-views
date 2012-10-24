@@ -10,12 +10,42 @@
  */
 class ViewResultsRetriever extends DataObject {
 
-   /**
-    * Allows users of this module to define the name of a param used by
-    * their code to show results in a locale other than the locale of the
-    * page.  Used by TranslatedResults.
-    */
-   static $content_locale_param = false;
+   const TRANSFORMATION_NONE = 'None';
+   const TRANSFORMATION_TRANSLATE_PAGE_LOCALE = 'TranslatePageLocale';
+   const TRANSFORMATION_TRANSLATE_QUERY_PARAM_LOCALE = 'TranslateQueryLocale';
+
+   static $db = array(
+      'Transformation' => "ENUM('None,TranslatePageLocale,TranslateQueryLocale')",
+      'QueryParamName' => 'VARCHAR(32)',
+   );
+
+   static $defaults = array(
+      'Transformation' => 'None',
+   );
+
+   protected function getCurrentPageLocale() {
+      $currentPage = Director::get_current_page();
+      if ($currentPage == null || !$currentPage->hasExtension('Translatable')) {
+         return false;
+      }
+
+      return $currentPage->Locale;
+   }
+
+   protected function getHiddenFormFieldValue() {
+      return md5($this->Transformation . '--' . $this->QueryParamName);
+   }
+
+   protected function getQueryParamLocale() {
+      if ($this->QueryParamName) {
+         $locale = QueryParamTokenizer::get_value($this->QueryParamName);
+      }
+      if ($locale !== null && i18n::validate_locale($locale)) {
+         return $locale;
+      }
+
+      return $this->getCurrentPageLocale();
+   }
 
    /**
     * All subclasses should implement this function, which provides a read-only
@@ -30,35 +60,55 @@ class ViewResultsRetriever extends DataObject {
    }
 
    /**
-    * Returns the locale to get translated results in.  Designed so that
-    * subclasses can override this with custom logic as needed.
+    * Since we add fields to the View's edit form, there isn't a way for those
+    * fields to automatically set values on our object.  Thus, we must marshal
+    * that data ourself.
+    *
+    * @see View->onBeforeWrite() for more information.
     */
-   protected function getTranslatedResultsLocale() {
-      if (self::$content_locale_param) {
-         $locale = QueryParamTokenizer::get_value(self::$content_locale_param);
-         if ($locale !== null && i18n::validate_locale($locale)) {
-            return $locale;
-         }
+   public function onBeforeWrite() {
+      parent::onBeforeWrite();
+      $req = Controller::curr()->getRequest();
+      if ($req->postVar('ResultsRetrieverSubmit') == $this->getHiddenFormFieldValue()) {
+         $this->Transformation = $req->postVar('Transformation');
+         $this->QueryParamName = $req->postVar('QueryParamName');
       }
-      $currentPage = Director::get_current_page();
-      if ($currentPage == null || !$currentPage->hasExtension('Translatable')) {
-         return false;
+   }
+
+   public function Results($maxResults = 0) {
+      Translatable::disable_locale_filter();
+      $results = $this->resultsImpl();
+      Translatable::enable_locale_filter();
+      if (!$results || empty($results)) {
+         return null;
       }
 
-      return $currentPage->Locale;
+      // if at some point more transformations are added, these transformation
+      // implementations should likely be injected as some sort of interface
+      // implementation instead of just being a big switch statement.
+      switch ($this->Transformation) {
+         case self::TRANSFORMATION_TRANSLATE_PAGE_LOCALE:
+            return $this->translateResults($results, $this->getCurrentPageLocale());
+         case self::TRANSFORMATION_TRANSLATE_QUERY_PARAM_LOCALE:
+            return $this->translateResults($results, $this->getQueryParamLocale());
+      }
+
+      return $results;
    }
 
    /**
-    * All subclasses must implement this function, which is the primary
-    * interface to the outside world.  When a view is requested, this function
-    * will be called and expected to return a DataObjectSet of results or null
-    * if no results could be retrieved.
+    * All subclasses must implement this function, which is their way of
+    * performing their one job - retrieving results.  This function is called
+    * by the Results function, which is the primary interface to the outside
+    * world.  When a view is requested, the Results function will be called and
+    * expected to return a DataObjectSet of results or null if no results could
+    * be retrieved.  This impl function is expected to follow the same contract.
     *
     * @param int $maxResults the maximum number of results to return
     * @return DataObjectSet|null the results or null if none found
     */
-   public function Results($maxResults = 0) {
-      throw new RuntimeException('The ' . get_class($this) . ' class needs to implement Results(int).');
+   protected function resultsImpl($maxResults = 0) {
+      throw new RuntimeException('The ' . get_class($this) . ' class needs to implement resultsImpl(int).');
    }
 
    /**
@@ -83,19 +133,15 @@ class ViewResultsRetriever extends DataObject {
     * @param int $maxResults maximum number of results to retriever, or 0 for infinite (default 0)
     * @return DataObjectSet the results in the current locale or null if none found
     */
-   public function TranslatedResults($maxResults = 0) {
-      Translatable::disable_locale_filter();
-      $results = $this->Results($maxResults);
-      Translatable::enable_locale_filter();
-
+   protected function translateResults(&$results, $locale) {
       if (empty($results)) {
          return null;
       }
 
-      $locale = $this->getTranslatedResultsLocale();
       if ($locale === false) {
          return $results;
       }
+
       $translatedResults = array();
       foreach ($results as $result) {
          if (!$result->hasExtension('Translatable')) {
@@ -124,7 +170,24 @@ class ViewResultsRetriever extends DataObject {
     * @param FieldSet the fields for this view form
     */
    public function updateCMSFields(&$view, &$fields) {
-      // no default operation
+      $transformation = new DropDownField(
+         'Transformation',
+         _t('Views.Transformation.Label', 'Results Transformation'),
+         array(
+            self::TRANSFORMATION_NONE => _t('Views.Transformation.None.Label', 'None'),
+            self::TRANSFORMATION_TRANSLATE_PAGE_LOCALE  => _t('Views.Transformation.TranslatePageLocale.Label', 'Translate into locale of page'),
+            self::TRANSFORMATION_TRANSLATE_QUERY_PARAM_LOCALE => _t('Views.Transformation.TranslateQueryLocale.Label', 'Translate into locale of query param (or page if no param)'),
+         ),
+         $this->Transformation
+      );
+      $paramName = new TextField(
+         'QueryParamName',
+         _t('Views.QueryParamName.Label', 'Query Param Name (only applicable for some transformations)'),
+         $this->QueryParamName
+      );
+      $fields->addFieldToTab('Root.Main', $transformation);
+      $fields->addFieldToTab('Root.Main', $paramName);
+      $fields->addFieldToTab('Root.Main', new HiddenField('ResultsRetrieverSubmit', null, $this->getHiddenFormFieldValue()));
    }
 
 }

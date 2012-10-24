@@ -55,9 +55,9 @@ class QueryResultsRetriever extends ViewResultsRetriever {
    }
 
    /**
-    * @see ViewResultsRetriever->Results()
+    * @see ViewResultsRetriever->resultsImpl()
     */
-   public function Results($maxResults = 0) {
+   protected function resultsImpl($maxResults = 0) {
       $query = new QueryBuilder();
       $query->selectObjects('SiteTree');
 
@@ -87,6 +87,7 @@ class QueryResultsRetriever extends ViewResultsRetriever {
     * @see ViewResultsRetriever->updateCMSFields()
     */
    public function updateCMSFields(&$view, &$fields) {
+      parent::updateCMSFields($view, $fields);
       // TODO: implement
    }
 }
