@@ -12,22 +12,6 @@
  */
 class RSSContentControllerExtension extends Extension {
 
-   private static $results_function = '';
-
-   /**
-    * The results function is the function that will be called on the View to
-    * get results.  Typically this should be either 'Results' or
-    * 'TranslatedResults'.  If you always want a single function to be used you
-    * can call this function to set this extension to always use that function.
-    * Otherwise getResultsFunction() will make a best guess for the particular
-    * type of results retriever.
-    *
-    * @param string the name of the results function to always use for all views
-    */
-   public static function set_results_function($function) {
-      self::$results_function = $function;
-   }
-
    /**
     * Create the RSS feed for a given view.  This function is designed to be
     * overridden by any client code that wants to customize the behavior of the
@@ -38,33 +22,8 @@ class RSSContentControllerExtension extends Extension {
     * @return RSSFeed the RSS feed for the view
     */
    protected function createFeed(&$view, $controller) {
-      $function = $this->getResultsFunction($view);
-      $items = $view->$function();
+      $items = $view->Results();
       return new RSSFeed($items, $controller->request->getURL(), _t('Views.' . $view->Name . 'RSSTitle'));
-   }
-
-   /**
-    * Returns the name of the results function that should be used to retrieve
-    * results from a view.  See set_results_function() for more details.
-    *
-    * This is designed to be overridden if you need custom logic.  Of course,
-    * if you do this you'll need to add your custom class as an extension of
-    * ContentController rather than this class.
-    *
-    * @param View $view the view to determine the results function for
-    * @return string the name of the function to use (typically 'Results' or 'TranslatedResults')
-    */
-   protected function getResultsFunction($view) {
-      if (self::$results_function != '') {
-         return self::$results_function;
-      }
-
-      $rr = $view->ResultsRetriever();
-      if ($rr instanceof HandPickedResultsRetriever) {
-         return 'TranslatedResults';
-      }
-
-      return 'Results';
    }
 
    /**
