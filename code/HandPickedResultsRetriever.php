@@ -34,7 +34,7 @@ class HandPickedResultsRetriever extends ViewResultsRetriever {
          return $html;
       }
       foreach($results as $page) {
-         $html .= '&nbsp&nbsp&nbsp&nbsp' . _t('Views.PageRef', 'Page reference') . ': [' . $page->ID . '] ' . $page->Title . '<br />';
+         $html .= '&nbsp;&nbsp;&nbsp;&nbsp;' . _t('Views.PageRef', 'Page reference') . ': [' . $page->ID . '] ' . $page->Title . '<br />';
       }
       return $html;
    }
