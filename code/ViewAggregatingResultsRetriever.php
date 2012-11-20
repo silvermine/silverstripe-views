@@ -12,13 +12,15 @@
 class ViewAggregatingResultsRetriever extends ViewResultsRetriever {
 
    static $db = array(
-      'SortFieldName'   => 'VARCHAR(64)',
-      'SortIsAscending' => 'BOOLEAN',
       'DeDupeFieldName' => 'VARCHAR(64)',
    );
 
    static $many_many = array(
       'Views' => 'View',
+   );
+
+   static $has_one = array(
+      'Sorter' => 'ViewResultsSorter',
    );
 
    /**
@@ -32,6 +34,7 @@ class ViewAggregatingResultsRetriever extends ViewResultsRetriever {
          $html .= '<hr />';
       }
       $html .= '</div>';
+      $html .= 'Sorts by: ' . ($this->Sorter() ? $this->Sorter()->getReadOnlySummary() : 'N/A');
       return $html;
    }
 
@@ -58,7 +61,9 @@ class ViewAggregatingResultsRetriever extends ViewResultsRetriever {
          }
       }
       $all->removeDuplicates($this->DeDupeFieldName);
-      $all->sort($this->SortFieldName, ($this->SortIsAscending ? 'ASC' : 'DESC'));
+      if ($this->Sorter()) {
+         $all = $this->Sorter()->sort($all);
+      }
       if ($maxResults > 0 && $all->TotalItems() > $maxResults) {
          $all = new DataObjectSet(array_slice($all->toArray(), 0, $maxResults));
       }
@@ -73,4 +78,3 @@ class ViewAggregatingResultsRetriever extends ViewResultsRetriever {
       // TODO: implement
    }
 }
-
