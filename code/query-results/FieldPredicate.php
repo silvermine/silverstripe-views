@@ -15,7 +15,12 @@ class FieldPredicate extends QueryPredicate {
 
    static $db = array(
       'FieldName' => 'VARCHAR(128)',
-      'Qualifier' => "ENUM('equals,notequal,like,in,notin', 'equals')",
+      'Qualifier' => "ENUM('equals,notequal,like,in,notin,gt,gte,lt,lte', 'equals')",
+      'IsRawSQL'  => 'BOOLEAN',
+   );
+
+   static $defaults = array(
+      'IsRawSQL' => false,
    );
 
    static $has_many = array(
@@ -24,6 +29,10 @@ class FieldPredicate extends QueryPredicate {
 
    static $qualifier_symbols = array(
       'equals'   => '=',
+      'gt'       => '>',
+      'gte'      => '>=',
+      'lt'       => '<',
+      'lte'      => '<=',
       'notequal' => '<>',
       'like'     => 'LIKE',
       'in'       => 'IN',
@@ -38,10 +47,15 @@ class FieldPredicate extends QueryPredicate {
       $values = '';
 
       switch ($this->Qualifier) {
+         case 'gt':
+         case 'gte':
+         case 'lt':
+         case 'lte':
          case 'equals':
          case 'notequal':
          case 'like':
-            $values = "'" . $this->Values()->first()->getSQLValue($translateSQLValues) . "'";
+            $value = $this->Values()->first()->getSQLValue($translateSQLValues);
+            $values = $this->IsRawSQL ? $value : sprintf("'%s'", $value);
             break;
          case 'in':
          case 'notin':
@@ -49,7 +63,11 @@ class FieldPredicate extends QueryPredicate {
             foreach ($this->Values() as $value) {
                array_push($sqlValues, $value->getSQLValue($translateSQLValues));
             }
-            $values = "('" . implode("', '", $sqlValues) . "')";
+            $delim  = $this->IsRawSQL ? ", " : "', '";
+            $values = implode($delim, $sqlValues);
+            $values = $this->IsRawSQL ?
+               ('(' . $values . ')') :
+               ("('" . $values . "')");
             break;
          default:
             throw new RuntimeException("FieldPredicate->buildWhere does not implement a qualifier '{$this->Qualifier}'");
