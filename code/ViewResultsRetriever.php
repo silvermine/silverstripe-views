@@ -20,7 +20,7 @@ class ViewResultsRetriever extends DataObject {
    );
 
    static $defaults = array(
-      'Transformation' => 'TranslatePageLocale',
+      'Transformation' => 'None',
    );
 
    protected function getCurrentPageLocale() {

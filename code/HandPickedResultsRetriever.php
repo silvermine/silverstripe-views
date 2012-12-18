@@ -14,6 +14,10 @@ class HandPickedResultsRetriever extends ViewResultsRetriever {
 
    static $db = array();
 
+   static $defaults = array(
+      'Transformation' => 'TranslatePageLocale',
+   );
+
    static $many_many = array(
       'Pages' => 'SiteTree',
    );
