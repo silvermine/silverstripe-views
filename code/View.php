@@ -55,6 +55,8 @@ class View extends DataObject {
 
    static $default_sort = 'Name';
 
+   static $reset_pagination_for_bad_value = true;
+
    // these are transient - set by the template when using the view
    private $owner;
    private $resultsPerPage = 0;
@@ -198,6 +200,10 @@ class View extends DataObject {
       if (Controller::curr() && Controller::curr()->getRequest() && Controller::curr()->getRequest()->getVar($this->paginationURLParam)) {
          $startVal = Controller::curr()->getRequest()->getVar($this->paginationURLParam);
          $start = is_numeric($startVal) ? ((int) $startVal) : $start;
+      }
+
+      if (self::$reset_pagination_for_bad_value && $start >= $all->Count()) {
+         $start = 0;
       }
 
       $results = new DataObjectSet(array_slice($all->toArray(), $start, $this->resultsPerPage));
