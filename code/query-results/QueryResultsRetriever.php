@@ -26,7 +26,9 @@ class QueryResultsRetriever extends ViewResultsRetriever {
     * @see ViewResultsRetriever#getReadOnlySummary
     */
    public function getReadOnlySummary() {
-      $html = '';
+      Requirements::css('views/code/css/views.css');
+      
+      $html = '<span class="viewsReadOnlyQuerySummary">';
       $html .= $this->RootPredicate()->getReadOnlySummary() . '<br />';
       $html .= 'ORDER BY<br />';
       $prefix = '';
@@ -34,6 +36,7 @@ class QueryResultsRetriever extends ViewResultsRetriever {
          $html .= $prefix . $sort->getReadOnlySummary();
          $prefix = ', ';
       }
+      $html .= '</span>';
       return $html;
    }
 
@@ -58,10 +61,15 @@ class QueryResultsRetriever extends ViewResultsRetriever {
     * @see ViewResultsRetriever->resultsImpl()
     */
    protected function resultsImpl($maxResults = 0) {
+      $root = $this->RootPredicate();
+      
+      // If no filters exist, don't return any results.
+      if ($root instanceof CompoundPredicate && count($root->Predicates()) == 0) {
+         return null;
+      }
+      
       $query = new QueryBuilder();
       $query->selectObjects('SiteTree');
-
-      $root = $this->RootPredicate();
       $root->updateQuery($query, true);
 
       $sorts = $this->Sorts();
@@ -70,7 +78,10 @@ class QueryResultsRetriever extends ViewResultsRetriever {
       }
 
       Translatable::disable_locale_filter();
-      $results = $query->execute();
+      $results = null;
+      try {
+         $results = $query->execute();
+      } catch (Exception $ex) {}
       Translatable::enable_locale_filter();
       return $results;
    }
@@ -88,7 +99,14 @@ class QueryResultsRetriever extends ViewResultsRetriever {
     */
    public function updateCMSFields(&$view, &$fields) {
       parent::updateCMSFields($view, $fields);
-      // TODO: implement
+      
+      $editor = new QueryBuilderField(
+         'QueryResultsRetriever',
+         _t('Views.QueryBuilder.Label', 'QueryBuilder'),
+         $this
+      );
+      
+      $fields->addFieldToTab('Root.QueryEditor', $editor);
    }
 }
 

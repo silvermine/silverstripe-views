@@ -221,6 +221,10 @@ class View extends DataObject {
    public function Results() {
       return $this->paginate($this->ResultsRetriever()->Results());
    }
+   
+   public function saveQueryResultsRetriever($data) {
+      QueryBuilderField::save($data, $this->ResultsRetriever());
+   }
 
    /**
     * When a ViewHost retrieves a view from the database it should call

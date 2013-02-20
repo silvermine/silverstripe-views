@@ -55,6 +55,14 @@ class AddViewFormPopup extends ComplexTableField_Popup {
       $view = new View($data);
 
       $rr = new $data['ResultsRetrieverType']();
+      
+      if ($rr instanceof QueryResultsRetriever) {
+         $pred = new CompoundPredicate();
+         $pred->IsConjunctive = true;
+         $pred->write();
+         $rr->RootPredicateID = $pred->ID;
+      }
+      
       $rr->write();
       $view->ResultsRetrieverID = $rr->ID;
 
