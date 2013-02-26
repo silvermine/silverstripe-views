@@ -35,19 +35,19 @@ class RSSContentControllerExtension extends Extension {
          $page->GetView($viewName) :
          false;
 
-      if (!$page || !$view || !$view->RSSEnabled) {
-         $controller->popCurrent();
-         $controller->httpError(404);
+      if ($page && $view && $view->RSSEnabled) {
+         $view->setTransientPaginationConfig($view->RSSItems, 'startItem');
+         $rss = $this->createFeed($view, $controller);
+         $rss->outputToBrowser();
+         $code = 200;
+      } else {
+         $code = 404;
       }
-
-      $view->setTransientPaginationConfig($view->RSSItems, 'startItem');
-      $rss = $this->createFeed($view, $controller);
-      $rss->outputToBrowser();
 
       // TODO: (review) this is a bit of a hack to get ContentController to stop
       // processing after our onAfterInit method has finished
       $controller->popCurrent();
-      throw new SS_HTTPResponse_Exception("", 200);
+      throw new SS_HTTPResponse_Exception("", $code);
    }
 
    /**
