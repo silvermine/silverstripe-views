@@ -38,7 +38,7 @@ class QueryBuilderField extends FormField {
     * @param string $json
     * @param object $resultsReriever
     */
-public static function save($json, QueryResultsRetiever &$resultsRetriever) {
+   public static function save($json, QueryResultsRetiever &$resultsRetriever) {
       // Delete Old Nodes
       $root = $resultsRetriever->RootPredicate();
       if ($root)
