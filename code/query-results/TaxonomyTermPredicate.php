@@ -19,6 +19,31 @@ class TaxonomyTermPredicate extends QueryPredicate {
    static $has_one = array(
       'Term' => 'VocabularyTerm',
    );
+   
+   /**
+    * Modifies TaxonomyTerm input to use a multiple choice select
+    * {@link QueryBuilderField::get_input_type()}
+    * 
+    * @return array
+    */
+   public static function get_term_input_type() {
+      $options = array();
+      
+      $terms = VocabularyTerm::get(
+         'VocabularyTerm', 
+         '', 
+         $sort = '"Vocabulary".MachineName ASC, "VocabularyTerm".MachineName ASC', 
+         $join = 'JOIN "Vocabulary" ON "Vocabulary".ID = "VocabularyTerm".VocabularyID');
+      
+      foreach ($terms as $term) {
+         $options[] = "{$term->Vocabulary()->MachineName}.{$term->MachineName}";
+      }
+      
+      return array(
+         'type' => 'select',
+         'default' => '',
+         'options' => $options);
+   }
 
    /**
     * @see QueryResultsRetriever#getReadOnlySummary
@@ -31,6 +56,36 @@ class TaxonomyTermPredicate extends QueryPredicate {
       } else {
          return "Does not have vocabulary term '{$term->Term}' from vocabulary '{$term->Vocabulary()->Name}'";         
       }
+   }
+   
+   /**
+    * Returns the representation of the current taxonomy term.
+    * {@link QueryBuilderField::buildObjectStructure()}
+    * 
+    * @return string
+    */
+   public function getTermStructure() {
+      $term = $this->Term();
+      return "{$term->Vocabulary()->MachineName}.{$term->MachineName}";
+   }
+   
+   /**
+    * Return the DataObject for a term defined in the given representation.
+    * Called by {@link QueryBuilderField::save_object()}
+    * 
+    * @param array
+    * @return VocabularTerm
+    */
+   public function saveTerm($term) {
+      $term = explode(".", $term);
+      if (count($term) < 2)
+         return;
+      
+      $term = VocabularyTerm::find_by_machine_names($term[0], $term[1]);
+      if (empty($term))
+         return;
+      
+      return $term;
    }
 
    public function updateQueryImpl(&$query, $conjunctive) {

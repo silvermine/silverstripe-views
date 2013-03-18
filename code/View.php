@@ -96,6 +96,15 @@ class View extends DataObject {
 
       return $fields;
    }
+   
+   /**
+    * Return the SiteTree node that this view is attached to.
+    * 
+    * @return SiteTree
+    */
+   public function getPage() {
+      return SiteTree::get_one('SiteTree', '"ViewCollectionID" = ' . Convert::raw2sql($this->ViewCollection()->ID));
+   }
 
    /**
     * Used in the current configuration of the views UI
@@ -222,8 +231,23 @@ class View extends DataObject {
       return $this->paginate($this->ResultsRetriever()->Results());
    }
    
-   public function saveQueryResultsRetriever($data) {
-      QueryBuilderField::save($data, $this->ResultsRetriever());
+   /**
+    * Harness QueryBuilderField to deconstruct the JSON from a 
+    * saved ViewResultsRetreiver and save it to the DB.
+    * 
+    * @param JSON Data
+    */
+   public function saveViewResultsRetriever($data) {
+      $oldRetriever = $this->ResultsRetriever();
+      $resultsRetriever = QueryBuilderField::save($data);
+      if (!is_object($resultsRetriever))
+         return;
+      
+      if ($oldRetriever)
+         $oldRetriever->delete();
+      
+      $this->ResultsRetrieverID = $resultsRetriever->ID;
+      $this->write();
    }
 
    /**

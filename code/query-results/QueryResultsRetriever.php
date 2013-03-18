@@ -93,20 +93,5 @@ class QueryResultsRetriever extends ViewResultsRetriever {
       }
       return $sorts;
    }
-
-   /**
-    * @see ViewResultsRetriever->updateCMSFields()
-    */
-   public function updateCMSFields(&$view, &$fields) {
-      parent::updateCMSFields($view, $fields);
-      
-      $editor = new QueryBuilderField(
-         'QueryResultsRetriever',
-         _t('Views.QueryBuilder.Label', 'QueryBuilder'),
-         $this
-      );
-      
-      $fields->addFieldToTab('Root.QueryEditor', $editor);
-   }
 }
 

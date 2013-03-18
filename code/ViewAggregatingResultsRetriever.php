@@ -22,6 +22,39 @@ class ViewAggregatingResultsRetriever extends ViewResultsRetriever {
    static $has_one = array(
       'Sorter' => 'ViewResultsSorter',
    );
+   
+   /**
+    * Augment the QueryBuilderField type description so that it includes an 
+    * entry for the View class. Includes a multiple-choice view choosing dropdown.
+    * Called by {@link QueryBuilderField::build_core_type_structures()}
+    * 
+    * @param array &$structure
+    */
+   public static function augment_types(&$structure) {
+      $options = array();
+      
+      $views = View::get(
+         'View', 
+         '', 
+         $sort = '"View".Name ASC', 
+         $join = 'JOIN "ViewCollection" ON "ViewCollection".ID = "View".ViewCollectionID JOIN "SiteTree" ON "SiteTree".ViewCollectionID = "ViewCollection".ID');
+      
+      foreach ($views as $view)
+         $options[$view->ID] = "{$view->Name} &ndash; {$view->getPage()->Summary()}";
+      
+      $viewStructure = array(
+         'base' => null,
+         'fields' => array(
+            'ID' => array(
+               'type' => 'select',
+               'default' => '',
+               'options' => $options
+            )
+         )
+      );
+      
+      $structure['View'] = $viewStructure;
+   }
 
    /**
     * @see ViewResultsRetriever->getReadOnlySummary()
@@ -36,6 +69,24 @@ class ViewAggregatingResultsRetriever extends ViewResultsRetriever {
       $html .= '</div>';
       $html .= 'Sorts by: ' . ($this->Sorter() ? $this->Sorter()->getReadOnlySummary() : 'N/A');
       return $html;
+   }
+   
+   /**
+    * Return an array representation of the Views relationship.
+    * Called by {@link QueryBuilderField::buildObjectStructure()}
+    * 
+    * @return array
+    */
+   public function getViewsStructure() {
+      $viewIDs = array();
+      foreach ($this->Views() as $view) {
+         $viewIDs[] = array(
+            'type' => get_class($view),
+            'fields' => array('ID' => $view->ID)
+         );
+      }
+      
+      return $viewIDs;
    }
 
    /**
@@ -68,6 +119,22 @@ class ViewAggregatingResultsRetriever extends ViewResultsRetriever {
          $all = new DataObjectSet(array_slice($all->toArray(), 0, $maxResults));
       }
       return $all;
+   }
+   
+   /**
+    * Return the DataObject for a view defined in the given representation.
+    * Called by {@link QueryBuilderField::save_object()}
+    * 
+    * @param array
+    * @return View
+    */
+   public function saveViews($view) {
+      $viewID = $view['fields']['ID'];
+      $view = View::get_one('View', 'ID = ' . Convert::raw2sql($viewID));
+      if (empty($view))
+         return;
+      
+      return $view;
    }
 
    /**

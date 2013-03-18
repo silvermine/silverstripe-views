@@ -41,7 +41,8 @@ class FieldPredicate extends QueryPredicate {
 
    private function buildWhere($translateSQLValues = true) {
       if (!array_key_exists($this->Qualifier, self::$qualifier_symbols)) {
-         throw new RuntimeException("FieldPredicate does not have a qualifier symbol for qualifier '{$this->Qualifier}'");
+         $this->Qualifier = 'equals';
+         //throw new RuntimeException("FieldPredicate does not have a qualifier symbol for qualifier '{$this->Qualifier}'");
       }
 
       $values = '';

@@ -32,10 +32,6 @@ class ViewResultsRetriever extends DataObject {
       return $currentPage->Locale;
    }
 
-   protected function getHiddenFormFieldValue() {
-      return md5($this->Transformation . '--' . $this->QueryParamName);
-   }
-
    protected function getQueryParamLocale() {
       if ($this->QueryParamName) {
          $locale = QueryParamTokenizer::get_value($this->QueryParamName);
@@ -57,22 +53,6 @@ class ViewResultsRetriever extends DataObject {
     */
    public function getReadOnlySummary() {
       return 'The ' . get_class($this) . ' class needs to implement getReadOnlySummary().';
-   }
-
-   /**
-    * Since we add fields to the View's edit form, there isn't a way for those
-    * fields to automatically set values on our object.  Thus, we must marshal
-    * that data ourself.
-    *
-    * @see View->onBeforeWrite() for more information.
-    */
-   public function onBeforeWrite() {
-      parent::onBeforeWrite();
-      $req = Controller::curr()->getRequest();
-      if ($req->postVar('ResultsRetrieverSubmit') == $this->getHiddenFormFieldValue()) {
-         $this->Transformation = $req->postVar('Transformation');
-         $this->QueryParamName = $req->postVar('QueryParamName');
-      }
    }
 
    public function Results($maxResults = 0) {
@@ -170,24 +150,13 @@ class ViewResultsRetriever extends DataObject {
     * @param FieldSet the fields for this view form
     */
    public function updateCMSFields(&$view, &$fields) {
-      $transformation = new DropDownField(
-         'Transformation',
-         _t('Views.Transformation.Label', 'Results Transformation'),
-         array(
-            self::TRANSFORMATION_NONE => _t('Views.Transformation.None.Label', 'None'),
-            self::TRANSFORMATION_TRANSLATE_PAGE_LOCALE  => _t('Views.Transformation.TranslatePageLocale.Label', 'Translate into locale of page'),
-            self::TRANSFORMATION_TRANSLATE_QUERY_PARAM_LOCALE => _t('Views.Transformation.TranslateQueryLocale.Label', 'Translate into locale of query param (or page if no param)'),
-         ),
-         $this->Transformation
+      $editor = new QueryBuilderField(
+         __CLASS__,
+         _t('Views.QueryBuilder.Label', 'QueryBuilder'),
+         $this
       );
-      $paramName = new TextField(
-         'QueryParamName',
-         _t('Views.QueryParamName.Label', 'Query Param Name (only applicable for some transformations)'),
-         $this->QueryParamName
-      );
-      $fields->addFieldToTab('Root.Main', $transformation);
-      $fields->addFieldToTab('Root.Main', $paramName);
-      $fields->addFieldToTab('Root.Main', new HiddenField('ResultsRetrieverSubmit', null, $this->getHiddenFormFieldValue()));
+      
+      $fields->addFieldToTab('Root.QueryEditor', $editor);
    }
 
 }

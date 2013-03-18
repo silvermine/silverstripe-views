@@ -2,74 +2,16 @@
    "use strict";
    
    var $ = jQuery,
-       ViewsModel,
-       QueryResultsRetriever,
-       QuerySort,
-       QueryPredicate,
-       CompoundPredicate,
-       TaxonomyTermPredicate,
-       FieldPredicate,
-       FieldPredicateValue,
-       PredicateCondition,
-       CompoundPredicateCondition,
-       QueryParamPredicateCondition;
+       ViewsModel;
    
    
-   /**
-    * Base object for all Views Data Model objects
-    * 
-    * @param object repr 
-    */
-   ViewsModel = function(repr, nlevel) {
-      this.nlevel = nlevel;
-   };
-   
-   
-   /**
-    * Return the object of the given type string
-    * 
-    * @param string type
-    */
-   ViewsModel.getType = function(type) {
-      var types, i;
+   ViewsModel = {
+      type: 'ViewsModel',
+      name: '',
+      help: '',
+      fields: {},
       
-      types = [
-         QueryResultsRetriever,
-         QuerySort,
-         QueryPredicate,
-         CompoundPredicate,
-         TaxonomyTermPredicate,
-         FieldPredicate,
-         FieldPredicateValue,
-         PredicateCondition,
-         CompoundPredicateCondition,
-         QueryParamPredicateCondition
-      ];
-      
-      for (i = 0; i < types.length; i++) {
-         if (types[i].prototype.Type === type) {
-            return types[i];
-         }
-      }
-   };
-   
-   
-   /**
-    * Given an object repr, return a new instance of it.
-    * 
-    * @param object repr
-    */
-   ViewsModel.instantiateType = function(repr, nlevel) {
-      var Type = ViewsModel.getType(repr.Type);
-      return new Type(repr, nlevel);
-   };
-   
-   ViewsModel.prototype = {
-      nlevel: 0,
-      Type: 'ViewsModel',
-      Name: '',
-      Help: '',
-      
+      children: {},
       
       /**
        * Build a select element to control a boolean field
@@ -177,23 +119,31 @@
        * @param array choices Select options
        * @return jQuery Object
        */
-      buildSelectInput: function(property, name, choices) {
+      buildSelectInput: function(property, name) {
          var self = this,
              input = $('<select></select>'),
              label = this.buildInputLabel(property, name),
              container = this.buildInputContainer(property),
-             choice, i;
+             choices = this.fields[property].options,
+             choice, key, value;
          
          input.addClass(property);
          
-         for (i = 0; i < choices.length; i++) {
-            choice = $('<option></option>');
-            choice.attr('value', choices[i]);
-            choice.html(choices[i]);
-            input.append(choice);
+         for (key in choices) {
+            if (choices.hasOwnProperty(key)) {
+               value = choices[key];
+               choice = $('<option></option>');
+               choice.attr('value', key);
+               choice.html(value);
+               
+               if (this[property] == key || this[property] == value) {
+                  choice.attr('selected', 'selected');
+               }
+               
+               input.append(choice);
+            }
          }
          
-         input.children('option[value="' + this[property] + '"]').attr('selected', 'selected');
          input.change(function() {
             self[property] = $(this).val();
          });
@@ -203,6 +153,100 @@
          return container;
       },
       
+      /**
+       * Dynamically construct an object subclass from the given 
+       * class descriptions.
+       * 
+       * @param string type Name of subclass
+       * @param array prototypes Class metadata descriptions
+       */
+      constructPrototype: function(type, prototypes) {
+         var proto = prototypes[type],
+             base = proto.base,
+             cls;
+         
+         if (this.children.hasOwnProperty(type)) {
+            return;
+         }
+         
+         if (base && !this.children.hasOwnProperty(base)) {
+            this.constructPrototype(base, prototypes);
+         }
+         
+         base = base ? this.getPrototype(base) : this;
+         cls = Object.create(base);
+         cls.constructor = base;
+         cls.type = type;
+         cls.fields = proto.fields;
+         this.children[type] = cls;
+      },
+      
+      
+      /**
+       * Dynamically construct object subclasses from the 
+       * given class descriptions.
+       * 
+       * @param array prototypes Class metadata descriptions
+       */
+      constructPrototypes: function(prototypes) {
+         var type;
+         
+         for (type in prototypes) {
+            if (prototypes.hasOwnProperty(type)) {
+               this.constructPrototype(type, prototypes);
+            }
+         }
+      },
+      
+      /**
+       * Get the HTML class name used to represent this object and it's parents
+       * 
+       * @return string
+       */
+      getClassName: function() {
+         var name = [],
+             proto = this.getPrototype(this.type);
+         
+         if (proto && proto.constructor && this.type != 'ViewsModel') {
+            name = this.constructor.getClassName();
+         }
+         
+         name.push(this.type);
+         return name;
+      },
+      
+      
+      /**
+       * Get the default value for a field
+       * 
+       * @param string name
+       * @return mixed default
+       */
+      getFieldDefault: function(name) {
+         return this.fields[name].default;
+      },
+      
+      
+      /**
+       * Get the input type for the given field
+       * 
+       * @param string name
+       * @return string Input Type
+       */
+      getFieldType: function(name) {
+         return this.fields[name].type;
+      },
+      
+      
+      /**
+       * Return the object of the given type string
+       * 
+       * @param string type
+       */
+      getPrototype: function(type) {
+         return this.children[type];
+      },
+      
       
       /**
        * Return an HTML interface representing the model
@@ -210,31 +254,106 @@
        * @return html
        */
       html: function () {
-         var container = $('<div></div>');
-         container.addClass('ViewsModel');
-         container.addClass('nlevel-' + this.nlevel);
-         container.addClass(this.Type);
-         container.append('<h4>' + this.Name + '</h4>');
-         container.attr('title', this.Help);
+         var container = $('<div></div>'),
+             classes = this.getClassName(),
+             key, i;
+         
+         container.append('<h4>' + this.type + '</h4>');
+         for (i = 0; i < classes.length; i++) {
+            container.addClass(classes[i]);
+         }
+         
+         for (key in this.fields) {
+            if (this.fields.hasOwnProperty(key)) {
+               container.append(this.renderField(key));
+            }
+         }
+         
          return container;
       },
       
       
       /**
-       * Instantiates a ForeignKey relationship given it's name
-       * and serialized representation.
+       * Recursively import an object data representation
        * 
-       * @param string property Object Property
-       * @param object repr Data Representation
+       * @param array repr
        */
-      instantiateSet: function(property, repr) {
-         var level = this.nlevel + 1,
+      importRepr: function(repr) {
+         var property,
+             child,
+             key,
              i;
          
-         this[property] = [];
-         repr[property] = repr[property] || [];
-         for (i = 0; i < repr[property].length; i++) {
-            this[property].push(ViewsModel.instantiateType(repr[property][i], level));
+         repr.fields = repr.fields || {};
+         for (key in this.fields) {
+            if (this.fields.hasOwnProperty(key)) {
+               property = repr.fields[key];
+               
+               switch (this.getFieldType(key)) {
+                  case 'has_one':
+                     property = property || {};
+                     this[key] = [this.instantiateType(property),];
+                     break;
+                  
+                  case 'has_many':
+                     this[key] = [];
+                     property = property || [];
+                     for (i = 0; i < property.length; i++) {
+                        child = this.instantiateType(property[i]);
+                        this[key].push(child);
+                     }
+                     break;
+                  
+                  case 'bool':
+                     this[key] = property ? parseInt(property, 2) : 0;
+                     break;
+                  
+                  default:
+                     this[key] = property;
+                     break;
+               }
+            }
+         }
+      },
+      
+      
+      /**
+       * Given an object repr, return a new instance of it.
+       * 
+       * @param object repr
+       */
+      instantiateType: function(repr) {
+         var proto = this.getPrototype(repr.type),
+             obj;
+         
+         obj = Object.create(proto);
+         obj.importRepr(repr);
+         return obj;
+      },
+      
+      
+      /**
+       * Return the HTML used to represent a field
+       * 
+       * @param string field
+       * @return html
+       */
+      renderField: function(field) {
+         switch (this.getFieldType(field)) {
+            case 'has_one':
+               return this.renderSet(field, field, 1);
+            
+            case 'has_many':
+               return this.renderSet(field, field);
+            
+            case 'bool':
+               return this.buildBoolSelect(field, field);
+            
+            case 'select':
+               return this.buildSelectInput(field, field);
+            
+            default:
+               return this.buildTextInput(field, field);
          }
       },
       
@@ -244,13 +363,17 @@
        * for adding / removing objects.
        * 
        * @param string property Object Property
-       * @param object repr Data Representation
+       * @param object repr data Representation
+       * @param integer limit Defaults to 0 (no limit). Max number of objects
        */
-      renderSet: function(property, title, allowedTypes) {
+      renderSet: function(property, title, limit) {
          var container = $('<div></div>'),
              heading = $('<h4></h4>'),
              self = this,
-             i, item, rmButton, addButton, type, rmCallback, addCallback;
+             allowedTypes = Object.keys(this.fields[property].options),
+             i, item, rmButton, addButton, type, rmCallback, addCallback, childObjects;
+         
+         limit = limit || 0;
          
          container.addClass(property);
          container.addClass('objectSet');
@@ -262,7 +385,7 @@
          rmCallback = function() {
             var i = $(this).data('index'),
                 item = self[property][i],
-                msg = "Are you sure you want to delete this object? " + item.Type + "#" + (i + 1);
+                msg = "Are you sure you want to delete this object? " + item.type + "#" + (i + 1);
             
             if (confirm(msg)) {
                self[property].splice(i, 1);
@@ -270,12 +393,10 @@
             }
          };
          
-         addCallback = function() {
-            var level = self.nlevel + 1;
-            
-            self[property].push(ViewsModel.instantiateType({
-               Type: $(this).data('type')
-            }, level));
+         addCallback = function() {            
+            self[property].push(self.instantiateType({
+               type: $(this).data('type')
+            }));
             
             $(document).trigger('redrawQueryBuilder');
          };
@@ -296,15 +417,18 @@
             container.append(item);
          }
          
-         for (i = 0; i < allowedTypes.length; i++) {
-            type = allowedTypes[i];
-            addButton = $('<span class="addButton">Add ' + ViewsModel.getType(type).prototype.Name + '</span>');
-            addButton.attr('title', ViewsModel.getType(type).prototype.Help);
-            addButton.data('type', type);
-            addButton.click(addCallback);
-            
-            container.append(addButton);
+         if (this[property].length < limit || limit === 0) {
+            for (i = 0; i < allowedTypes.length; i++) {
+               type = allowedTypes[i];
+               addButton = $('<span class="addButton">Add ' + this.getPrototype(type).type + '</span>');
+               addButton.attr('title', this.getPrototype(type).help);
+               addButton.data('type', type);
+               addButton.click(addCallback);
+               
+               container.append(addButton);
+            }
          }
+         
          return container;
       },
       
@@ -315,505 +439,37 @@
        * @return object
        */
       repr: function() {
-         return {
-            Type: this.Type
+         var obj, key, i;
+         obj = {
+            type: this.type,
+            fields: {}
          };
-      },
-      
-      
-      /**
-       * Represent a ForeignKey relationship as JSON seriablizable object.
-       * 
-       * @return object
-       */
-      reprSet: function(property) {
-         var set = [],
-             i;
          
-         for (i = 0; i < this[property].length; i++) {
-            set.push(this[property][i].repr());
+         for (key in this.fields) {
+            if (this.fields.hasOwnProperty(key)) {
+               switch (this.getFieldType(key)) {
+                  case 'has_one':
+                     obj.fields[key] = this[key][0].repr();
+                     break;
+                  
+                  case 'has_many':
+                     obj.fields[key] = [];
+                     for (i = 0; i < this[key].length; i++) {
+                        obj.fields[key].push(this[key][i].repr());
+                     }
+                     break;
+                  
+                  default:
+                     obj.fields[key] = this[key] || this.getFieldDefault(key);
+                     break;
+               }
+            }
          }
          
-         return set;
+         return obj;
       }
    };
    
-   
-   /**
-    * Client side model to represent a QueryResultsRetreiver object
-    * 
-    * @param object repr Object Data Representation
-    * @param integer nlevel Nesting Level. All children of this object become nlevel + 1
-    */
-   QueryResultsRetriever = function(repr, nlevel) {
-      ViewsModel.call(this, repr, nlevel);
-      
-      this.RootPredicate = ViewsModel.instantiateType(repr.RootPredicate, this.nlevel + 1);
-      this.instantiateSet('Sorts', repr);
-   };
-   
-   QueryResultsRetriever.prototype = $.extend({}, ViewsModel.prototype, {
-      Type: 'QueryResultsRetriever',
-      Name: 'Query Editor',
-      RootPredicate: null,
-      Sorts: [],
-      
-      
-      /**
-       * {@link ViewsModel.html}
-       */
-      html: function() {
-         var resultsRetrieverContainer = ViewsModel.prototype.html.call(this),
-             rootPredicateContainer = $('<div class="RootPredicate"></div>'),
-             querySortContainer;
-         
-         rootPredicateContainer.append(this.RootPredicate.html());
-         resultsRetrieverContainer.append(rootPredicateContainer);
-         
-         querySortContainer = this.renderSet('Sorts', 'Sorting', ['QuerySort']);
-         resultsRetrieverContainer.append(querySortContainer);
-         
-         return resultsRetrieverContainer;
-      },
-      
-      
-      /**
-       * {@link ViewsModel.repr}
-       */
-      repr: function() {
-         var structure = ViewsModel.prototype.repr.call(this);
-         
-         structure.RootPredicate = this.RootPredicate.repr();
-         structure.Sorts = this.reprSet('Sorts');
-         return structure;
-      }
-   });
-   
-   
-   /**
-    * Client side model to represent a QuerySort object
-    * 
-    * @param object repr Object Data Representation
-    * @param integer nlevel Nesting Level. All children of this object become nlevel + 1
-    */
-   QuerySort = function(repr, nlevel) {
-      ViewsModel.call(this, repr, nlevel);
-      
-      this.FieldName = repr.FieldName;
-      this.IsAscending = !!repr.IsAscending;
-   };
-   
-   QuerySort.prototype = $.extend({}, ViewsModel.prototype, {
-      Type: 'QuerySort',
-      Name: 'Sort Clause',
-      Help: 'Use a sort clause object to sort results based on the value of a field, in either ascending or descending order.',
-      FieldName: '',
-      IsAscending: false,
-      
-      
-      /**
-       * {@link ViewsModel.html}
-       */
-      html: function() {
-         var querySortContainer = ViewsModel.prototype.html.call(this),
-             fieldName = this.buildTextInput('FieldName', 'Field Name ("TableName".ColumnName)'),
-             isAscending = this.buildBoolSelect('IsAscending', 'Order', 'Ascending', 'Descending');
-         
-         querySortContainer.append(fieldName);
-         querySortContainer.append(isAscending);
-         return querySortContainer;
-      },
-      
-      
-      /**
-       * {@link ViewsModel.repr}
-       */
-      repr: function() {
-         var structure = ViewsModel.prototype.repr.call(this);
-         
-         structure.FieldName = this.FieldName;
-         structure.IsAscending = this.IsAscending;
-         return structure;
-      }
-   });
-   
-   
-   /**
-    * Client side model to represent a QueryPredicate object
-    * 
-    * @param object repr Object Data Representation
-    * @param integer nlevel Nesting Level. All children of this object become nlevel + 1
-    */
-   QueryPredicate = function(repr, nlevel) {
-      ViewsModel.call(this, repr, nlevel);
-      
-      this.instantiateSet('PredicateConditions', repr);
-   };
-   
-   QueryPredicate.prototype = $.extend({}, ViewsModel.prototype, {
-      Type: 'QueryPredicate',
-      Name: '',
-      Help: '',
-      PredicateConditions: [],
-      
-      
-      /**
-       * {@link ViewsModel.html}
-       */
-      html: function() {
-         var queryPredicateContainer = ViewsModel.prototype.html.call(this),
-             predicateConditionsContainer;
-         
-         predicateConditionsContainer = this.renderSet('PredicateConditions', 'Filter Conditions', [
-            'CompoundPredicateCondition',
-            'QueryParamPredicateCondition'
-         ]);
-         
-         queryPredicateContainer.append(predicateConditionsContainer);
-         return queryPredicateContainer;
-      },
-      
-      
-      /**
-       * {@link ViewsModel.repr}
-       */
-      repr: function() {
-         var structure = ViewsModel.prototype.repr.call(this);
-         
-         structure.PredicateConditions = this.reprSet('PredicateConditions');
-         return structure;
-      }
-   });
-   
-   
-   /**
-    * Client side model to represent a CompoundPredicate object
-    * 
-    * @param object repr Object Data Representation
-    * @param integer nlevel Nesting Level. All children of this object become nlevel + 1
-    */
-   CompoundPredicate = function(repr, nlevel) {
-      QueryPredicate.call(this, repr, nlevel);
-      
-      this.IsConjunctive = !!repr.IsConjunctive;
-      this.instantiateSet('Predicates', repr);
-   };
-   
-   CompoundPredicate.prototype = $.extend({}, QueryPredicate.prototype, {
-      Type: 'CompoundPredicate',
-      Name: 'Compound Filter',
-      Help: 'Use a compound filter to combine multiple filters together using either a logical AND or OR condition.',
-      IsConjunctive: false,
-      Predicates: [],
-      
-      
-      /**
-       * {@link ViewsModel.html}
-       */
-      html: function() {
-         var queryPredicateContainer = QueryPredicate.prototype.html.call(this),
-             isConjunctive = this.buildBoolSelect('IsConjunctive', 'Comparison Operator', 'Logical AND', 'Logical OR'),
-             predicatesContainer;
-         
-         predicatesContainer = this.renderSet('Predicates', 'Filters', [
-            'CompoundPredicate',
-            'FieldPredicate',
-            'TaxonomyTermPredicate'
-         ]);
-         
-         predicatesContainer.find('h4:first').after(isConjunctive);
-         queryPredicateContainer.append(predicatesContainer);
-         return queryPredicateContainer;
-      },
-      
-      
-      /**
-       * {@link ViewsModel.repr}
-       */
-      repr: function() {
-         var structure = QueryPredicate.prototype.repr.call(this);
-         
-         structure.IsConjunctive = !!this.IsConjunctive;
-         structure.Predicates = this.reprSet('Predicates');
-         return structure;
-      }
-   });
-   
-   
-   /**
-    * Client side model to represent a FiledPredicate object
-    * 
-    * @param object repr Object Data Representation
-    * @param integer nlevel Nesting Level. All children of this object become nlevel + 1
-    */
-   FieldPredicate = function(repr, nlevel) {
-      QueryPredicate.call(this, repr, nlevel);
-      
-      this.FieldName = repr.FieldName;
-      this.Qualifier = repr.Qualifier;
-      this.IsRawSQL = repr.IsRawSQL;
-      
-      this.instantiateSet('Values', repr);
-   };
-   
-   FieldPredicate.prototype = $.extend({}, QueryPredicate.prototype, {
-      Type: 'FieldPredicate',
-      Name: 'Field Filter',
-      Help: 'Use a field filter object to filter returned results by comparing the value of a saved field to a set of given values.',
-      FieldName: '',
-      Qualifier: '',
-      QualifierOptions: ['gt', 'gte', 'lt', 'lte', 'equals', 'notequal', 'like', 'in', 'notin'],
-      IsRawSQL: false,
-      Values: [],
-      
-      
-      /**
-       * {@link ViewsModel.html}
-       */
-      html: function() {
-         var fieldPredicateContainer = QueryPredicate.prototype.html.call(this),
-             fieldName = this.buildTextInput('FieldName', 'Field Name ("TableName".ColumnName)'),
-             qualifier = this.buildSelectInput('Qualifier', 'Comparison Operator', this.QualifierOptions),
-             isRawSQL = this.buildBoolSelect('IsRawSQL', 'Are Values Executable SQL?'),
-             valuesContainer;
-         
-         fieldPredicateContainer.append(fieldName);
-         fieldPredicateContainer.append(qualifier);
-         fieldPredicateContainer.append(isRawSQL);
-         
-         valuesContainer = this.renderSet('Values', 'Values', ['FieldPredicateValue']);
-         valuesContainer.removeClass('objectSet');
-         fieldPredicateContainer.append(valuesContainer);
-         
-         return fieldPredicateContainer;
-      },
-      
-      
-      /**
-       * {@link ViewsModel.repr}
-       */
-      repr: function() {
-         var structure = QueryPredicate.prototype.repr.call(this);
-         
-         structure.FieldName = this.FieldName;
-         structure.Qualifier = this.Qualifier;
-         structure.IsRawSQL = this.IsRawSQL;
-         structure.Values = this.reprSet('Values');
-         return structure;
-      }
-   });
-   
-   
-   /**
-    * Client side model to represent a TaxonomyTermPredicate object
-    * 
-    * @param object repr Object Data Representation
-    * @param integer nlevel Nesting Level. All children of this object become nlevel + 1
-    */
-   TaxonomyTermPredicate = function(repr, nlevel) {      
-      QueryPredicate.call(this, repr, nlevel);
-      
-      this.Inclusive = repr.Inclusive;
-      this.VocabTerm = repr.VocabTerm;
-      this.Options = repr.Options;
-   };
-   
-   TaxonomyTermPredicate.prototype = $.extend({}, QueryPredicate.prototype, {
-      Type: 'TaxonomyTermPredicate',
-      Name: 'Taxonomy Term Filter',
-      Help: 'Use a taxonomy term filter to either include or exclude all returned results with the a supplied taxonomy term.',
-      Inclusive: false,
-      VocabTerm: '',
-      Options: [],
-      
-      
-      /**
-       * {@link ViewsModel.html}
-       */
-      html: function() {
-         var taxonomyTermPredicateContainer = QueryPredicate.prototype.html.call(this),
-             inclusive = this.buildBoolSelect('Inclusive', 'Items with this Term are: ', 'Included in Results', 'Excluded from Results'),
-             vocabTerm = this.buildTextInput('VocabTerm', 'Vocabulary Term (VocabularyMachineName.TermMachineName)');
-         
-         taxonomyTermPredicateContainer.append(vocabTerm);
-         taxonomyTermPredicateContainer.append(inclusive);
-         return taxonomyTermPredicateContainer;
-      },
-      
-      
-      /**
-       * {@link ViewsModel.repr}
-       */
-      repr: function() {
-         var structure = QueryPredicate.prototype.repr.call(this);
-         structure.Type = 'TaxonomyTermPredicate';
-         structure.Inclusive = this.Inclusive;
-         structure.VocabTerm = this.VocabTerm;
-         structure.Options = this.Options;
-         return structure;
-      }
-   });
-   
-   
-   /**
-    * Client side model to represent a PredicateCondition object
-    * 
-    * @param object repr Object Data Representation
-    * @param integer nlevel Nesting Level. All children of this object become nlevel + 1
-    */
-   PredicateCondition = function(repr, nlevel) {
-      ViewsModel.call(this, repr, nlevel);
-   };
-   
-   PredicateCondition.prototype = $.extend({}, ViewsModel.prototype, {
-      Type: 'PredicateCondition',
-      Name: '',
-      Help: ''
-   });
-   
-   
-   /**
-    * Client side model to represent a CompoundPredicateCondition object
-    * 
-    * @param object repr Object Data Representation
-    * @param integer nlevel Nesting Level. All children of this object become nlevel + 1
-    */
-   CompoundPredicateCondition = function(repr, nlevel) {
-      PredicateCondition.call(this, repr, nlevel);
-      
-      this.IsConjunctive = !!repr.IsConjunctive;
-      this.instantiateSet('Conditions', repr);
-   };
-   
-   CompoundPredicateCondition.prototype = $.extend({}, PredicateCondition.prototype, {
-      Type: 'CompoundPredicateCondition',
-      Name: 'Compound Filter Condition',
-      Help: 'Use a compound filter condition to group multiple filter conditions together using either a logical AND or OR comparison.',
-      IsConjunctive: false,
-      Conditions: [],
-      
-      
-      /**
-       * {@link ViewsModel.html}
-       */
-      html: function() {
-         var compoundPredicateConditionContainer = PredicateCondition.prototype.html.call(this),
-             isConjunctive = this.buildBoolSelect('IsConjunctive', 'Comparison Operator', 'Logical AND', 'Logical OR'),
-             conditionsContainer;
-         
-         conditionsContainer = this.renderSet('Conditions', 'Conditions', [
-            'CompoundPredicateCondition',
-            'QueryParamPredicateCondition'
-         ]);
-         
-         compoundPredicateConditionContainer.append(isConjunctive);
-         compoundPredicateConditionContainer.append(conditionsContainer);
-         return compoundPredicateConditionContainer;
-      },
-      
-      
-      /**
-       * {@link ViewsModel.repr}
-       */
-      repr: function() {
-         var structure = PredicateCondition.prototype.repr.call(this);
-         
-         structure.IsConjunctive = this.IsConjunctive;
-         structure.Conditions = this.reprSet('Conditions');
-         return structure;
-      }
-   });
-   
-   
-   /**
-    * Client side model to represent a QueryParamPredicateCondition object
-    * 
-    * @param object repr Object Data Representation
-    * @param integer nlevel Nesting Level. All children of this object become nlevel + 1
-    */
-   QueryParamPredicateCondition = function(repr, nlevel) {
-      PredicateCondition.call(this, repr, nlevel);
-      
-      this.QueryParamName = repr.QueryParamName;
-      this.PresenceRequired = !!repr.PresenceRequired;
-   };
-   
-   QueryParamPredicateCondition.prototype = $.extend({}, PredicateCondition.prototype, {
-      Type: 'QueryParamPredicateCondition',
-      Name: 'Query Parameter Filter Condition',
-      Help: 'Use a query parameter filter condition to selectively apply a filter based on the presence of a URL query parameter.',
-      QueryParamName: '',
-      PresenceRequired: false,
-      
-      
-      /**
-       * {@link ViewsModel.html}
-       */
-      html: function() {
-         var queryParamPredicateCondition = PredicateCondition.prototype.html.call(this),
-             queryParamName = this.buildTextInput('QueryParamName', 'Query Parameter Name'),
-             presenceRequired = this.buildBoolSelect('PresenceRequired', 'Require the Query Parameter to be Present?');
-         
-         queryParamPredicateCondition.append(queryParamName);
-         queryParamPredicateCondition.append(presenceRequired);
-         return queryParamPredicateCondition;
-      },
-      
-      
-      /**
-       * {@link ViewsModel.repr}
-       */
-      repr: function() {
-         var structure = PredicateCondition.prototype.repr.call(this);
-         
-         structure.QueryParamName = this.QueryParamName;
-         structure.PresenceRequired = this.PresenceRequired;
-         return structure;
-      }
-   });
-   
-   
-   /**
-    * Client side model to represent a FieldPredicateValue object
-    * 
-    * @param object repr Object Data Representation
-    * @param integer nlevel Nesting Level. All children of this object become nlevel + 1
-    */
-   FieldPredicateValue = function(repr, nlevel) {
-      ViewsModel.call(this, repr, nlevel);
-      
-      this.Value = repr.Value;
-   };
-   
-   FieldPredicateValue.prototype = $.extend({}, ViewsModel.prototype, {
-      Type: 'FieldPredicateValue',
-      Name: 'Value',
-      Help: 'Use a value to supply a field filter with a value to compare against. This value can be either a constant, executable SQL, or a call to a dynamic value tokenizer (ex. $$CurrentPageID$$).',
-      Value: '',
-      
-      
-      /**
-       * {@link ViewsModel.html}
-       */
-      html: function() {
-         var fieldPredicateValueContainer = ViewsModel.prototype.html.call(this),
-             value = this.buildTextInput('Value', 'Value');
-         
-         fieldPredicateValueContainer.append(value);
-         return fieldPredicateValueContainer;
-      },
-      
-      
-      /**
-       * {@link ViewsModel.repr}
-       */
-      repr: function() {
-         var structure = ViewsModel.prototype.repr.call(this);
-         
-         structure.Value = this.Value;
-         return structure;
-      }
-   });
    
    
    // Instantiate Query Editors and tie there edits to
@@ -823,25 +479,40 @@
          var field = $(this),
              json = field.val(),
              repr = $.parseJSON(json),
-             query = new QueryResultsRetriever(repr, 1),
-             form = query.html(),
-             ui = $(this).prev('div');
+             save,
+             query,
+             form,
+             ui;
          
-         if (!JSON || !JSON.stringify || true) {
+         if (!JSON || !JSON.stringify) {
             ui.html('<p>Browser must support JSON tools. Modern Chrome or Firefox is recommended.</p>');
          }
          
-         ui.html(form);
-         $('input, select').live('change', function() {
-            var json = JSON.stringify(query.repr());
-            field.val(json);
-         });
+         // Dynamically construct classes from their definitions
+         ViewsModel.constructPrototypes(repr.types);
          
-         $(document).bind('redrawQueryBuilder', function() {
-            var form = query.html(),
-                json = JSON.stringify(query.repr());
-            ui.html(form);
+         // Instantiates objects using the new class tree
+         query = ViewsModel.instantiateType(repr.data);
+         
+         // Draw Form
+         form = query.html();
+         ui = $(this).prev('div');
+         ui.html(form);
+         
+         // Save function
+         save = function() {
+            var json;
+            repr.data = query.repr();
+            json = JSON.stringify(repr);
             field.val(json);
+         };
+         
+         $('input, select').live('change', save);
+         $('form').submit(save);
+         $(document).bind('redrawQueryBuilder', function() {
+            var form = query.html();
+            ui.html(form);
+            save();
          });
       });
    });

@@ -6,16 +6,16 @@
    display: none !important;
 }
 
-.QueryResultsRetriever h4 {
+.ViewResultsRetriever h4 {
    margin: 0 0 0 0;
 }
 
-.QueryResultsRetriever .ViewsModel.nlevel-1 > h4,
-.QueryResultsRetriever .ViewsModel.nlevel-2 > h4 {
+.ViewResultsRetriever .ViewsModel.nlevel-1 > h4,
+.ViewResultsRetriever .ViewsModel.nlevel-2 > h4 {
    display: none;
 }
 
-.QueryResultsRetriever p {
+.ViewResultsRetriever p {
    font-style: italic;
    margin-top: 0;
    text-align: center;
@@ -23,30 +23,30 @@
 
 /* Make Query Previews render monospaced */
 .viewsReadOnlyQuerySummary,
-.QueryResultsRetriever input,
-.QueryResultsRetriever select {
+.ViewResultsRetriever input,
+.ViewResultsRetriever select {
    font: 11px/1.5 Monaco, Consolas, Courier, monospace;
 }
 
-.QueryResultsRetriever label,
-.QueryResultsRetriever input
-.QueryResultsRetriever select {
+.ViewResultsRetriever label,
+.ViewResultsRetriever input
+.ViewResultsRetriever select {
    margin: 0 5px 0 0;
    padding: 0;
 }
 
-.QueryResultsRetriever input[type="text"] {
+.ViewResultsRetriever input[type="text"] {
    min-width: 75%;
    display: block;
 }
 
-.QueryResultsRetriever .inputGrouping {
+.ViewResultsRetriever .inputGrouping {
    display: block;
    margin: 10px 0;
 }
 
-.QueryResultsRetriever .rmButton,
-.QueryResultsRetriever .addButton {
+.ViewResultsRetriever .rmButton,
+.ViewResultsRetriever .addButton {
    color: #666;
    font-weight: bold;
    cursor: pointer;
@@ -56,32 +56,32 @@
    border: 1px solid #999;
 }
 
-.QueryResultsRetriever .rmButton:hover,
-.QueryResultsRetriever .addButton:hover {
+.ViewResultsRetriever .rmButton:hover,
+.ViewResultsRetriever .addButton:hover {
    color: #777;
    -moz-box-shadow: inset 0 0 2px #999;
    -webkit-box-shadow: inset 0 0 2px #999;
    -ie-box-shadow: inset 0 0 2px #999;
 }
 
-.QueryResultsRetriever .addButton {
+.ViewResultsRetriever .addButton {
    display: inline-block;
    margin-right: 10px;
+   margin-top: 10px;
 }
 
-.QueryResultsRetriever .rmButton {
+.ViewResultsRetriever .rmButton {
    position: absolute;
    top: -1px;
    right: -1px;
 }
 
-.QueryResultsRetriever .ViewsModel {
+.ViewResultsRetriever .ViewsModel {
    position: relative;
 }
 
-.QueryResultsRetriever .ViewsModel:not(.nlevel-1):not(.nlevel-2),
-.QueryResultsRetriever .QuerySort,
-.QueryResultsRetriever .objectSet {
+.ViewResultsRetriever .ViewsModel,
+.ViewResultsRetriever .objectSet {
    border: 1px solid #999;
    box-shadow: 0 0 5px #CCC;
    -moz-box-shadow: 0 0 5px #CCC;
@@ -91,41 +91,41 @@
    margin: 10px 0;
 }
 
-.QueryResultsRetriever .ViewsModel {
+.ViewResultsRetriever > .ViewsModel.CompoundPredicate,
+.ViewResultsRetriever .objectSet.Values {
+   border: none;
+   box-shadow: none;
+   -moz-box-shadow: none;
+   -webkit-box-shadow: none;
+   -ie-box-shadow:none;
+   padding: 0;
+   margin: 0;
+}
+
+.ViewResultsRetriever .ViewsModel {
    background: rgba(189, 186, 207, 0.25);
 }
 
-.QueryResultsRetriever .objectSet {
+.ViewResultsRetriever .objectSet {
    background: rgba(204, 222, 243, 0.35);
 }
 
-.QueryResultsRetriever h4 + .ViewsModel {
+.ViewResultsRetriever h4 + .ViewsModel {
    margin-top: 5px !important;
 }
 
-.QueryResultsRetriever .FieldPredicateValue h4 {
+.ViewResultsRetriever > .CompoundPredicate > h4,
+.ViewResultsRetriever .FieldPredicateValue > h4,
+.ViewResultsRetriever > .CompoundPredicate > .PredicateConditions {
    display: none;
 }
 
-.QueryResultsRetriever .Values {
+.ViewResultsRetriever .Values {
    padding: 15px 0 0 0;
    margin: 10px 0 0 0;
 }
 
-.QueryResultsRetriever .ViewsModel.nlevel-1,
-.QueryResultsRetriever .ViewsModel.nlevel-2 {
+.ViewResultsRetriever > .ViewsModel {
    background: transparent;
-}
-
-.QueryResultsRetriever .ViewsModel.nlevel-3 {
-   margin: 25px 0 !important;
-}
-
-.QueryResultsRetriever .ViewsModel.nlevel-4 {
-   margin: 20px 0 !important;
-}
-
-.QueryResultsRetriever .ViewsModel.nlevel-5 {
-   margin: 15px 0 !important;
 }
 
