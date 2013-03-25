@@ -239,6 +239,8 @@ class View extends DataObject {
     */
    public function saveViewResultsRetriever($data) {
       $oldRetriever = $this->ResultsRetriever();
+      $preservedData = $oldRetriever->dumpPreservedFields();
+      
       $resultsRetriever = QueryBuilderField::save($data);
       if (!is_object($resultsRetriever))
          return;
@@ -246,6 +248,7 @@ class View extends DataObject {
       if ($oldRetriever)
          $oldRetriever->delete();
       
+      $resultsRetriever->loadPreservedFields($preservedData);
       $this->ResultsRetrieverID = $resultsRetriever->ID;
       $this->write();
    }

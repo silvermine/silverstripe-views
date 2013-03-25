@@ -27,6 +27,19 @@ class HandPickedResultsRetriever extends ViewResultsRetriever {
          'SortOrder' => 'Int',
       ),
    );
+   
+   /**
+    * {@link ViewResultsRetriever::dumpPreservedFields}
+    */
+   public function dumpPreservedFields() {
+      $pages = array();
+      foreach($this->Pages() as $page)
+         $pages[] = $page;
+      
+      return array(
+         'Pages' => $pages
+      );
+   }
 
    /**
     * @see ViewResultsRetriever->getReadOnlySummary()
@@ -41,6 +54,16 @@ class HandPickedResultsRetriever extends ViewResultsRetriever {
          $html .= '&nbsp;&nbsp;&nbsp;&nbsp;' . _t('Views.PageRef', 'Page reference') . ': [' . $page->ID . '] ' . $page->Title . '<br />';
       }
       return $html;
+   }
+   
+   /**
+    * {@link ViewResultsRetriever::loadPreservedFields}
+    */
+   public function loadPreservedFields($data) {
+      $pages = array_key_exists('Pages', $data) ? $data['Pages'] : array();
+      $this->Pages()->removeAll();
+      foreach($pages as $page)
+         $this->Pages()->add($page);
    }
 
    /**

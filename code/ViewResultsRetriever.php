@@ -22,6 +22,16 @@ class ViewResultsRetriever extends DataObject {
    static $defaults = array(
       'Transformation' => 'None',
    );
+   
+   /**
+    * Used to dump fields the need to be preserved by, but
+    * not modified by QueryBuilderField upon a save action.
+    * 
+    * @return array
+    */
+   public function dumpPreservedFields() {
+      return array();
+   }
 
    protected function getCurrentPageLocale() {
       $currentPage = Director::get_current_page();
@@ -53,6 +63,15 @@ class ViewResultsRetriever extends DataObject {
     */
    public function getReadOnlySummary() {
       return 'The ' . get_class($this) . ' class needs to implement getReadOnlySummary().';
+   }
+   
+   /**
+    * Used to load fields the need to be preserved by, but
+    * not modified by QueryBuilderField upon a save action.
+    * 
+    * @param array
+    */
+   public function loadPreservedFields($data) {
    }
 
    public function Results($maxResults = 0) {
