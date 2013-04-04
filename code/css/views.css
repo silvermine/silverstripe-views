@@ -129,3 +129,8 @@
    background: transparent;
 }
 
+.ViewResultsRetriever .addButton.PredicateCondition,
+.ViewResultsRetriever .addButton.QueryPredicate,
+.ViewResultsRetriever .addButton.ViewResultsSorter {
+   display: none;
+}
