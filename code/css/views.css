@@ -147,3 +147,11 @@
    width: 48%;
    text-align: center;
 }
+
+.viewsImportExport div:nth-child(2) {
+   float: right;
+}
+
+.viewsImportExport div input {
+   margin: 20px auto;
+}

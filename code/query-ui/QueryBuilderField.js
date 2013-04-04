@@ -485,35 +485,55 @@
    // Instantiate Query Editors and tie there edits to
    // the hidden JSON form they power.
    $(document).ready(function() {
+      if (!JSON || !JSON.stringify) {
+         ui.html('<p>Browser must support JSON tools. Modern Chrome or Firefox is recommended.</p>');
+      }
+      
       $('input.viewsQueryBuilderRepr').each(function() {
          var field = $(this),
-             json = field.val(),
-             repr = $.parseJSON(json),
-             importExport,
-             save,
-             query,
-             form,
-             ui;
+             loadRepr, repr, importExport, save, query, ui;
          
-         if (!JSON || !JSON.stringify) {
-            ui.html('<p>Browser must support JSON tools. Modern Chrome or Firefox is recommended.</p>');
-         }
+         loadRepr = function() {
+            var form, json;
+            
+            json = field.val();
+            repr = $.parseJSON(json);
+            
+            // Dynamically construct classes from their definitions
+            ViewsModel.constructPrototypes(repr.types);
+            
+            // Instantiates objects using the new class tree
+            query = ViewsModel.instantiateType(repr.data);
+            
+            // Draw Form
+            form = query.html();
+            ui = field.parent().find('div.viewsQueryBuilder');
+            ui.html(form);
+         };
          
-         // Dynamically construct classes from their definitions
-         ViewsModel.constructPrototypes(repr.types);
+         loadRepr();
          
-         // Instantiates objects using the new class tree
-         query = ViewsModel.instantiateType(repr.data);
-         
-         // Draw Form
-         form = query.html();
-         ui = $(this).parent().find('div.viewsQueryBuilder');
-         ui.html(form);
-         
-         // Export Views
-         if (window.Blob) {
+         // Import / Export Views
+         if (window.Blob && window.FileReader) {
             importExport = $(this).parent().find('div.viewsImportExport');
             importExport.append("<div class='export'><h2>Export View</h2><a>Download</a></div>");
+            importExport.append("<div class='import'><h2>Import View</h2><input type='file' /><a>Import View</a></div>");
+            
+            importExport.find('div.import a').click(function() {
+               if(!confirm("Are you sure you want to completely overwrite the above view?")) {
+                  return;
+               }
+               
+               var file = $(this).prev('input').get(0).files[0],
+                   reader = new FileReader();
+               
+               reader.onload = function(event) {
+                  field.val(event.target.result);
+                  loadRepr();
+               }
+               
+               reader.readAsText(file);
+            });
          }
          
          // Save function
@@ -527,7 +547,7 @@
                return;
             }
             
-            exportLink = importExport.find('.export a')[0];
+            exportLink = importExport.find('.export a').get(0);
             URL.revokeObjectURL(exportLink.href);
             
             blob = new Blob([json], {"type": "application\/json"});
