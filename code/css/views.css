@@ -6,7 +6,8 @@
    display: none !important;
 }
 
-.ViewResultsRetriever h4 {
+.ViewResultsRetriever h4,
+.viewsImportExport h2 {
    margin: 0 0 0 0;
 }
 
@@ -46,7 +47,8 @@
 }
 
 .ViewResultsRetriever .rmButton,
-.ViewResultsRetriever .addButton {
+.ViewResultsRetriever .addButton,
+.viewsImportExport a {
    color: #666;
    font-weight: bold;
    cursor: pointer;
@@ -54,11 +56,14 @@
    display: block;
    padding: 5px;
    border: 1px solid #999;
+   text-decoration: none;
 }
 
 .ViewResultsRetriever .rmButton:hover,
-.ViewResultsRetriever .addButton:hover {
+.ViewResultsRetriever .addButton:hover,
+.viewsImportExport a:hover {
    color: #777;
+   background: #FFF;
    -moz-box-shadow: inset 0 0 2px #999;
    -webkit-box-shadow: inset 0 0 2px #999;
    -ie-box-shadow: inset 0 0 2px #999;
@@ -81,7 +86,8 @@
 }
 
 .ViewResultsRetriever .ViewsModel,
-.ViewResultsRetriever .objectSet {
+.ViewResultsRetriever .objectSet,
+.viewsImportExport div {
    border: 1px solid #999;
    box-shadow: 0 0 5px #CCC;
    -moz-box-shadow: 0 0 5px #CCC;
@@ -106,7 +112,8 @@
    background: rgba(189, 186, 207, 0.25);
 }
 
-.ViewResultsRetriever .objectSet {
+.ViewResultsRetriever .objectSet,
+.viewsImportExport div {
    background: rgba(204, 222, 243, 0.35);
 }
 
@@ -133,4 +140,10 @@
 .ViewResultsRetriever .addButton.QueryPredicate,
 .ViewResultsRetriever .addButton.ViewResultsSorter {
    display: none;
+}
+
+.viewsImportExport div {
+   float: left;
+   width: 48%;
+   text-align: center;
 }

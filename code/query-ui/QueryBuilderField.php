@@ -580,7 +580,9 @@ class QueryBuilderField extends FormField {
       Requirements::javascript('views/code/query-ui/QueryBuilderField.js');
       Requirements::css('views/code/css/views.css');
       
-      $html = "<div class='viewsQueryBuilder'></div>\n" . $this->getInputTag();
+      $html = "<div class='viewsQueryBuilder'></div>";
+      $html .= "<div class='viewsImportExport'></div>";
+      $html .= $this->getInputTag();
       return $html;
    }
 }

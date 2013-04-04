@@ -489,6 +489,7 @@
          var field = $(this),
              json = field.val(),
              repr = $.parseJSON(json),
+             importExport,
              save,
              query,
              form,
@@ -506,15 +507,32 @@
          
          // Draw Form
          form = query.html();
-         ui = $(this).prev('div');
+         ui = $(this).parent().find('div.viewsQueryBuilder');
          ui.html(form);
+         
+         // Export Views
+         if (window.Blob) {
+            importExport = $(this).parent().find('div.viewsImportExport');
+            importExport.append("<div class='export'><h2>Export View</h2><a>Download</a></div>");
+         }
          
          // Save function
          save = function() {
-            var json;
+            var json, blob, exportLink;
             repr.data = query.repr();
             json = JSON.stringify(repr);
             field.val(json);
+            
+            if (!window.Blob) {
+               return;
+            }
+            
+            exportLink = importExport.find('.export a')[0];
+            URL.revokeObjectURL(exportLink.href);
+            
+            blob = new Blob([json], {"type": "application\/json"});
+            exportLink.href = URL.createObjectURL(blob);
+            exportLink.download = "silverstripe-" + (new Date()).getTime() + ".view";
          };
          
          $('input, select').live('change', save);
@@ -524,6 +542,8 @@
             ui.html(form);
             save();
          });
+         
+         save();
       });
    });
    
