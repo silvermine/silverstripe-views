@@ -390,7 +390,7 @@ class QueryBuilderField extends FormField {
       if (is_object($cls))
          $cls = get_class($cls);
       
-      return in_array($cls, array('QueryResultsRetriever', 'TaxonomyTermPredicate', 'ViewAggregatingResultsRetriever')) && !empty($cls::$has_one);
+      return !empty($cls::$has_one) && isset($cls::$traverse_has_one) && $cls::$traverse_has_one;
    }
    
    
@@ -441,6 +441,10 @@ class QueryBuilderField extends FormField {
          if (method_exists($obj, $fnName)) {
             return $obj->$fnName();
          }
+         
+         $columnName = "{$name}ID";
+         if (isset($obj->$columnName) && $obj->$columnName == 0)
+            return null;
          
          $property = $obj->$name();
          if ($property instanceof DataObjectSet) {

@@ -21,6 +21,8 @@ class QueryResultsRetriever extends ViewResultsRetriever {
    static $has_many = array(
       'Sorts' => 'QuerySort',
    );
+   
+   static $traverse_has_one = true;
 
    /**
     * @see ViewResultsRetriever#getReadOnlySummary

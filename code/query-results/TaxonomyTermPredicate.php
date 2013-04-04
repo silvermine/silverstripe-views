@@ -20,6 +20,8 @@ class TaxonomyTermPredicate extends QueryPredicate {
       'Term' => 'VocabularyTerm',
    );
    
+   static $traverse_has_one = true;
+   
    /**
     * Modifies TaxonomyTerm input to use a multiple choice select
     * {@link QueryBuilderField::get_input_type()}
@@ -36,7 +38,8 @@ class TaxonomyTermPredicate extends QueryPredicate {
          $join = 'JOIN "Vocabulary" ON "Vocabulary".ID = "VocabularyTerm".VocabularyID');
       
       foreach ($terms as $term) {
-         $options[] = "{$term->Vocabulary()->MachineName}.{$term->MachineName}";
+         $repr = "{$term->Vocabulary()->MachineName}.{$term->MachineName}";
+         $options[$repr] = $repr;
       }
       
       return array(
@@ -65,6 +68,9 @@ class TaxonomyTermPredicate extends QueryPredicate {
     * @return string
     */
    public function getTermStructure() {
+      if (!$this->TermID)
+         return "";
+      
       $term = $this->Term();
       return "{$term->Vocabulary()->MachineName}.{$term->MachineName}";
    }
@@ -73,7 +79,7 @@ class TaxonomyTermPredicate extends QueryPredicate {
     * Return the DataObject for a term defined in the given representation.
     * Called by {@link QueryBuilderField::save_object()}
     * 
-    * @param array
+    * @param string
     * @return VocabularTerm
     */
    public function saveTerm($term) {

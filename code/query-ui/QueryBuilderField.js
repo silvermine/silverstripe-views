@@ -292,7 +292,11 @@
                switch (this.getFieldType(key)) {
                   case 'has_one':
                      property = property || {};
-                     this[key] = [this.instantiateType(property),];
+                     child = this.instantiateType(property);
+                     this[key] = [];
+                     if (child) {
+                        this[key].push(child);
+                     }
                      break;
                   
                   case 'has_many':
@@ -325,6 +329,10 @@
       instantiateType: function(repr) {
          var proto = this.getPrototype(repr.type),
              obj;
+         
+         if (!proto) {
+            return null;
+         }
          
          obj = Object.create(proto);
          obj.importRepr(repr);
@@ -420,7 +428,9 @@
          if (this[property].length < limit || limit === 0) {
             for (i = 0; i < allowedTypes.length; i++) {
                type = allowedTypes[i];
-               addButton = $('<span class="addButton">Add ' + this.getPrototype(type).type + '</span>');
+               addButton = $('<span>Add ' + this.getPrototype(type).type + '</span>');
+               addButton.addClass('addButton');
+               addButton.addClass(type);
                addButton.attr('title', this.getPrototype(type).help);
                addButton.data('type', type);
                addButton.click(addCallback);
@@ -449,7 +459,7 @@
             if (this.fields.hasOwnProperty(key)) {
                switch (this.getFieldType(key)) {
                   case 'has_one':
-                     obj.fields[key] = this[key][0].repr();
+                     obj.fields[key] = this[key].length ? this[key][0].repr() : null;
                      break;
                   
                   case 'has_many':

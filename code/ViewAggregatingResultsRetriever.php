@@ -23,6 +23,8 @@ class ViewAggregatingResultsRetriever extends ViewResultsRetriever {
       'Sorter' => 'ViewResultsSorter',
    );
    
+   static $traverse_has_one = true;
+   
    /**
     * Augment the QueryBuilderField type description so that it includes an 
     * entry for the View class. Includes a multiple-choice view choosing dropdown.
