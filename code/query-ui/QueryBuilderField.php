@@ -329,7 +329,21 @@ class QueryBuilderField extends FormField {
       
       $setProperties = function($cls, $parent) use (&$obj, &$fields, &$saveChildObject) {
          foreach (QueryBuilderField::get_database_property($cls, 'db') as $property => $type) {
-            $obj->$property = QueryBuilderField::get_value($fields, $property, null);
+            $value = QueryBuilderField::get_value($fields, $property, null);
+            
+            switch(true) {
+               case strtolower((string)$value) == 'true':
+                  $value = 1;
+                  break;
+               case strtolower((string)$value) == 'false':
+                  $value = 0;
+                  break;
+               case is_numeric($value):
+                  $value = (int)$value;
+                  break;
+            }
+            
+            $obj->$property = $value;
          }
          
          foreach (QueryBuilderField::get_database_property($cls, 'has_one') as $property => $type) {
