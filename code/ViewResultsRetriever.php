@@ -24,6 +24,15 @@ class ViewResultsRetriever extends DataObject {
    );
    
    /**
+    * Return the max number of results possible
+    * 
+    * @return integer
+    */
+   public function count() {
+      throw new RuntimeException('The ' . get_class($this) . ' class needs to implement count().');
+   }
+   
+   /**
     * Used to dump fields the need to be preserved by, but
     * not modified by QueryBuilderField upon a save action.
     * 
@@ -33,6 +42,11 @@ class ViewResultsRetriever extends DataObject {
       return array();
    }
 
+   /**
+    * Get the locale of the current page
+    * 
+    * @return string
+    */
    protected function getCurrentPageLocale() {
       $currentPage = Director::get_current_page();
       if ($currentPage == null || !$currentPage->hasExtension('Translatable')) {
@@ -42,6 +56,11 @@ class ViewResultsRetriever extends DataObject {
       return $currentPage->Locale;
    }
 
+   /**
+    * Get the locale from the pre-defined query param
+    * 
+    * @return string
+    */
    protected function getQueryParamLocale() {
       if ($this->QueryParamName) {
          $locale = QueryParamTokenizer::get_value($this->QueryParamName);
@@ -64,7 +83,17 @@ class ViewResultsRetriever extends DataObject {
    public function getReadOnlySummary() {
       return 'The ' . get_class($this) . ' class needs to implement getReadOnlySummary().';
    }
-   
+
+   protected function getTransformedResultsLocale() {
+      switch ($this->Transformation) {
+         case self::TRANSFORMATION_TRANSLATE_PAGE_LOCALE:
+            return $this->getCurrentPageLocale();
+         
+         case self::TRANSFORMATION_TRANSLATE_QUERY_PARAM_LOCALE:
+            return $this->getQueryParamLocale();
+      }
+   }
+
    /**
     * Used to load fields the need to be preserved by, but
     * not modified by QueryBuilderField upon a save action.
@@ -74,23 +103,17 @@ class ViewResultsRetriever extends DataObject {
    public function loadPreservedFields($data) {
    }
 
-   public function Results($maxResults = 0) {
-      Translatable::disable_locale_filter();
-      $results = $this->resultsImpl();
-      Translatable::enable_locale_filter();
-      if (!$results || empty($results)) {
-         return null;
-      }
-
-      // if at some point more transformations are added, these transformation
-      // implementations should likely be injected as some sort of interface
-      // implementation instead of just being a big switch statement.
-      switch ($this->Transformation) {
-         case self::TRANSFORMATION_TRANSLATE_PAGE_LOCALE:
-            return $this->translateResults($results, $this->getCurrentPageLocale());
-         case self::TRANSFORMATION_TRANSLATE_QUERY_PARAM_LOCALE:
-            return $this->translateResults($results, $this->getQueryParamLocale());
-      }
+   /**
+    * Return the results
+    * 
+    * @param integer $offset
+    * @param integer $limit
+    * @return DataObjectSet
+    */
+   public function results($offset = 0, $limit = 1000) {
+      $results = $this->resultsImpl($offset, $limit);
+      
+      $results = (!$results || empty($results)) ? null : $results;
 
       return $results;
    }
@@ -106,58 +129,8 @@ class ViewResultsRetriever extends DataObject {
     * @param int $maxResults the maximum number of results to return
     * @return DataObjectSet|null the results or null if none found
     */
-   protected function resultsImpl($maxResults = 0) {
-      throw new RuntimeException('The ' . get_class($this) . ' class needs to implement resultsImpl(int).');
-   }
-
-   /**
-    * This function disables the Translatable locale filter and then takes the
-    * results returned by the Results() function and checks each node returned
-    * to see if there are equivalent translations in the language of the
-    * current page.  This allows you to create a view on one page (in the
-    * master/default language/locale) and have all translations of that page
-    * use the same view.  Thus you don't need to create the view on every
-    * translation of the page, saving you considerable time.
-    *
-    * NOTE: if the current page can not be found or is not translatable this
-    * function will simply return the results that were returned by Results()
-    *
-    * @todo fix $maxResults functionality... by passing it to the results
-    *            retriever we are really breaking this.  The results retriever
-    *            might return 5 of 10 actual results (if we pass 5), and we
-    *            might only have three translations of those five results.  But
-    *            if we retrieved all results and then checked for translations
-    *            we might be able to get up to our real max.
-    *
-    * @param int $maxResults maximum number of results to retriever, or 0 for infinite (default 0)
-    * @return DataObjectSet the results in the current locale or null if none found
-    */
-   protected function translateResults(&$results, $locale) {
-      if (empty($results)) {
-         return null;
-      }
-
-      if ($locale === false) {
-         return $results;
-      }
-
-      $translatedResults = array();
-      foreach ($results as $result) {
-         if (!$result->hasExtension('Translatable')) {
-            continue;
-         }
-
-         if ($result->Locale == $locale) {
-            // no need to translate - our results retriever retrieved the result
-            // in the correct locale already
-            array_push($translatedResults, $result);
-            continue;
-         } elseif(($translatedResult = $result->getTranslation($locale)) != null) {
-            array_push($translatedResults, $translatedResult);
-         }
-      }
-
-      return empty($translatedResults) ? null : new DataObjectset($translatedResults);
+   protected function resultsImpl($offset, $limit) {
+      throw new RuntimeException('The ' . get_class($this) . ' class needs to implement resultsImpl(int, int).');
    }
 
    /**

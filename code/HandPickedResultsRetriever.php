@@ -29,6 +29,24 @@ class HandPickedResultsRetriever extends ViewResultsRetriever {
    );
    
    /**
+    * {@link ViewResultsRetriever::count}
+    */
+   public function count() {
+      $columns = array("COUNT(*)");
+      $qb = $this->getQuery($columns);
+      
+      Translatable::disable_locale_filter();
+      $results = $qb->execute();
+      Translatable::enable_locale_filter();
+      
+      if (empty($results))
+         return 0;
+      
+      $count = (int)$results->First()->getField("COUNT(*)");
+      return $count;
+   }
+   
+   /**
     * {@link ViewResultsRetriever::dumpPreservedFields}
     */
    public function dumpPreservedFields() {
@@ -39,6 +57,40 @@ class HandPickedResultsRetriever extends ViewResultsRetriever {
       return array(
          'Pages' => $pages
       );
+   }
+   
+   /**
+    * Return a QueryBuilder instance set up to query for objects
+    * in $this->Pages()
+    * 
+    * @param array $columns Optional, columns to select
+    * @return QueryBuilder
+    */
+   private function &getQuery($columns = null) {
+      $qb = new QueryBuilder();
+      
+      if (is_array($columns)) {
+         $vernSiteTree = $qb->selectColumns(self::$many_many['Pages']);
+         $qb->addColumns($columns);
+      } else {
+         $vernSiteTree = $qb->selectObjects(self::$many_many['Pages']);
+      }
+      
+      // If Translatable isn't loaded, just return the basic results
+      $locale = $this->getTransformedResultsLocale();
+      $masterSiteTree = $vernSiteTree;
+      if ($this->isTranslatable() && $locale) {
+         $masterSiteTree = $qb->translateResults($locale);
+      }
+      
+      $pages = $qb->getTableAlias('HandPickedResultsRetriever_Pages');
+      $id = Convert::raw2sql($this->ID);
+      $join = sprintf("{$pages}.HandPickedResultsRetrieverID = %d AND {$pages}.SiteTreeID = {$masterSiteTree}.ID", $id);
+      $qb->innerJoin($pages, $join);
+      
+      $qb->orderby("{$pages}.SortOrder", $ascending = true);
+      
+      return $qb;
    }
 
    /**
@@ -54,6 +106,13 @@ class HandPickedResultsRetriever extends ViewResultsRetriever {
          $html .= '&nbsp;&nbsp;&nbsp;&nbsp;' . _t('Views.PageRef', 'Page reference') . ': [' . $page->ID . '] ' . $page->Title . '<br />';
       }
       return $html;
+   }
+   
+   /**
+    * Returns true if Pages can be translated
+    */
+   private function isTranslatable() {
+      return Object::has_extension(self::$many_many['Pages'], 'Translatable');
    }
    
    /**
@@ -90,8 +149,17 @@ class HandPickedResultsRetriever extends ViewResultsRetriever {
    /**
     * @see ViewResultsRetriever->resultsImpl()
     */
-   protected function resultsImpl($maxResults = 0) {
-      return $this->Pages();
+   protected function resultsImpl($offset, $limit) {
+      // Build a query to retrieve translations of the selected pages
+      $qb = $this->getQuery();
+      $qb->limit($limit);
+      $qb->offset($offset);
+      
+      Translatable::disable_locale_filter();
+      $results = $qb->execute();
+      Translatable::enable_locale_filter();
+      
+      return $results;
    }
 
    /**

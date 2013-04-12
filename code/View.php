@@ -114,6 +114,39 @@ class View extends DataObject {
       $html .= '<span style="font-size: 0.9em;">' . $this->ResultsRetriever()->getReadOnlySummary() . '</span>';
       return $html;
    }
+   
+   /**
+    * Return the max number of results to get
+    * 
+    * @return integer
+    */
+   private function getResultsLimit() {
+      return $this->resultsPerPage;
+   }
+   
+   /**
+    * Return the results offset
+    * 
+    * @return integer
+    */
+   private function getResultsOffset() {
+      $offset = 0;
+      
+      $controller = Controller::curr();
+      if (!$controller)
+         return $offset;
+      
+      $request = $controller->getRequest();
+      if (!$request)
+         return $offset;
+      
+      $startParam = $request->getVar($this->paginationURLParam);
+      if(!$startParam)
+         return $offset;
+      
+      $offset = is_numeric($startParam) ? ((int)$startParam) : $offset;
+      return $offset;
+   }
 
    /**
     * Used by ComplexTableField to validate objects added in the CMS UI
@@ -178,57 +211,24 @@ class View extends DataObject {
    }
 
    /**
-    * Paginates a DataObjectSet according to the current transient pagination
-    * config.
-    *
-    * @todo - obviously loading all results just to paginate them and return a
-    * a portion of them is not a great architectural decision.  This needs to
-    * be revisited to see how this can be improved without making the API for
-    * results retrievers too complex.  Part of the complexity comes from the
-    * TranslatedResults function.  If the translated results function only
-    * loads one page of results and then translates them (finding equivalents
-    * in the current locale), it can end up with less results.  Thus, it must
-    * really load all results to even know which one to start from (each page
-    * could have less results).  Because of this we will just load all results
-    * for now and come back to visit this problem later.
-    *
-    * @param DataObjectSet $all a set containing all possible results to be paginated
-    * @return null|DataObjectSet null if null is passed in, otherwise an appropriately paginated DataObjectSet
-    */
-   private function paginate($all) {
-      if (is_null($all)) {
-         return null;
-      }
-
-      if ($this->resultsPerPage <= 0) {
-         $all->setPageLimits(0, PHP_INT_MAX, $all->Count());
-         return $all;
-      }
-
-      $start = 0;
-      if (Controller::curr() && Controller::curr()->getRequest() && Controller::curr()->getRequest()->getVar($this->paginationURLParam)) {
-         $startVal = Controller::curr()->getRequest()->getVar($this->paginationURLParam);
-         $start = is_numeric($startVal) ? ((int) $startVal) : $start;
-      }
-
-      if (self::$reset_pagination_for_bad_value && $start >= $all->Count()) {
-         $start = 0;
-      }
-
-      $results = new DataObjectSet(array_slice($all->toArray(), $start, $this->resultsPerPage));
-      $results->setPaginationGetVar($this->paginationURLParam);
-      $results->setPageLimits($start, $this->resultsPerPage, $all->Count());
-      return $results;
-   }
-
-   /**
     * Helper function for templates so they can call the Results function from
     * the view itself without having to get the results retriever as well.
     *
     * @return DataObjectSet the results in the current locale or null if none found
     */
    public function Results() {
-      return $this->paginate($this->ResultsRetriever()->Results());
+      $offset = $this->getResultsOffset();
+      $limit = $this->getResultsLimit();
+      
+      $retreiver = $this->ResultsRetriever();
+      $results = $retreiver->results($offset, $limit);
+      
+      if ($results) {
+         $results->setPaginationGetVar($this->paginationURLParam);
+         $results->setPageLimits($offset, $limit, $retreiver->count());
+      }
+      
+      return $results;
    }
    
    /**

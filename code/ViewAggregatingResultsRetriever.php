@@ -57,6 +57,17 @@ class ViewAggregatingResultsRetriever extends ViewResultsRetriever {
       
       $structure['View'] = $viewStructure;
    }
+   
+   /**
+    * @see ViewResultsRetriever->count()
+    */
+   public function count() {
+      $count = 0;
+      
+      foreach ($this->Views() as $view) {
+         $count += $view->Results()->Count();
+      }
+   }
 
    /**
     * @see ViewResultsRetriever->getReadOnlySummary()
@@ -123,7 +134,7 @@ class ViewAggregatingResultsRetriever extends ViewResultsRetriever {
    /**
     * @see ViewResultsRetriever->resultsImpl()
     */
-   protected function resultsImpl($maxResults = 0) {
+   protected function resultsImpl($offset, $limit) {
       $all = new DataObjectSet(array());
       foreach ($this->Views() as $view) {
          $results = $view->Results();
@@ -131,13 +142,16 @@ class ViewAggregatingResultsRetriever extends ViewResultsRetriever {
             $all->merge($results);
          }
       }
+      
       $all->removeDuplicates($this->DeDupeFieldName);
       if ($this->Sorter()) {
          $all = $this->Sorter()->sort($all);
       }
-      if ($maxResults > 0 && $all->TotalItems() > $maxResults) {
-         $all = new DataObjectSet(array_slice($all->toArray(), 0, $maxResults));
+      
+      if ($offset || $limit) {
+         $all = new DataObjectSet(array_slice($all->toArray(), $offset, $limit));
       }
+      
       return $all;
    }
 

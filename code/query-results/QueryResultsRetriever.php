@@ -23,6 +23,29 @@ class QueryResultsRetriever extends ViewResultsRetriever {
    );
    
    static $traverse_has_one = true;
+   
+   /**
+    * {@link ViewResultsRetriever::count}
+    */
+   public function count() {
+      $root = $this->RootPredicate();
+      if ($root instanceof CompoundPredicate && count($root->Predicates()) == 0) {
+         return 0;
+      }
+      
+      $columns = array("COUNT(*)");
+      $qb = $this->getQuery($root, $columns);
+      
+      Translatable::disable_locale_filter();
+      $results = $qb->execute();
+      Translatable::enable_locale_filter();
+      
+      if (empty($results))
+         return 0;
+      
+      $count = (int)$results->First()->getField("COUNT(*)");
+      return $count;
+   }
 
    /**
     * @see ViewResultsRetriever#getReadOnlySummary
@@ -41,7 +64,48 @@ class QueryResultsRetriever extends ViewResultsRetriever {
       $html .= '</span>';
       return $html;
    }
-
+   
+   /**
+    * Return an instance of QueryBuilder set up using the given query predicate
+    * 
+    * @param QueryPredicate $queryPredicate
+    * @param array $columns Optional. Columns to retrieve from the Query
+    * @return QueryBuilder
+    */
+   private function &getQuery($queryPredicate, $columns = null) {
+      $qb = new QueryBuilder();
+      
+      if (is_array($columns)) {
+         $vernSiteTree = $qb->selectColumns('SiteTree');
+         $qb->addColumns($columns);
+      } else {
+         $vernSiteTree = $qb->selectObjects('SiteTree');
+      }
+      
+      $locale = $this->getTransformedResultsLocale();
+      if($this->isTranslatable() && $locale) {
+         $qb->translateResults($locale);
+      }
+      
+      $queryPredicate->updateQuery($qb, true);
+      
+      $sorts = $this->Sorts();
+      foreach ($sorts as $sort) {
+         $sort->updateQuery($qb);
+      }
+      
+      return $qb;
+   }
+   
+   /**
+    * Return true if SiteTree is translatable
+    * 
+    * @return bool
+    */
+   private function isTranslatable() {
+      return Object::has_extension('SiteTree', 'Translatable');
+   }
+   
    /**
     * Deletes all related objects that have a one-to-one relationship with this
     * instance.
@@ -62,7 +126,7 @@ class QueryResultsRetriever extends ViewResultsRetriever {
    /**
     * @see ViewResultsRetriever->resultsImpl()
     */
-   protected function resultsImpl($maxResults = 0) {
+   protected function resultsImpl($offset, $limit) {
       $root = $this->RootPredicate();
       
       // If no filters exist, don't return any results.
@@ -70,21 +134,14 @@ class QueryResultsRetriever extends ViewResultsRetriever {
          return null;
       }
       
-      $query = new QueryBuilder();
-      $query->selectObjects('SiteTree');
-      $root->updateQuery($query, true);
-
-      $sorts = $this->Sorts();
-      foreach ($sorts as $sort) {
-         $sort->updateQuery($query);
-      }
-
+      $qb = $this->getQuery($root);
+      $qb->limit($limit);
+      $qb->offset($offset);
+      
       Translatable::disable_locale_filter();
-      $results = null;
-      try {
-         $results = $query->execute();
-      } catch (Exception $ex) {}
+      $results = $qb->execute();
       Translatable::enable_locale_filter();
+      
       return $results;
    }
 
