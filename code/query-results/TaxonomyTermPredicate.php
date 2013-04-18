@@ -82,7 +82,7 @@ class TaxonomyTermPredicate extends QueryPredicate {
     * @param string
     * @return VocabularTerm
     */
-   public function saveTerm($term) {
+   public function resolveTermStructure($term) {
       $term = explode(".", $term);
       if (count($term) < 2)
          return;

@@ -136,13 +136,13 @@ class QueryBuilderField extends FormField {
     * @return array('NameOfField' => 'FieldType')
     */
    public static function get_database_property($cls, $prop) {
-      if (!QueryBuilderField::traverse_has_one_relationship($cls) && $prop == 'has_one')
+      if ($prop == 'has_one' && !QueryBuilderField::traverse_has_one_relationship($cls))
          return array();
       
-      if (!QueryBuilderField::traverse_has_many_relationship($cls) && $prop == 'has_many')
+      if ($prop == 'has_many' && !QueryBuilderField::traverse_has_many_relationship($cls))
          return array();
       
-      if (!QueryBuilderField::traverse_many_many_relationship($cls) && $prop == 'many_many')
+      if ($prop == 'many_many' && !QueryBuilderField::traverse_many_many_relationship($cls))
          return array();
       
       return $cls::$$prop ?: array();
@@ -320,7 +320,7 @@ class QueryBuilderField extends FormField {
       $obj->write();
       
       $saveChildObject = function($property, $childStructure) use (&$obj) {
-         $fnName = "save{$property}";
+         $fnName = "resolve{$property}Structure";
          if (method_exists($obj, $fnName))
             return $obj->$fnName($childStructure);
          
@@ -514,7 +514,7 @@ class QueryBuilderField extends FormField {
     */
    private function buildQueryRepr(ViewResultsRetriever $query) {
       $repr = array(
-         'data' => $this->buildObjectStructure($query, true),
+         'data' => $this->buildObjectStructure($query),
          'types' => self::build_core_type_structures(),
       );
       

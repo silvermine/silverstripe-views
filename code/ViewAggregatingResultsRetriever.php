@@ -101,6 +101,24 @@ class ViewAggregatingResultsRetriever extends ViewResultsRetriever {
       parent::onBeforeDelete();
       parent::Views()->removeAll();
    }
+   
+   /**
+    * Return the DataObject for a view defined in the given representation.
+    * Called by {@link QueryBuilderField::save_object()}
+    * 
+    * Input is the same as the output of {@link ViewAggregatingResultsRetriever::getViewsStructure()}
+    * 
+    * @param array
+    * @return View
+    */
+   public function resolveViewsStructure($view) {
+      $viewID = $view['fields']['ID'];
+      $view = View::get_one('View', 'ID = ' . Convert::raw2sql($viewID));
+      if (empty($view))
+         return;
+      
+      return $view;
+   }
 
    /**
     * @see ViewResultsRetriever->resultsImpl()
@@ -121,22 +139,6 @@ class ViewAggregatingResultsRetriever extends ViewResultsRetriever {
          $all = new DataObjectSet(array_slice($all->toArray(), 0, $maxResults));
       }
       return $all;
-   }
-   
-   /**
-    * Return the DataObject for a view defined in the given representation.
-    * Called by {@link QueryBuilderField::save_object()}
-    * 
-    * @param array
-    * @return View
-    */
-   public function saveViews($view) {
-      $viewID = $view['fields']['ID'];
-      $view = View::get_one('View', 'ID = ' . Convert::raw2sql($viewID));
-      if (empty($view))
-         return;
-      
-      return $view;
    }
 
    /**
