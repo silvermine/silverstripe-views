@@ -79,6 +79,8 @@ class TaxonomyTermPredicate extends QueryPredicate {
     * Return the DataObject for a term defined in the given representation.
     * Called by {@link QueryBuilderField::save_object()}
     * 
+    * Input is the same as the output of {@link TaxonomyTermPredicate::getTermStructure()}
+    * 
     * @param string
     * @return VocabularTerm
     */
