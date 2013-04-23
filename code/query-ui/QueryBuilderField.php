@@ -577,7 +577,7 @@ class QueryBuilderField extends FormField {
          return $this->getReadOnlySummary();
       }
       
-      Requirements::javascript('views/code/query-ui/QueryBuilderField.js');
+      Requirements::javascript('views/code/javascript/QueryBuilderField.js');
       Requirements::css('views/code/css/views.css');
       
       $html = "<div class='viewsQueryBuilder'></div>";
