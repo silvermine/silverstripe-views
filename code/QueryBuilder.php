@@ -593,13 +593,13 @@ class QueryBuilder {
       $groupTableName = $this->objectName . '_translationgroups';
       
       $vernacularGroups = $this->getTableAlias($groupTableName);
-      $this->innerJoin($vernacularGroups, "{$vernacularGroups}.ID = {$this->tableNameAlias}.ID");
+      $this->innerJoin($vernacularGroups, "{$vernacularGroups}.OriginalID = {$this->tableNameAlias}.ID");
       
       $masterGroups = $this->getTableAlias($groupTableName);
       $this->innerJoin($masterGroups, "{$masterGroups}.TranslationGroupID = {$vernacularGroups}.TranslationGroupID");
       
       $master = $this->getTableAlias($this->tableName);
-      $this->innerJoin($master, "{$master}.ID = {$masterGroups}.ID");
+      $this->innerJoin($master, "{$master}.ID = {$masterGroups}.OriginalID");
       
       $this->joinSubclassTables($this->objectName, $master);
       
