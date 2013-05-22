@@ -131,20 +131,21 @@ class View extends DataObject {
     */
    private function getResultsOffset() {
       $offset = 0;
-      
+
       $controller = Controller::curr();
       if (!$controller)
          return $offset;
-      
+
       $request = $controller->getRequest();
       if (!$request)
          return $offset;
-      
+
       $startParam = $request->getVar($this->paginationURLParam);
       if(!$startParam)
          return $offset;
-      
-      $offset = is_numeric($startParam) ? ((int)$startParam) : $offset;
+
+      // use max(0, $offset) to avoid potential for negative numbers
+      $offset = max(0, (is_numeric($startParam) ? ((int)$startParam) : $offset));
       return $offset;
    }
 
