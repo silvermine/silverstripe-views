@@ -103,6 +103,7 @@ class QueryBuilder {
    private $offset = 0;
    
    private $tableAliasCount = 0;
+   private $subclassTablesJoined = false;
    
    
    /**
@@ -292,23 +293,32 @@ class QueryBuilder {
     * @return SS_List
     */
    private function fetchObjects() {
+      $this->joinSubclassTables($this->objectName, $this->tableNameAlias);
+
       $dl = new DataList($this->objectName);
 
       foreach ($this->joins as $join) {
          $table = $this->aliases[$join['alias']]; // gets the base table name
          $table = self::get_table_name($table);   // gets the versioned table name
          $joinFunction = $join['type'] == self::JOIN_TYPE_INNER ? 'innerJoin' : 'leftJoin';
-         $dl = $dl->$joinFunction($table, $join['clause'], $join['alias']);
+         $clause = $this->replaceTableNamesWithAliases($join['clause']);
+         $dl = $dl->$joinFunction($table, $clause, $join['alias']);
       }
 
-      $dl = $dl->where(implode("\n", $this->wheres));
+      $dl = $dl->where($this->replaceTableNamesWithAliases(implode("\n", $this->wheres)));
 
-      $dl = $dl->sort(implode(", ", $this->sorts));
+      $dl = $dl->sort($this->replaceTableNamesWithAliases(implode(", ", $this->sorts)));
 
       if ($this->limit || $this->offset) {
          $dl = $dl->limit($this->limit, $this->offset);
       }
 
+      $request = array();
+      if (($cont = Controller::curr()) && $cont->getRequest()) {
+         $request = $cont->getRequest();
+      }
+
+      $dl = new PaginatedList($dl, $request);
       return $dl;
    }
    
@@ -383,6 +393,16 @@ class QueryBuilder {
       }
       
       // Prepend Aliases
+      foreach ($parts as $key => $sql) {
+         $parts[$key] = $this->replaceTableNamesWithAliases($sql);
+      }
+
+      $parts['complete'] = $this->assembleSQL($parts);
+
+      return $parts;
+   }
+
+   private function replaceTableNamesWithAliases($sql) {
       $aliases = $this->aliases;
       $callback = function($match) use ($aliases) {
          $tableName = $match[1];
@@ -395,15 +415,8 @@ class QueryBuilder {
          return "{$alias}.";
       };
       
-      foreach ($parts as $key => &$sql) {
-         $sql = preg_replace_callback("/\"([\w]+)\"\./", $callback, $sql);
-      }
-
-      $parts['complete'] = $this->assembleSQL($parts);
-
-      return $parts;
+      return preg_replace_callback("/\"([\w]+)\"\./", $callback, $sql);
    }
-   
    
    /**
     * Creates a unique alias for a table.  This alias can be used as the first
@@ -448,6 +461,10 @@ class QueryBuilder {
     * @param string $parentAlias Alias of the parent table
     */
    private function joinSubclassTables($class, $parentAlias) {
+      if ($this->subclassTablesJoined) {
+         return;
+      }
+
       $classes = ClassInfo::dataClassesFor($class);
       $baseClass = array_shift($classes);
       
@@ -457,6 +474,7 @@ class QueryBuilder {
          $clause = "{$alias}.ID = {$parentAlias}.ID";
          $this->addJoin(self::JOIN_TYPE_LEFT_OUTER, $alias, $clause);
       }
+      $this->subclassTablesJoined = true;
    }
     
     
