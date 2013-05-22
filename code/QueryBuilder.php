@@ -125,7 +125,7 @@ class QueryBuilder {
       $defaultStage = 'Stage';
       $suffix = '';
       $versioned = ClassInfo::exists($tableName) &&
-         ClassInfo::is_subclass_of($tableName, 'DataObject') &&
+         is_subclass_of($tableName, 'DataObject') &&
          singleton($tableName)->hasExtension('Versioned');
       
       if ($versioned && Versioned::current_stage() && (Versioned::current_stage() == Versioned::get_live_stage())) {
