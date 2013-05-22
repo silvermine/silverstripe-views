@@ -81,7 +81,10 @@ class QueryBuilder {
    
    const MODE_SELECT_OBJECTS = 'select-objects';
    const MODE_SELECT_COLUMNS = 'select-columns';
-   
+
+   const JOIN_TYPE_LEFT_OUTER = 'LEFT OUTER';
+   const JOIN_TYPE_INNER = 'INNER';
+
    const START_COMPOUND = '(';
    const END_COMPOUND = ')';
    
@@ -170,7 +173,7 @@ class QueryBuilder {
     * Internal implementation function for adding a join of any type to the
     * internal joins data structure.
     *
-    * @param string $type the type of join (i.e. 'INNER', 'LEFT OUTER', etc)
+    * @param string $type the type of join (i.e. self::JOIN_TYPE_*, etc)
     * @param string $tableAlias the alias of the table that is being joined to
     * @param string $joinClause the clause used to join the table to others
     */
@@ -245,13 +248,12 @@ class QueryBuilder {
     * @return SS_List the results of your query
     */
    public function execute() {
-      $sql = $this->getSQLParts();
-      
       if ($this->mode == self::MODE_SELECT_COLUMNS) {
+         $sql = $this->getSQLParts();
          return $this->fetchColumns($sql);
       }
-      
-      return $this->fetchObjects($sql);
+
+      return $this->fetchObjects();
    }
    
    
@@ -262,9 +264,8 @@ class QueryBuilder {
     * @return SS_List
     */
    private function fetchColumns($parts) {
-      $sql = $this->assembleSQL($parts);
-      $query = DB::query($sql);
-      
+      $query = DB::query($parts['complete']);
+
       $columns = array();
       foreach ($this->columns as $col) {
          $split = explode('.', $col);
@@ -290,15 +291,25 @@ class QueryBuilder {
     * @param array $parts SQL Parts
     * @return SS_List
     */
-   private function fetchObjects($sql) {
-      $results = DataObject::get(
-         $this->objectName, 
-         $sql['wheres'],
-         $sql['sorts'], 
-         $sql['joins'], 
-         $sql['limit']);
-      
-      return $results;
+   private function fetchObjects() {
+      $dl = new DataList($this->objectName);
+
+      foreach ($this->joins as $join) {
+         $table = $this->aliases[$join['alias']]; // gets the base table name
+         $table = self::get_table_name($table);   // gets the versioned table name
+         $joinFunction = $join['type'] == self::JOIN_TYPE_INNER ? 'innerJoin' : 'leftJoin';
+         $dl = $dl->$joinFunction($table, $join['clause'], $join['alias']);
+      }
+
+      $dl = $dl->where(implode("\n", $this->wheres));
+
+      $dl = $dl->sort(implode(", ", $this->sorts));
+
+      if ($this->limit || $this->offset) {
+         $dl = $dl->limit($this->limit, $this->offset);
+      }
+
+      return $dl;
    }
    
    
@@ -387,7 +398,9 @@ class QueryBuilder {
       foreach ($parts as $key => &$sql) {
          $sql = preg_replace_callback("/\"([\w]+)\"\./", $callback, $sql);
       }
-      
+
+      $parts['complete'] = $this->assembleSQL($parts);
+
       return $parts;
    }
    
@@ -423,7 +436,7 @@ class QueryBuilder {
     */
    public function innerJoin($tableAlias, $joinClause) {
       $this->verifyConfiguredFor(self::ACTION_ADD_ANYTHING);
-      $this->addJoin('INNER', $tableAlias, $joinClause);
+      $this->addJoin(self::JOIN_TYPE_INNER, $tableAlias, $joinClause);
       return $this;
    }
    
@@ -442,7 +455,7 @@ class QueryBuilder {
          $table = self::get_table_name($class);
          $alias = $this->getTableAlias($table);
          $clause = "{$alias}.ID = {$parentAlias}.ID";
-         $this->addJoin("LEFT", $alias, $clause);
+         $this->addJoin(self::JOIN_TYPE_LEFT_OUTER, $alias, $clause);
       }
    }
     
@@ -461,7 +474,7 @@ class QueryBuilder {
     */
    public function leftJoin($tableAlias, $joinClause) {
       $this->verifyConfiguredFor(self::ACTION_ADD_ANYTHING);
-      $this->addJoin('LEFT OUTER', $tableAlias, $joinClause);
+      $this->addJoin(self::JOIN_TYPE_LEFT_OUTER, $tableAlias, $joinClause);
       return $this;
    }
    

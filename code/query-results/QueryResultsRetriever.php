@@ -33,18 +33,13 @@ class QueryResultsRetriever extends ViewResultsRetriever {
          return 0;
       }
       
-      $columns = array("COUNT(*)");
-      $qb = $this->getQuery($root, $columns);
+      $qb = $this->getQuery($root);
       
       Translatable::disable_locale_filter();
       $results = $qb->execute();
       Translatable::enable_locale_filter();
-      
-      if (empty($results))
-         return 0;
-      
-      $count = (int)$results->First()->getField("COUNT(*)");
-      return $count;
+
+      return $results->count();
    }
 
    /**
@@ -69,31 +64,25 @@ class QueryResultsRetriever extends ViewResultsRetriever {
     * Return an instance of QueryBuilder set up using the given query predicate
     * 
     * @param QueryPredicate $queryPredicate
-    * @param array $columns Optional. Columns to retrieve from the Query
     * @return QueryBuilder
     */
-   private function &getQuery($queryPredicate, $columns = null) {
+   private function &getQuery($queryPredicate) {
       $qb = new QueryBuilder();
-      
-      if (is_array($columns)) {
-         $vernSiteTree = $qb->selectColumns('SiteTree');
-         $qb->addColumns($columns);
-      } else {
-         $vernSiteTree = $qb->selectObjects('SiteTree');
-      }
-      
+
+      $vernSiteTree = $qb->selectObjects('SiteTree');
+
       $locale = $this->getTransformedResultsLocale();
       if($this->isTranslatable() && $locale) {
          $qb->translateResults($locale);
       }
-      
+
       $queryPredicate->updateQuery($qb, true);
-      
+
       $sorts = $this->Sorts();
       foreach ($sorts as $sort) {
          $sort->updateQuery($qb);
       }
-      
+
       return $qb;
    }
    

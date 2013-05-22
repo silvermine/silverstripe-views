@@ -230,7 +230,9 @@ class View extends DataObject {
 
       if ($results) {
          $results->setPaginationGetVar($this->paginationURLParam);
-         $results->setPageLimits($offset, $limit, $retriever->count());
+         $results->setPageLength($limit);
+         $results->setPageStart($offset);
+         $results->setTotalItems($results->count());
       }
 
       return $results;
