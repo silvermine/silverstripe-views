@@ -267,7 +267,8 @@ class QueryBuilder {
       
       $columns = array();
       foreach ($this->columns as $col) {
-         $columns[] = array_pop(explode('.', $col));
+         $split = explode('.', $col);
+         $columns[] = array_pop($split);
       }
       
       $rows = array();
@@ -375,7 +376,8 @@ class QueryBuilder {
       $callback = function($match) use ($aliases) {
          $tableName = $match[1];
          $tableName = QueryBuilder::get_table_name($tableName);
-         $alias = end(array_keys($aliases, $tableName));
+         $keys = array_keys($aliases, $tableName);
+         $alias = end($keys);
          if (!$alias)
             return $match[0];
          

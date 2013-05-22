@@ -241,7 +241,8 @@ class ViewHost extends DataExtension {
             $master = $this->owner->getTranslation($defaultLocale);
             if ($master && $master->hasExtension('ViewHost')) {
                $incremented = true;
-               $continue = $this->filterViews($master, $callback, $views, ++$level);
+               $level++;
+               $continue = $this->filterViews($master, $callback, $views, $level);
             }
          }
       }
@@ -254,7 +255,8 @@ class ViewHost extends DataExtension {
       if ($continue && $this->owner->hasExtension('Hierarchy') && $this->owner->ParentID && ($parent = $this->owner->Parent()) && $parent->hasExtension('ViewHost')) {
          $ext = $parent->getExtensionInstance('ViewHost');
          $ext->setOwner($parent);
-         $ext->traverseViews($callback, $includeDefaultLocale, false, $views, ++$level, $continue);
+         $level++;
+         $ext->traverseViews($callback, $includeDefaultLocale, false, $views, $level, $continue);
       }
 
       // ATTEMPT 4: try to get global view from the SiteConfig object
