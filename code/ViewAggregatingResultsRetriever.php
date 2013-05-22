@@ -137,7 +137,7 @@ class ViewAggregatingResultsRetriever extends ViewResultsRetriever {
     * @see ViewResultsRetriever->resultsImpl()
     */
    protected function resultsImpl($offset, $limit) {
-      $all = new DataObjectSet(array());
+      $all = new ArrayList(array());
       foreach ($this->Views() as $view) {
          $results = $view->Results();
          if ($results) {
@@ -154,7 +154,7 @@ class ViewAggregatingResultsRetriever extends ViewResultsRetriever {
       }
       
       if ($offset || $limit) {
-         $all = new DataObjectSet(array_slice($all->toArray(), $offset, $limit));
+         $all = new ArrayList(array_slice($all->toArray(), $offset, $limit));
       }
       
       return $all;

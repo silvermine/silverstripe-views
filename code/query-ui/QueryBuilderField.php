@@ -461,7 +461,7 @@ class QueryBuilderField extends FormField {
             return null;
          
          $property = $obj->$name();
-         if ($property instanceof DataObjectSet) {
+         if ($property instanceof SS_List) {
             $output = array();
             foreach ($property as $child)
                $output[] = $field->buildObjectStructure($child);

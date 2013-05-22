@@ -239,10 +239,10 @@ class QueryBuilder {
    
    /**
     * Execute the query that you have built and return the results as a
-    * DataObjectSet.  A DOS is returned regardless of whether you are selecting
+    * SS_List.  An SS_List is returned regardless of whether you are selecting
     * columns or objects.
     *
-    * @return DataObjectSet the results of your query
+    * @return SS_List the results of your query
     */
    public function execute() {
       $sql = $this->getSQLParts();
@@ -259,7 +259,7 @@ class QueryBuilder {
     * Run a query and retrieve specific columns from the result
     * 
     * @param array $parts SQL Parts
-    * @return DataObjectSet
+    * @return SS_List
     */
    private function fetchColumns($parts) {
       $sql = $this->assembleSQL($parts);
@@ -280,15 +280,15 @@ class QueryBuilder {
          $rows[] = $row;
       }
       
-      return new DataObjectSet($rows);
+      return new ArrayList($rows);
    }
    
    
    /**
-    * Run a query and retreive a DataObjectSet full of DataObjects
+    * Run a query and retreive an SS_List full of DataObjects
     * 
     * @param array $parts SQL Parts
-    * @return DataObjectSet
+    * @return SS_List
     */
    private function fetchObjects($sql) {
       $results = DataObject::get(

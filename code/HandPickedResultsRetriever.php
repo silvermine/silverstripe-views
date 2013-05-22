@@ -140,7 +140,7 @@ class HandPickedResultsRetriever extends ViewResultsRetriever {
     * Override the default Pages implementation to sort the pages in the
     * correct sort order (based on the many_many_extraFields column).
     *
-    * @return DataObjectSet or null the pages associated with this results retriever
+    * @return SS_List or null the pages associated with this results retriever
     */
    public function Pages() {
       return parent::Pages(null, 'SortOrder ASC');

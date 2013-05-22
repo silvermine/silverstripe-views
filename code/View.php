@@ -215,7 +215,7 @@ class View extends DataObject {
     * Helper function for templates so they can call the Results function from
     * the view itself without having to get the results retriever as well.
     *
-    * @return DataObjectSet the results in the current locale or null if none found
+    * @return SS_List the results in the current locale or null if none found
     */
    public function Results() {
       $offset = $this->getResultsOffset();

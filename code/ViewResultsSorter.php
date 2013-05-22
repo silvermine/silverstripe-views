@@ -12,14 +12,14 @@ class ViewResultsSorter extends DataObject {
 
    /**
     * All subclasses should implement this function.
-    * Sorts the given DataObjectSet of results, returning that DOS
+    * Sorts the given SS_List of results, returning that DOS
     * or a new one if necessary.
     *
-    * @param DataObjectSet &$results the results to sort
-    * @return DataObjectSet the sorted results
+    * @param SS_List &$results the results to sort
+    * @return SS_List the sorted results
     */
-   public function sort(DataObjectSet &$results) {
-      throw new Exception(get_class($this) . ' must implement ViewResultsSorter->sort(DataObjectSet)');
+   public function sort(SS_List &$results) {
+      throw new Exception(get_class($this) . ' must implement ViewResultsSorter->sort(SS_List)');
    }
 
    /**
