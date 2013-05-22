@@ -51,7 +51,7 @@ class TaxonomyTermPredicate extends QueryPredicate {
    /**
     * @see QueryResultsRetriever#getReadOnlySummary
     */
-   public function getReadOnlySummaryImpl() {
+   public function getReadOnlySummaryImpl($linePrefix = '') {
       $term = $this->Term();
 
       if($this->Inclusive) {

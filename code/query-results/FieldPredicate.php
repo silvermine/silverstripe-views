@@ -80,7 +80,7 @@ class FieldPredicate extends QueryPredicate {
    /**
     * @see QueryResultsRetriever#getReadOnlySummary
     */
-   public function getReadOnlySummaryImpl() {
+   public function getReadOnlySummaryImpl($linePrefix = '') {
       return $this->buildWhere(false);
    }
 
