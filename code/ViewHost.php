@@ -1,7 +1,7 @@
 <?php
 
 /**
- * A ViewHost is a DataObjectDecorator that can be added to DataObjects to
+ * A ViewHost is a DataExtension that can be added to DataObjects to
  * allow them to have view definitions added to them.  With the default module
  * configuration all SiteTree nodes have the ViewHost DOD added to them.
  *
@@ -10,7 +10,7 @@
  * @package silverstripe-views
  * @subpackage code
  */
-class ViewHost extends DataObjectDecorator {
+class ViewHost extends DataExtension {
 
    const TRAVERSAL_LEVEL_OWNER = 1;
    const TRAVERSAL_LEVEL_OWNER_DEFAULT_LOCALE = 2;
@@ -20,6 +20,10 @@ class ViewHost extends DataObjectDecorator {
    const TRAVERSAL_LEVEL_SITE_CONFIG = 20000;
    const TRAVERSAL_LEVEL_DEFAULT_LOCALE_SITE_CONFIG = 20001;
 
+   static $has_one = array(
+      'ViewCollection' => 'ViewCollection',
+   );
+
    /**
     * This function is called by ContentController while it is initalizing
     * itself and is used to include the RSS links in the head of the page for
@@ -27,17 +31,6 @@ class ViewHost extends DataObjectDecorator {
     */
    public function contentcontrollerInit($controller) {
       $this->includeRSSAutoLinkTags();
-   }
-
-   /**
-    * @see DataObjectDecorator->extraStatics()
-    */
-   function extraStatics() {
-      return array(
-         'has_one' => array(
-            'ViewCollection' => 'ViewCollection',
-         ),
-      );
    }
 
    /**
@@ -296,9 +289,9 @@ class ViewHost extends DataObjectDecorator {
    }
 
    /**
-    * @see DataObjectDecorator->updateCMSFields()
+    * @see DataExtension->updateCMSFields()
     */
-   public function updateCMSFields(FieldSet &$fields) {
+   public function updateCMSFields(FieldList $fields) {
       // TODO: make this show more than 10 results (it's paginated)
       // TODO: make this not show the checkboxes since we're limiting it to the views on this page
       $viewCollection = $this->owner->ViewCollection();
