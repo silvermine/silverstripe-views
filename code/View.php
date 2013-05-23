@@ -220,15 +220,19 @@ class View extends DataObject {
    public function Results() {
       $offset = $this->getResultsOffset();
       $limit = $this->getResultsLimit();
-      
-      $retreiver = $this->ResultsRetriever();
-      $results = $retreiver->results($offset, $limit);
-      
+
+      $retriever = $this->ResultsRetriever();
+
+      if (self::$reset_pagination_for_bad_value && $offset >= $retriever->count()) {
+         $offset = 0;
+      }
+      $results = $retriever->results($offset, $limit);
+
       if ($results) {
          $results->setPaginationGetVar($this->paginationURLParam);
-         $results->setPageLimits($offset, $limit, $retreiver->count());
+         $results->setPageLimits($offset, $limit, $retriever->count());
       }
-      
+
       return $results;
    }
    
