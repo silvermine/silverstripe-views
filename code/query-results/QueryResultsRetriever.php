@@ -92,7 +92,7 @@ class QueryResultsRetriever extends ViewResultsRetriever {
     * @return bool
     */
    private function isTranslatable() {
-      return Object::has_extension('SiteTree', 'Translatable');
+      return SiteTree::has_extension('Translatable');
    }
    
    /**

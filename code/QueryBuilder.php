@@ -620,9 +620,11 @@ class QueryBuilder {
     * @return string Table Alias of non-translated version of primary table
     */
    public function translateResults($locale) {
-      if (!Object::has_extension($this->objectName, 'Translatable'))
+      $hasExt = call_user_func($this->objectName . '::has_extension', 'Translatable');
+      if (!$hasExt) {
          user_error("Class {$objectName} is not translatable", E_USER_ERROR);
-      
+      }
+
       $groupTableName = $this->objectName . '_translationgroups';
       
       $vernacularGroups = $this->getTableAlias($groupTableName);

@@ -101,7 +101,7 @@ class HandPickedResultsRetriever extends ViewResultsRetriever {
     * Returns true if Pages can be translated
     */
    private function isTranslatable() {
-      return Object::has_extension(self::$many_many['Pages'], 'Translatable');
+      return call_user_func(self::$many_many['Pages'] . '::has_extension', 'Translatable');
    }
    
    /**
