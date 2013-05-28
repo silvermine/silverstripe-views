@@ -63,10 +63,11 @@ class ViewAggregatingResultsRetriever extends ViewResultsRetriever {
     */
    public function count() {
       $count = 0;
-      
+
       foreach ($this->Views() as $view) {
          $count += $view->Results()->Count();
       }
+      return $count;
    }
 
    /**
