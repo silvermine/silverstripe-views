@@ -88,8 +88,6 @@ class HandPickedResultsRetriever extends ViewResultsRetriever {
       $join = sprintf("{$pages}.HandPickedResultsRetrieverID = %d AND {$pages}.SiteTreeID = {$masterSiteTree}.ID", $id);
       $qb->innerJoin($pages, $join);
       
-      $qb->joinSubclassTables(self::$many_many['Pages'], $masterSiteTree);
-      
       $qb->orderby("{$pages}.SortOrder", $ascending = true);
       
       return $qb;

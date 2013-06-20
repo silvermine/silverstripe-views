@@ -432,7 +432,7 @@ class QueryBuilder {
     * @param string $class Name of a DataObject Class
     * @param string $parentAlias Alias of the parent table
     */
-   public function joinSubclassTables($class, $parentAlias) {
+   private function joinSubclassTables($class, $parentAlias) {
       $classes = ClassInfo::dataClassesFor($class);
       $baseClass = array_shift($classes);
       
@@ -600,6 +600,8 @@ class QueryBuilder {
       
       $master = $this->getTableAlias($this->tableName);
       $this->innerJoin($master, "{$master}.ID = {$masterGroups}.OriginalID");
+      
+      $this->joinSubclassTables($this->objectName, $master);
       
       $this->where(sprintf("{$this->tableNameAlias}.Locale = '%s'", Convert::raw2sql($locale)));
       
