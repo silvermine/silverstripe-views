@@ -84,7 +84,8 @@ class QueryResultsRetriever extends ViewResultsRetriever {
       
       $locale = $this->getTransformedResultsLocale();
       if($this->isTranslatable() && $locale) {
-         $qb->translateResults($locale);
+         $masterSiteTree = $qb->translateResults($locale);
+         $qb->joinSubclassTables(self::$many_many['Pages'], $masterSiteTree);
       }
       
       $queryPredicate->updateQuery($qb, true);
