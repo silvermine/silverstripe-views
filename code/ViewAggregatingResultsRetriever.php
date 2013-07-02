@@ -145,7 +145,10 @@ class ViewAggregatingResultsRetriever extends ViewResultsRetriever {
          }
       }
       
-      $all->removeDuplicates($this->DeDupeFieldName);
+      if ($this->DeDupeFieldName) {
+         $all->removeDuplicates($this->DeDupeFieldName);
+      }
+      
       if ($this->Sorter()) {
          $all = $this->Sorter()->sort($all);
       }
