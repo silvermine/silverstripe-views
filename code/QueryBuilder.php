@@ -293,8 +293,6 @@ class QueryBuilder {
     * @return SS_List
     */
    private function fetchObjects() {
-      $this->joinSubclassTables($this->objectName, $this->tableNameAlias);
-
       $dl = DataList::create($this->objectName);
 
       foreach ($this->joins as $join) {
@@ -555,9 +553,9 @@ class QueryBuilder {
       $this->objectName = $from;
       $this->tableName = $resolveTableName ? self::get_table_name($from) : $from;
       $this->tableNameAlias = $this->getTableAlias($this->tableName);
-      
+
       $this->joinSubclassTables($from, $this->tableNameAlias);
-      
+
       $this->columns = array();
       
       return $this->tableNameAlias;
@@ -586,7 +584,9 @@ class QueryBuilder {
       $this->objectName = $objectName;
       $this->tableNameAlias = self::get_table_name($objectName);
       $this->tableName = $this->tableNameAlias;
-      
+
+      $this->joinSubclassTables($this->objectName, $this->tableNameAlias);
+
       return $this->tableNameAlias;
    }
    
