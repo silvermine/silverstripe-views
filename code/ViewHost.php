@@ -260,7 +260,7 @@ class ViewHost extends DataExtension {
       }
 
       // ATTEMPT 4: try to get global view from the SiteConfig object
-      if ($continue && $includeSiteConfig && singleton('SiteConfig')->hasExtension('Viewhost')) {
+      if ($continue && $includeSiteConfig && singleton('SiteConfig')->hasExtension('ViewHost')) {
          if (singleton('SiteConfig')->hasExtension('Translatable') && $this->owner->hasExtension('Translatable')) {
             $config = $this->getSiteConfig($this->owner->Locale);
             if ($config) {
