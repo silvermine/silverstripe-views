@@ -64,10 +64,8 @@ class QueryPredicate extends DataObject {
    protected function onBeforeDelete() {
       parent::onBeforeDelete();
       $conditions = $this->PredicateConditions();
-      if ($conditions) {
-         foreach ($conditions as $condition) {
-            $condition->delete();
-         }
+      foreach ($conditions as $condition) {
+         $condition->delete();
       }
    }
 

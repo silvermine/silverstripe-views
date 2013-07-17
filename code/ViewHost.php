@@ -157,7 +157,7 @@ class ViewHost extends DataExtension {
       }
 
       $results = $view->Results();
-      return is_null($results) ? false : ($results->Count() > 0);
+      return $results->exists();
    }
 
    /**
@@ -320,14 +320,12 @@ class ViewHost extends DataExtension {
    public function Views() {
       $coll = $this->owner->ViewCollection();
       if (is_null($coll)) {
-         return null;
+         return new ArrayList(array());
       }
 
       $views = $coll->Views();
-      if ($views) {
-         foreach ($views as $view) {
-            $view->setOwner($this->owner);
-         }
+      foreach ($views as $view) {
+         $view->setOwner($this->owner);
       }
       return $views;
    }

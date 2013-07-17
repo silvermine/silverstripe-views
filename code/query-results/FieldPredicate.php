@@ -92,10 +92,8 @@ class FieldPredicate extends QueryPredicate {
    protected function onBeforeDelete() {
       parent::onBeforeDelete();
       $values = $this->Values();
-      if ($values) {
-         foreach ($values as $value) {
-            $value->delete();
-         }
+      foreach ($values as $value) {
+         $value->delete();
       }
    }
 

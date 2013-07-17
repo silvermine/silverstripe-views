@@ -88,9 +88,6 @@ class HandPickedResultsRetriever extends ViewResultsRetriever {
    public function getReadOnlySummary() {
       $html = '';
       $results = $this->Results();
-      if ($results == null) {
-         return $html;
-      }
       foreach($results as $page) {
          $html .= '&nbsp;&nbsp;&nbsp;&nbsp;' . _t('Views.PageRef', 'Page reference') . ': [' . $page->ID . '] ' . $page->Title . '<br />';
       }

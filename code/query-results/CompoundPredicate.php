@@ -44,10 +44,8 @@ class CompoundPredicate extends QueryPredicate {
    protected function onBeforeDelete() {
       parent::onBeforeDelete();
       $predicates = $this->Predicates();
-      if ($predicates) {
-         foreach ($predicates as $predicate) {
-            $predicate->delete();
-         }
+      foreach ($predicates as $predicate) {
+         $predicate->delete();
       }
    }
 

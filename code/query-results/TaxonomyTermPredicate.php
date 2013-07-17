@@ -30,22 +30,22 @@ class TaxonomyTermPredicate extends QueryPredicate {
     */
    public static function get_term_input_type() {
       $options = array();
-      
-      $terms = VocabularyTerm::get(
-         'VocabularyTerm', 
-         '', 
-         $sort = '"Vocabulary".MachineName ASC, "VocabularyTerm".MachineName ASC', 
-         $join = 'JOIN "Vocabulary" ON "Vocabulary".ID = "VocabularyTerm".VocabularyID');
-      
+
+      $terms = VocabularyTerm::get()
+         ->innerJoin('Vocabulary', '"Vocabulary".ID = "VocabularyTerm".VocabularyID')
+         ->sort('"Vocabulary".MachineName ASC, "VocabularyTerm".MachineName ASC')
+      ;
+
       foreach ($terms as $term) {
          $repr = "{$term->Vocabulary()->MachineName}.{$term->MachineName}";
          $options[$repr] = $repr;
       }
-      
+
       return array(
          'type' => 'select',
          'default' => '',
-         'options' => $options);
+         'options' => $options
+      );
    }
 
    /**

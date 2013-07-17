@@ -67,10 +67,8 @@ class CompoundPredicateCondition extends PredicateCondition {
    protected function onBeforeDelete() {
       parent::onBeforeDelete();
       $conditions = $this->Conditions();
-      if ($conditions) {
-         foreach ($conditions as $condition) {
-            $condition->delete();
-         }
+      foreach ($conditions as $condition) {
+         $condition->delete();
       }
    }
 }

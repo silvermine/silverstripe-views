@@ -105,10 +105,8 @@ class QueryResultsRetriever extends ViewResultsRetriever {
       parent::onBeforeDelete();
       $this->RootPredicate()->delete();
       $sorts = $this->Sorts();
-      if ($sorts) {
-         foreach ($sorts as $sort) {
-            $sort->delete();
-         }
+      foreach ($sorts as $sort) {
+         $sort->delete();
       }
    }
 
@@ -135,11 +133,7 @@ class QueryResultsRetriever extends ViewResultsRetriever {
    }
 
    public function Sorts() {
-      $sorts = parent::Sorts();
-      if ($sorts) {
-         $sorts->sort('ID');
-      }
-      return $sorts;
+      return parent::Sorts()->sort('ID');
    }
 }
 

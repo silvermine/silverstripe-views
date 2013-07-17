@@ -112,9 +112,9 @@ class ViewResultsRetriever extends DataObject {
     */
    public function results($offset = 0, $limit = 1000) {
       $results = $this->resultsImpl($offset, $limit);
-      
-      $results = (!$results || empty($results)) ? null : $results;
-
+      // this is basically just here in case any results retrievers have a faulty implementation
+      // of resultsImpl that doesn't return a list of some sort:
+      $results = (!$results || empty($results)) ? new ArrayList(array()) : $results;
       return $results;
    }
 

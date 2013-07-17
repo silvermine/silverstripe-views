@@ -29,11 +29,8 @@ class ViewCollection extends DataObject {
     */
    protected function onBeforeDelete() {
       parent::onBeforeDelete();
-      $views = $this->Views();
-      if ($views) {
-         foreach ($views as $view) {
-            $view->delete();
-         }
+      foreach ($this->Views() as $view) {
+         $view->delete();
       }
    }
 }

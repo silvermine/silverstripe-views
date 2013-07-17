@@ -63,10 +63,8 @@ class ViewAggregatingResultsRetriever extends ViewResultsRetriever {
     */
    public function count() {
       $count = 0;
-
       foreach ($this->Views() as $view) {
-         $results = $view->Results();
-         $count += $results ? $results->Count() : 0;
+         $count += $$view->Results()->Count();
       }
       return $count;
    }
@@ -100,7 +98,7 @@ class ViewAggregatingResultsRetriever extends ViewResultsRetriever {
             'fields' => array('ID' => $view->ID)
          );
       }
-      
+
       return $viewIDs;
    }
 
@@ -139,24 +137,21 @@ class ViewAggregatingResultsRetriever extends ViewResultsRetriever {
    protected function resultsImpl($offset, $limit) {
       $all = new ArrayList(array());
       foreach ($this->Views() as $view) {
-         $results = $view->Results();
-         if ($results) {
-            $all->merge($results);
-         }
+         $all->merge($view->Results());
       }
-      
+
       if ($this->DeDupeFieldName) {
          $all->removeDuplicates($this->DeDupeFieldName);
       }
-      
+
       if ($this->SorterID) {
          $all = $this->Sorter()->sort($all);
       }
-      
+
       if ($offset || $limit) {
          $all = new ArrayList(array_slice($all->toArray(), $offset, $limit));
       }
-      
+
       return $all;
    }
 
@@ -165,6 +160,5 @@ class ViewAggregatingResultsRetriever extends ViewResultsRetriever {
     */
    public function updateCMSFields(&$view, &$fields) {
       parent::updateCMSFields($view, $fields);
-      // TODO: implement
    }
 }

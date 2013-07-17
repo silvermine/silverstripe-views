@@ -295,7 +295,7 @@ class QueryBuilder {
    private function fetchObjects() {
       $this->joinSubclassTables($this->objectName, $this->tableNameAlias);
 
-      $dl = new DataList($this->objectName);
+      $dl = DataList::create($this->objectName);
 
       foreach ($this->joins as $join) {
          $table = $this->aliases[$join['alias']]; // gets the base table name
