@@ -32,6 +32,7 @@ class AddViewFormPopup extends ComplexTableField_Popup {
          $fields->addFieldToTab('Root.Main', $retrieverType);
 
          // and override the actions to use our custom function addView (rather than standard save behavior)
+         // TODO: SS3.1
          $this->setActions(new FieldSet(new FormAction('addView', _t('Views.Add.Label', 'Add View'))));
       }
    }

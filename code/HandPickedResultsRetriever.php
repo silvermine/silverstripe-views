@@ -153,6 +153,7 @@ class HandPickedResultsRetriever extends ViewResultsRetriever {
     */
    public function updateCMSFields(&$view, &$fields) {
       parent::updateCMSFields($view, $fields);
+      /* TODO SS3.1 ADMIN ... replacement for this
       $picker = new ManyManyPickerField(
          $view,
          'ResultsRetriever.Pages',
@@ -164,6 +165,7 @@ class HandPickedResultsRetriever extends ViewResultsRetriever {
          )
       );
       $fields->addFieldToTab('Root.Main', $picker);
+      */
    }
 }
 

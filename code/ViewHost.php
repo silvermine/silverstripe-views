@@ -297,6 +297,7 @@ class ViewHost extends DataExtension {
       // TODO: make this show more than 10 results (it's paginated)
       // TODO: make this not show the checkboxes since we're limiting it to the views on this page
       $viewCollection = $this->owner->ViewCollection();
+      /* TODO SS3.1 ADMIN - replacement for this
       $viewsTable = new HasManyComplexTableField(
          $viewCollection,
          'Views',
@@ -312,6 +313,7 @@ class ViewHost extends DataExtension {
       $viewsTable->popupClass = 'AddViewFormPopup';
 
       $fields->addFieldToTab('Root.Views', $viewsTable);
+      */
    }
 
    /**
