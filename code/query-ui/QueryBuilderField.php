@@ -144,8 +144,8 @@ class QueryBuilderField extends FormField {
       
       if ($prop == 'many_many' && !QueryBuilderField::traverse_many_many_relationship($cls))
          return array();
-      
-      return $cls::$$prop ?: array();
+
+      return Config::inst()->get($cls, $prop) ?: array();
    }
    
    
@@ -167,7 +167,8 @@ class QueryBuilderField extends FormField {
       }
       
       $type = '';
-      $default = isset($cls::$defaults[$name]) ? $cls::$defaults[$name] : '';
+      $defaults = Config::inst()->get($cls, 'defaults');
+      $default = isset($defaults[$name]) ? $defaults[$name] : '';
       $options = array();
       
       switch (true) {
@@ -389,7 +390,8 @@ class QueryBuilderField extends FormField {
     * @return bool
     */
    public static function traverse_has_many_relationship($cls) {
-      return !empty($cls::$has_many);
+      $relation = Config::inst()->get($cls, 'has_many');
+      return !empty($relation);
    }
    
    
@@ -403,8 +405,10 @@ class QueryBuilderField extends FormField {
    public static function traverse_has_one_relationship($cls) {
       if (is_object($cls))
          $cls = get_class($cls);
-      
-      return !empty($cls::$has_one) && isset($cls::$traverse_has_one) && $cls::$traverse_has_one;
+
+      $relation = Config::inst()->get($cls, 'has_one');
+      $traverse = Config::inst()->get($cls, 'traverse_has_one');
+      return !empty($relation) && !empty($traverse) && $traverse;
    }
    
    
@@ -419,7 +423,8 @@ class QueryBuilderField extends FormField {
       if (is_object($cls))
          $cls = get_class($cls);
       
-      return in_array($cls, array('ViewAggregatingResultsRetriever')) && !empty($cls::$many_many);
+      $relation = Config::inst()->get($cls, 'many_many');
+      return in_array($cls, array('ViewAggregatingResultsRetriever')) && !empty($relation);
    }
    
    
@@ -533,7 +538,7 @@ class QueryBuilderField extends FormField {
          'class' => 'viewsQueryBuilderRepr',
          'name' => $this->name,
          'value' => $this->value,
-         'tabindex' => $this->getTabIndex()
+         'tabindex' => $this->getAttribute('tabindex')
       );
       
       return $this->createTag('input', $hiddenAttributes);
@@ -572,7 +577,7 @@ class QueryBuilderField extends FormField {
    /**
     * {@link FormField::Field()}
     */
-   public function Field() {
+   public function Field($properties = array()) {
       if ($this->readonly) {
          return $this->getReadOnlySummary();
       }

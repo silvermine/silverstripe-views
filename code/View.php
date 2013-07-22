@@ -66,7 +66,7 @@ class View extends DataObject {
     * @see DataObject->getCMSFields()
     */
    function getCMSFields() {
-      $fields = new FieldSet(
+      $fields = new FieldList(
          new TabSet('Root',
             new Tab('Main',
                new TextField('Name', _t('Views.Name.Label', 'Name')),

@@ -139,7 +139,7 @@ class ViewResultsRetriever extends DataObject {
     * what the user uses to modify this results retriever.
     *
     * @param View reference to the view that contains this results retriever
-    * @param FieldSet the fields for this view form
+    * @param FieldList the fields for this view form
     */
    public function updateCMSFields(&$view, &$fields) {
       $editor = new QueryBuilderField(

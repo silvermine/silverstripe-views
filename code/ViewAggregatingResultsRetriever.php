@@ -35,11 +35,11 @@ class ViewAggregatingResultsRetriever extends ViewResultsRetriever {
    public static function augment_types(&$structure) {
       $options = array();
       
-      $views = View::get(
-         'View', 
-         '', 
-         $sort = '"View".Name ASC', 
-         $join = 'JOIN "ViewCollection" ON "ViewCollection".ID = "View".ViewCollectionID JOIN "SiteTree" ON "SiteTree".ViewCollectionID = "ViewCollection".ID');
+      $views = View::get()
+         ->innerJoin('ViewCollection', '"ViewCollection".ID = "View".ViewCollectionID')
+         ->innerJoin('SiteTree', '"SiteTree".ViewCollectionID = "ViewCollection".ID')
+         ->sort('"View".Name ASC')
+      ;
       
       foreach ($views as $view)
          $options[$view->ID] = "{$view->Name} &ndash; {$view->getPage()->Summary()}";
