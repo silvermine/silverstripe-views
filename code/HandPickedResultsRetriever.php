@@ -135,16 +135,14 @@ class HandPickedResultsRetriever extends ViewResultsRetriever {
    /**
     * @see ViewResultsRetriever->resultsImpl()
     */
-   protected function resultsImpl($offset, $limit) {
+   protected function resultsImpl() {
       // Build a query to retrieve translations of the selected pages
       $qb = $this->getQuery();
-      $qb->limit($limit);
-      $qb->offset($offset);
-      
+
       Translatable::disable_locale_filter();
       $results = $qb->execute();
       Translatable::enable_locale_filter();
-      
+
       return $results;
    }
 

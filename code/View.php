@@ -218,22 +218,34 @@ class View extends DataObject {
     * @return SS_List the results in the current locale or null if none found
     */
    public function Results() {
-      $offset = $this->getResultsOffset();
-      $limit = $this->getResultsLimit();
-
       $retriever = $this->ResultsRetriever();
 
-      if (self::$reset_pagination_for_bad_value && $offset >= $retriever->count()) {
+
+      // returns a DataList of some sort (that optimally has not run query yet)
+      // we will add pagination criteria to this below ... this query is for
+      // "all" results so we get an accurate count, etc
+      $results = $retriever->results();
+
+      $totalItems = $results->count();
+      $offset = $this->getResultsOffset();
+      $limit = $this->getResultsLimit();
+      if (self::$reset_pagination_for_bad_value && $offset >= $totalItems) {
          $offset = 0;
       }
-      $results = $retriever->results($offset, $limit);
 
-      if ($results instanceof PaginatedList) {
-         $results->setPaginationGetVar($this->paginationURLParam);
-         $results->setPageLength($limit);
-         $results->setPageStart($offset);
-         $results->setTotalItems($results->count());
+      if (!($results instanceof PaginatedList)) {
+         $request = array();
+         if (($cont = Controller::curr()) && $cont->getRequest()) {
+            $request = $cont->getRequest();
+         }
+
+         $results = new PaginatedList($results, $request);
       }
+
+      $results->setPaginationGetVar($this->paginationURLParam);
+      $results->setPageLength($limit);
+      $results->setPageStart($offset);
+      $results->setTotalItems($totalItems);
 
       return $results;
    }

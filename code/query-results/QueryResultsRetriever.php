@@ -113,22 +113,20 @@ class QueryResultsRetriever extends ViewResultsRetriever {
    /**
     * @see ViewResultsRetriever->resultsImpl()
     */
-   protected function resultsImpl($offset, $limit) {
+   protected function resultsImpl() {
       $root = $this->RootPredicate();
       
       // If no filters exist, don't return any results.
       if ($root instanceof CompoundPredicate && count($root->Predicates()) == 0) {
-         return null;
+         return new ArrayList(array());
       }
       
       $qb = $this->getQuery($root);
-      $qb->limit($limit);
-      $qb->offset($offset);
-      
+
       Translatable::disable_locale_filter();
       $results = $qb->execute();
       Translatable::enable_locale_filter();
-      
+
       return $results;
    }
 

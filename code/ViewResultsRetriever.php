@@ -106,12 +106,10 @@ class ViewResultsRetriever extends DataObject {
    /**
     * Return the results
     * 
-    * @param integer $offset
-    * @param integer $limit
     * @return SS_List
     */
-   public function results($offset = 0, $limit = 1000) {
-      $results = $this->resultsImpl($offset, $limit);
+   public function results() {
+      $results = $this->resultsImpl();
       // this is basically just here in case any results retrievers have a faulty implementation
       // of resultsImpl that doesn't return a list of some sort:
       $results = (!$results || empty($results)) ? new ArrayList(array()) : $results;
@@ -123,13 +121,13 @@ class ViewResultsRetriever extends DataObject {
     * performing their one job - retrieving results.  This function is called
     * by the Results function, which is the primary interface to the outside
     * world.  When a view is requested, the Results function will be called and
-    * expected to return an SS_List of results or null if no results could
-    * be retrieved.  This impl function is expected to follow the same contract.
+    * expected to return an SS_List of results.
     *
-    * @param int $maxResults the maximum number of results to return
-    * @return SS_List|null the results or null if none found
+    * This impl function is expected to follow the same contract.
+    *
+    * @return SS_List a DataList or ArrayList of results
     */
-   protected function resultsImpl($offset, $limit) {
+   protected function resultsImpl() {
       throw new RuntimeException('The ' . get_class($this) . ' class needs to implement resultsImpl(int, int).');
    }
 

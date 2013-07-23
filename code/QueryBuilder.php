@@ -311,12 +311,6 @@ class QueryBuilder {
          $dl = $dl->limit($this->limit, $this->offset);
       }
 
-      $request = array();
-      if (($cont = Controller::curr()) && $cont->getRequest()) {
-         $request = $cont->getRequest();
-      }
-
-      $dl = new PaginatedList($dl, $request);
       return $dl;
    }
    
@@ -502,6 +496,7 @@ class QueryBuilder {
     */
    public function limit($count) {
       $this->limit = $count;
+      return $this;
    }
    
    
@@ -512,6 +507,7 @@ class QueryBuilder {
     */
    public function offset($num) {
       $this->offset = $num;
+      return $this;
    }
    
    

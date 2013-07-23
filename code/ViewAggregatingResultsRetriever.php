@@ -134,7 +134,7 @@ class ViewAggregatingResultsRetriever extends ViewResultsRetriever {
    /**
     * @see ViewResultsRetriever->resultsImpl()
     */
-   protected function resultsImpl($offset, $limit) {
+   protected function resultsImpl() {
       $all = new ArrayList(array());
       foreach ($this->Views() as $view) {
          $all->merge($view->Results());
@@ -146,10 +146,6 @@ class ViewAggregatingResultsRetriever extends ViewResultsRetriever {
 
       if ($this->SorterID) {
          $all = $this->Sorter()->sort($all);
-      }
-
-      if ($offset || $limit) {
-         $all = new ArrayList(array_slice($all->toArray(), $offset, $limit));
       }
 
       return $all;
