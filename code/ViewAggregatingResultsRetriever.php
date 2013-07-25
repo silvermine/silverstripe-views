@@ -35,6 +35,7 @@ class ViewAggregatingResultsRetriever extends ViewResultsRetriever {
    public static function augment_types(&$structure) {
       $options = array();
       
+      // TODO: SS3.1 - do we really need to show all views here or just ones in the same view collection as us?
       $views = View::get()
          ->innerJoin('ViewCollection', '"ViewCollection".ID = "View".ViewCollectionID')
          ->innerJoin('SiteTree', '"SiteTree".ViewCollectionID = "ViewCollection".ID')

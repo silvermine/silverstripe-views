@@ -49,7 +49,11 @@ class QueryResultsRetriever extends ViewResultsRetriever {
       Requirements::css('views/code/css/views.css');
       
       $html = '<span class="viewsReadOnlyQuerySummary">';
-      $html .= $this->RootPredicate()->getReadOnlySummary() . '<br />';
+      if ($this->RootPredicate()->ID) {
+         $html .= $this->RootPredicate()->getReadOnlySummary() . '<br />';
+      } else {
+         $html .= 'No root predicate assigned yet.<br />';
+      }
       $html .= 'ORDER BY<br />';
       $prefix = '';
       foreach ($this->Sorts() as $sort) {

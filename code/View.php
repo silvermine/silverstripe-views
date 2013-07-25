@@ -97,6 +97,8 @@ class View extends DataObject {
       if ($this->ID && $rr != null && get_class($rr) != 'ViewResultsRetriever') {
          // only allow editing of actual results retriever on non-transient views
          $rr->updateCMSFields($this, $fields);
+      } else {
+         $fields->addFieldToTab('Root.Main', new ViewResultsRetrieverTypeDropDownField());
       }
 
       return $fields;
@@ -158,16 +160,20 @@ class View extends DataObject {
    }
 
    /**
-    * Used by ComplexTableField to validate objects added in the CMS UI
-    *
     * @todo add a unique-per-hosting-object validation rule to "Name"
     *       (can probably use UniqueTextField for this)
     * @todo "Name" should also be only alphanumeric characters because of the
     *       way it is used in templates as well as by RSS feeds with i18n to
     *       get the title of a feed
     */
-   public function getValidator() {
-      return new RequiredFields('Name', 'ResultsRetrieverID');
+   public function validate() {
+      $result = parent::validate();
+
+      if (empty($this->Name)) {
+         $result->error(_t('Views.NameNotEmptyError', 'The name field can not be empty.'));
+      }
+
+      return $result;
    }
 
    /**
@@ -203,20 +209,6 @@ class View extends DataObject {
       parent::onBeforeDelete();
 
       $this->ResultsRetriever()->delete();
-   }
-
-   /**
-    * Since SS form fields do not currently allow dot notation, child objects
-    * such as the ResultsRetriever have no way of really adding fields to the
-    * form that edits the view.  The only way they can do it is to add the
-    * field and then check for the value in the request manually at some point
-    * in the form submission process.  By calling ResultsRetriever->write() we
-    * give it the ability to use onBeforeWrite to get fields from the submitted
-    * form and set those values on itself and then write the updates.
-    */
-   public function onBeforeWrite() {
-      parent::onBeforeWrite();
-      $this->ResultsRetriever()->write();
    }
 
    /**
