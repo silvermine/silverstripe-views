@@ -1,0 +1,12 @@
+---
+Name:  views-config
+---
+
+# used for changing appearance of admin UI
+LeftAndMain:
+  extra_requirements_css:
+    views/css/views.css:
+      media: screen
+  extra_requirements_js:
+    - views/javascript/QueryBuilderField.js
+

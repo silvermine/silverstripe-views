@@ -581,10 +581,7 @@ class QueryBuilderField extends FormField {
       if ($this->readonly) {
          return $this->getReadOnlySummary();
       }
-      
-      Requirements::javascript('views/code/javascript/QueryBuilderField.js');
-      Requirements::css('views/code/css/views.css');
-      
+
       $html = "<div class='viewsQueryBuilder'></div>";
       $html .= "<div class='viewsImportExport'></div>";
       $html .= $this->getInputTag();
