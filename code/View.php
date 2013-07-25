@@ -57,6 +57,11 @@ class View extends DataObject {
 
    static $reset_pagination_for_bad_value = true;
 
+   static $summary_fields = array(
+      'Name' => 'View Name',
+      'ResultsRetrieverReadOnlySummary' => 'Results Retriever Summary',
+   );
+
    // these are transient - set by the template when using the view
    private $owner;
    private $resultsPerPage = 0;
@@ -106,15 +111,18 @@ class View extends DataObject {
       return SiteTree::get_one('SiteTree', '"ViewCollectionID" = ' . Convert::raw2sql($this->ViewCollection()->ID));
    }
 
-   /**
-    * Used in the current configuration of the views UI
-    */
    public function getReadOnlySummary() {
-      $html = '<strong style="font-size: 1.1em;">' . $this->Name . '</strong> <em>(' . get_class($this->ResultsRetriever()) . ')</em><br />';
-      $html .= '<span style="font-size: 0.9em;">' . $this->ResultsRetriever()->getReadOnlySummary() . '</span>';
+      $html = '<strong>View name: ' . $this->Name . '</strong><br />';
+      $html .= $this->getResultsRetrieverReadOnlySummary();
       return $html;
    }
-   
+
+   public function getResultsRetrieverReadOnlySummary() {
+      $html = '<strong>Type: ' . get_class($this->ResultsRetriever()) . '</strong><br />';
+      $html .= $this->ResultsRetriever()->getReadOnlySummary();
+      return DBField::create_field('HTMLText', $html);
+   }
+
    /**
     * Return the max number of results to get
     * 

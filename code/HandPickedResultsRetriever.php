@@ -86,11 +86,12 @@ class HandPickedResultsRetriever extends ViewResultsRetriever {
     * @see ViewResultsRetriever->getReadOnlySummary()
     */
    public function getReadOnlySummary() {
-      $html = '';
+      $html = '<ul>';
       $results = $this->Results();
       foreach($results as $page) {
-         $html .= '&nbsp;&nbsp;&nbsp;&nbsp;' . _t('Views.PageRef', 'Page reference') . ': [' . $page->ID . '] ' . $page->Title . '<br />';
+         $html .= '<li>' . _t('Views.AdminHPRRPage', 'Page') . ': [' . $page->ID . '] ' . $page->Title . '</li>';
       }
+      $html .= '</ul>';
       return $html;
    }
    

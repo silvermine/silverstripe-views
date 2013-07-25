@@ -25,7 +25,7 @@ class CompoundPredicateCondition extends PredicateCondition {
     */
    public function getReadOnlySummary($linePrefix = '') {
       $end = '<br />' . $linePrefix . ')';
-      $linePrefix = $linePrefix . '&nbsp;&nbsp&nbsp;';
+      $linePrefix = $linePrefix . '&nbsp;&nbsp;&nbsp;';
       $html = '';
       $html .= '(<br />';
       $prefix = $linePrefix;

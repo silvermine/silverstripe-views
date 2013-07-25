@@ -22,11 +22,19 @@
    text-align: center;
 }
 
+.col-ResultsRetrieverReadOnlySummary ol,
+.col-ResultsRetrieverReadOnlySummary ul {
+   list-style: disc;
+   margin-left: 1.2em;
+}
+
 /* Make Query Previews render monospaced */
 .viewsReadOnlyQuerySummary,
 .ViewResultsRetriever input,
 .ViewResultsRetriever select {
    font: 11px/1.5 Monaco, Consolas, Courier, monospace;
+   font-weight: normal;
+   color: black;
 }
 
 .ViewResultsRetriever label,

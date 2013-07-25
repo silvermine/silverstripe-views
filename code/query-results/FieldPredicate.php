@@ -81,7 +81,7 @@ class FieldPredicate extends QueryPredicate {
     * @see QueryResultsRetriever#getReadOnlySummary
     */
    public function getReadOnlySummaryImpl($linePrefix = '') {
-      return $this->buildWhere(false);
+      return htmlentities($this->buildWhere(false));
    }
 
    /**

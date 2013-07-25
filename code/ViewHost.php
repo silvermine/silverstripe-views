@@ -294,26 +294,14 @@ class ViewHost extends DataExtension {
     * @see DataExtension->updateCMSFields()
     */
    public function updateCMSFields(FieldList $fields) {
-      // TODO: make this show more than 10 results (it's paginated)
-      // TODO: make this not show the checkboxes since we're limiting it to the views on this page
-      $viewCollection = $this->owner->ViewCollection();
-      /* TODO SS3.1 ADMIN - replacement for this
-      $viewsTable = new HasManyComplexTableField(
-         $viewCollection,
-         'Views',
-         'View',
-         array(
-            'ReadOnlySummary' => 'Name',
-         ),
-         'getCMSFields',
-         sprintf('"View"."ViewCollectionID" = %d', $viewCollection->ID)
+      $config = GridFieldConfig_RecordEditor::create($itemsPerPage = 20);
+      $viewsGrid = new GridField(
+         'ViewCollection.Views',
+         _t('Views.ViewsLabel', 'Views'),
+         $this->owner->ViewCollection()->Views(),
+         $config
       );
-
-      // use our custom form for add/edit:
-      $viewsTable->popupClass = 'AddViewFormPopup';
-
-      $fields->addFieldToTab('Root.Views', $viewsTable);
-      */
+      $fields->addFieldToTab('Root.Views', $viewsGrid);
    }
 
    /**
