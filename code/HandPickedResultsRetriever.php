@@ -152,19 +152,24 @@ class HandPickedResultsRetriever extends ViewResultsRetriever {
     */
    public function updateCMSFields(&$view, &$fields) {
       parent::updateCMSFields($view, $fields);
-      /* TODO SS3.1 ADMIN ... replacement for this
-      $picker = new ManyManyPickerField(
-         $view,
-         'ResultsRetriever.Pages',
-         _t('Views.Pages.Label', 'Pages'),
-         array(
-            'ShowPickedInSearch' => false,
-            'Sortable'           => true,
-            'SortableField'      => 'SortOrder',
-         )
+
+      $config = GridFieldConfig_RelationEditor::create($itemsPerPage = 20)
+         ->removeComponentsByType('GridFieldEditButton')
+         ->removeComponentsByType('GridFieldDeleteAction')
+         ->addComponent(new GridFieldUpDownSortAction('SortOrder', $up = true))
+         ->addComponent(new GridFieldUpDownSortAction('SortOrder', $up = false))
+         ->addComponent(new GridFieldDeleteAction($removeRelation = true))
+      ;
+
+      // TODO SS3.1: optimize auto-complete, which runs EXTREMELY slow when searching a large SiteTree
+
+      $picker = new GridField(
+         'Pages',
+         _t('Views.HandPickedPagesLabel', 'Pages'),
+         $this->owner->Pages()->sort(array('SortOrder ASC', 'ID ASC')),
+         $config
       );
       $fields->addFieldToTab('Root.Main', $picker);
-      */
    }
 }
 

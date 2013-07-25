@@ -163,3 +163,8 @@
 .viewsImportExport div input {
    margin: 20px auto;
 }
+
+/* sprites for up/down arrows */
+button.gridfield-button-moveitemdown span.btn-icon-arrow-down { height: 16px; width: 10px; background: url('./link_arrows.png') 0 -48px no-repeat; margin-right: 4px; }
+button.gridfield-button-moveitemup span.btn-icon-arrow-up     { height: 16px; width: 10px; background: url('./link_arrows.png') 0 -32px no-repeat; margin-right: 4px; }
+
