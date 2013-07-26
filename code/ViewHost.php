@@ -294,6 +294,14 @@ class ViewHost extends DataExtension {
     * @see DataExtension->updateCMSFields()
     */
    public function updateCMSFields(FieldList $fields) {
+      // TODO: this code should likely live somewhere else, we just need
+      // to be sure that our owner has a view collection before we can proceed
+      // otherwise we might try adding a view to an UnsavedRelationList
+      if (!$this->owner->ViewCollection()->ID) {
+         $vcID = $this->owner->ViewCollection()->write();
+         $this->owner->ViewCollectionID = $vcID;
+         $this->owner->write();
+      }
       $config = GridFieldConfig_RecordEditor::create($itemsPerPage = 20);
       $viewsGrid = new GridField(
          'ViewCollection.Views',
