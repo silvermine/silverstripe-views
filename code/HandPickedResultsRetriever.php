@@ -27,6 +27,11 @@ class HandPickedResultsRetriever extends ViewResultsRetriever {
          'SortOrder' => 'Int',
       ),
    );
+
+   private static $autocomplete_search_fields = array(
+      'Title',
+      'URLSegment',
+   );
    
    /**
     * {@link ViewResultsRetriever::count}
@@ -160,8 +165,9 @@ class HandPickedResultsRetriever extends ViewResultsRetriever {
          ->addComponent(new GridFieldUpDownSortAction('SortOrder', $up = false))
          ->addComponent(new GridFieldDeleteAction($removeRelation = true))
       ;
-
-      // TODO SS3.1: optimize auto-complete, which runs EXTREMELY slow when searching a large SiteTree
+      $autocompleter = $config->getComponentByType('GridFieldAddExistingAutocompleter');
+      $autocompleter->setSearchList($this->createSearchDataList());
+      $autocompleter->setSearchFields($this->config()->get('autocomplete_search_fields'));
 
       $picker = new GridField(
          'Pages',
@@ -170,6 +176,21 @@ class HandPickedResultsRetriever extends ViewResultsRetriever {
          $config
       );
       $fields->addFieldToTab('Root.Main', $picker);
+   }
+
+   protected function createSearchDataList() {
+      $list = DataList::create('SiteTree');
+      $classes = ClassInfo::dataClassesFor('SiteTree');
+      $baseClass = array_shift($classes);
+
+      foreach($classes as $class) {
+         $list = $list->leftJoin($class, sprintf('"SiteTree"."ID" = "%s"."ID"', $class));
+      }
+
+      // needed this because of the problem described in
+      // https://github.com/silverstripe/silverstripe-framework/pull/2267
+      $list = $list->where(sprintf('"SiteTree".Locale = \'%s\'', Translatable::get_current_locale()));
+      return $list;
    }
 }
 
