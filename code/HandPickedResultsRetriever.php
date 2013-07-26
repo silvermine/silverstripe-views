@@ -28,6 +28,8 @@ class HandPickedResultsRetriever extends ViewResultsRetriever {
       ),
    );
 
+   private static $autocomplete_format = '$Title';
+
    private static $autocomplete_search_fields = array(
       'Title',
       'URLSegment',
@@ -167,6 +169,7 @@ class HandPickedResultsRetriever extends ViewResultsRetriever {
       ;
       $autocompleter = $config->getComponentByType('GridFieldAddExistingAutocompleter');
       $autocompleter->setSearchList($this->createSearchDataList());
+      $autocompleter->setResultsFormat($this->config()->get('autocomplete_format'));
       $autocompleter->setSearchFields($this->config()->get('autocomplete_search_fields'));
 
       $picker = new GridField(
