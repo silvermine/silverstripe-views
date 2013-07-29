@@ -7,6 +7,6 @@ LeftAndMain:
   extra_requirements_css:
     views/css/views.css:
       media: screen
-  extra_requirements_js:
+  extra_requirements_javascript:
     - views/javascript/QueryBuilderField.js
 
