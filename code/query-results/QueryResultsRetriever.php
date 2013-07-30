@@ -21,9 +21,9 @@ class QueryResultsRetriever extends ViewResultsRetriever {
    static $has_many = array(
       'Sorts' => 'QuerySort',
    );
-   
+
    static $traverse_has_one = true;
-   
+
    /**
     * {@link ViewResultsRetriever::count}
     */
@@ -32,9 +32,9 @@ class QueryResultsRetriever extends ViewResultsRetriever {
       if ($root instanceof CompoundPredicate && count($root->Predicates()) == 0) {
          return 0;
       }
-      
+
       $qb = $this->getQuery($root);
-      
+
       Translatable::disable_locale_filter();
       $results = $qb->execute();
       Translatable::enable_locale_filter();
@@ -47,7 +47,7 @@ class QueryResultsRetriever extends ViewResultsRetriever {
     */
    public function getReadOnlySummary() {
       Requirements::css('views/code/css/views.css');
-      
+
       $html = '<span class="viewsReadOnlyQuerySummary">';
       if ($this->RootPredicate()->ID) {
          $html .= $this->RootPredicate()->getReadOnlySummary() . '<br />';
@@ -63,10 +63,10 @@ class QueryResultsRetriever extends ViewResultsRetriever {
       $html .= '</span>';
       return $html;
    }
-   
+
    /**
     * Return an instance of QueryBuilder set up using the given query predicate
-    * 
+    *
     * @param QueryPredicate $queryPredicate
     * @return QueryBuilder
     */
@@ -89,16 +89,16 @@ class QueryResultsRetriever extends ViewResultsRetriever {
 
       return $qb;
    }
-   
+
    /**
     * Return true if SiteTree is translatable
-    * 
+    *
     * @return bool
     */
    private function isTranslatable() {
       return SiteTree::has_extension('Translatable');
    }
-   
+
    /**
     * Deletes all related objects that have a one-to-one relationship with this
     * instance.
@@ -107,7 +107,10 @@ class QueryResultsRetriever extends ViewResultsRetriever {
     */
    protected function onBeforeDelete() {
       parent::onBeforeDelete();
-      $this->RootPredicate()->delete();
+      if ($this->RootPredicate()->ID) {
+         $this->RootPredicate()->delete();
+      }
+
       $sorts = $this->Sorts();
       foreach ($sorts as $sort) {
          $sort->delete();
@@ -119,12 +122,12 @@ class QueryResultsRetriever extends ViewResultsRetriever {
     */
    protected function resultsImpl() {
       $root = $this->RootPredicate();
-      
+
       // If no filters exist, don't return any results.
       if ($root instanceof CompoundPredicate && count($root->Predicates()) == 0) {
          return new ArrayList(array());
       }
-      
+
       $qb = $this->getQuery($root);
 
       Translatable::disable_locale_filter();
