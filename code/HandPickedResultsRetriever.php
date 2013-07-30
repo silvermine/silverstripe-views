@@ -163,6 +163,7 @@ class HandPickedResultsRetriever extends ViewResultsRetriever {
       $config = GridFieldConfig_RelationEditor::create($itemsPerPage = 20)
          ->removeComponentsByType('GridFieldEditButton')
          ->removeComponentsByType('GridFieldDeleteAction')
+         ->removeComponentsByType('GridFieldAddNewButton')
          ->addComponent(new GridFieldUpDownSortAction('SortOrder', $up = true))
          ->addComponent(new GridFieldUpDownSortAction('SortOrder', $up = false))
          ->addComponent(new GridFieldDeleteAction($removeRelation = true))
