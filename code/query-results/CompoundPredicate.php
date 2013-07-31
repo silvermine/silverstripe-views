@@ -52,7 +52,7 @@ class CompoundPredicate extends QueryPredicate {
    public function updateQueryImpl(&$query, $conjunctive) {
       $preds = $this->Predicates();
       $updated = false;
-      $query->startCompoundWhere();
+      $query->startCompoundWhere($conjunctive);
       foreach ($preds as $pred) {
          $updated |= $pred->updateQuery($query, $this->IsConjunctive);
       }

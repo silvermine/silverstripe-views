@@ -603,8 +603,9 @@ class QueryBuilder {
     * Tells QueryBuilder to start a compound where clause and continue grouping
     * calls to where() until endCompoundWhere() is called.
     */
-   public function startCompoundWhere() {
-      array_push($this->wheres, ($this->hasPreviousWhereClause ? '   AND ' : '') . self::START_COMPOUND);
+   public function startCompoundWhere($conjunctive = true) {
+      $joinWord = ($conjunctive ? '   AND ' : '    OR ');
+      array_push($this->wheres, ($this->hasPreviousWhereClause ? $joinWord : '') . self::START_COMPOUND);
       $this->hasPreviousWhereClause = false;
    }
    
