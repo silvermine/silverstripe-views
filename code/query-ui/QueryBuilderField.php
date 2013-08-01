@@ -10,11 +10,11 @@
  * @subpackage query-ui
  */
 class QueryBuilderField extends FormField {
-   
+
    protected $readonly = false;
    protected $disabled = false;
    private $resultsRetriever = null;
-   
+
    /**
     * array_merge_recursive does indeed merge arrays, but it converts values with duplicate
     * keys to arrays rather than overwriting the value in the first array with the duplicate
@@ -43,7 +43,7 @@ class QueryBuilderField extends FormField {
     */
    public static function array_merge_recursive_distinct(array &$array1, array &$array2){
       $merged = $array1;
-      
+
       foreach ($array2 as $key => &$value) {
          if (is_array($value) && isset($merged[$key]) && is_array($merged[$key])) {
             $merged[$key] = self::array_merge_recursive_distinct($merged[$key], $value);
@@ -51,23 +51,23 @@ class QueryBuilderField extends FormField {
             $merged[$key] = $value;
          }
       }
-      
+
       return $merged;
    }
-   
-   
+
+
    /**
     * Builds an array of metadata about our core DataObject classes
     * and their subclasses.
-    * 
+    *
     * @return array
     */
    private static function build_core_type_structures() {
       // Create lambda function wrapper so that it can be passed as a parameter
-      $buildStructure = function($cls, $base) { 
-         return QueryBuilderField::build_data_type_structure($cls, $base); 
+      $buildStructure = function($cls, $base) {
+         return QueryBuilderField::build_data_type_structure($cls, $base);
       };
-      
+
       // Loop through the 4 main base data classes
       $structure = array();
       foreach(self::list_root_data_classes() as $base) {
@@ -75,21 +75,21 @@ class QueryBuilderField extends FormField {
          $subclasses = array_values(ClassInfo::subclassesFor($base));
          foreach ($subclasses as $cls) {
             $structure[$cls] = self::map_ancestry($cls, $buildStructure);
-            
+
             // Allow each class a hook for augmenting types as needed
             // Trust that no one uses this for evil
             if (is_callable("{$cls}::augment_types"))
                $cls::augment_types($structure);
          }
       }
-      
+
       return $structure;
    }
-   
-   
+
+
    /**
     * Build a metadata structure about a single class.
-    * 
+    *
     * @param class $cls Class to Describe
     * @param class $base Parent Class
     * @return array
@@ -98,23 +98,23 @@ class QueryBuilderField extends FormField {
       $structure = array(
          'base' => $base,
          'fields' => array());
-      
+
       // List Database Fields
       $fields = self::get_class_fields($cls);
-      
+
       // Describe Database Fields
       foreach($fields as $name => $type)
          $structure['fields'][$name] = self::get_input_type($cls, $name, $type);
-      
+
       return $structure;
    }
-   
-   
+
+
    /**
     * Returns an array of fields and relationships for the given class.
     * The fieldType may be either a DB Column type or a Class (DataObject)
     * type.
-    * 
+    *
     * @param class $cls
     * @return array('NameOfField' => 'FieldType')
     */
@@ -123,14 +123,14 @@ class QueryBuilderField extends FormField {
       $fields = array_merge($fields, QueryBuilderField::get_database_property($cls, 'has_one'));
       $fields = array_merge($fields, QueryBuilderField::get_database_property($cls, 'has_many'));
       $fields = array_merge($fields, QueryBuilderField::get_database_property($cls, 'many_many'));
-      
+
       return $fields;
    }
-   
-   
+
+
    /**
     * Given a class, return the fields matching the kind of relationship provided.
-    * 
+    *
     * @param class $cls DataObject Class
     * @param string $prop [db, has_one, has_many, many_many]
     * @return array('NameOfField' => 'FieldType')
@@ -138,22 +138,22 @@ class QueryBuilderField extends FormField {
    public static function get_database_property($cls, $prop) {
       if ($prop == 'has_one' && !QueryBuilderField::traverse_has_one_relationship($cls))
          return array();
-      
+
       if ($prop == 'has_many' && !QueryBuilderField::traverse_has_many_relationship($cls))
          return array();
-      
+
       if ($prop == 'many_many' && !QueryBuilderField::traverse_many_many_relationship($cls))
          return array();
 
-      return Config::inst()->get($cls, $prop) ?: array();
+      return Config::inst()->get($cls, $prop, Config::UNINHERITED) ?: array();
    }
-   
-   
+
+
    /**
     * Return an array of metadata describing a DataObject field. This can be
     * overwritten in any DataObject with Field granularity by creating
     * methods named Class::get_<lowercasefieldname>_input_type()
-    * 
+    *
     * @param class $cls DataObject Class
     * @param string $name Name of Field
     * @param string $dbType Type of Field
@@ -165,52 +165,52 @@ class QueryBuilderField extends FormField {
       if (is_callable("{$cls}::{$fnName}")) {
          return $cls::$fnName();
       }
-      
+
       $type = '';
       $defaults = Config::inst()->get($cls, 'defaults');
       $default = isset($defaults[$name]) ? $defaults[$name] : '';
       $options = array();
-      
+
       switch (true) {
          case (preg_match('/BOOL/', $dbType)):
             $type = 'bool';
             break;
-         
+
          case (preg_match('/ENUM\([\'\"]([^\'\"]*)[\'\"](,[\s]*[\'\"]([^\'\"]*)[\'\"])*\)/', $dbType, $match)):
             $type = 'select';
             $options = $match[1];
             $options = explode(',', $options);
             $default = isset($match[3]) ? $match[3] : reset($options);
             break;
-         
+
          case class_exists($dbType):
             $hasOne = array_keys(self::get_database_property($cls, 'has_one'));
-            $type = in_array($name, $hasOne) 
+            $type = in_array($name, $hasOne)
                ? 'has_one'
                : 'has_many';
             $options = array_values(ClassInfo::subclassesFor($dbType));
             break;
-         
+
          case (preg_match('/VARCHAR/', $dbType)):
          default:
             $type = 'text';
             break;
       }
-      
+
       // Convert to an associative array
       $options = empty($options) ? null : array_combine($options, $options);
-      
+
       return array(
          'type' => $type,
          'default' => $default,
          'options' => $options);
    }
-   
-   
+
+
    /**
     * Convenience function for getting a value from an array where
     * the key might not exist.
-    * 
+    *
     * @param array $arr
     * @param string $key
     * @param mixed $default Optional. Defaults to null
@@ -219,8 +219,8 @@ class QueryBuilderField extends FormField {
    public static function get_value($arr, $key, $default = null) {
       return array_key_exists($key, $arr) ? $arr[$key] : $default;
    }
-   
-   
+
+
    /**
     * Returns an array of our core DataObjects base classes. All other
     * view-related DataObject's inherit from these classes.
@@ -235,14 +235,14 @@ class QueryBuilderField extends FormField {
          'FieldPredicateValue');
       return $baseClasses;
    }
-   
-   
+
+
    /**
     * Iterate over the provided class and it's inheritance
     * ancestry, applying the provided function to each. Iterates
     * from the base class towards the (given) top level class. Merges
     * function output into a single array and returns it.
-    * 
+    *
     * @param class $cls The name of a subclass of DataObject
     * @param function $fn($className, $immediateParentClassName) A function to apply to the ancestry of $cls
     * @return array
@@ -251,87 +251,87 @@ class QueryBuilderField extends FormField {
       $base = ClassInfo::baseDataClass($cls);
       if (!$base)
          return array();
-      
+
       $classHierarchy = array();
       while ($parents = ClassInfo::ancestry($cls)) {
          $classHierarchy[] = $cls;
-         
+
          // Stop if we've reach the base class
          if ($cls == $base)
             break;
-         
-         // Pop the stack so that we traverse up the 
+
+         // Pop the stack so that we traverse up the
          // class hierarchy by one step
          array_pop($parents);
          $cls = array_pop($parents);
       }
-      
+
       // Iterate over entire hierarchy from Base -> Top
       $mergedOutput = array();
       $immediateParent = count($classHierarchy) > 1 ? $classHierarchy[1] : null;
       $classHierarchy = array_reverse($classHierarchy);
       foreach ($classHierarchy as $cls) {
          $partialOutput = $fn($cls, $immediateParent);
-         
+
          if (is_array($partialOutput))
             $mergedOutput = self::array_merge_recursive_distinct($mergedOutput, $partialOutput);
          else
             $mergedOutput[] = $partialOutput;
       }
-      
+
       return $mergedOutput;
    }
-   
-   
+
+
    /**
     * Accept a data representation. Recursively instantiate and save
     * data objects to match it. Inverse of {@link QueryBuilderField::buildQueryRepr()}
-    * 
+    *
     * @param string JSON Data Object Representation
     * @return DataObject
     */
    public static function save($structure) {
       $structure = json_decode($structure, true);
       $structure = $structure['data'];
-      
+
       return self::save_object($structure);
    }
-   
-   
+
+
    /**
     * Accept a data representation. Recursively instantiate and save
     * data objects to match it. Used by {@link QueryBuilderField::save()}
-    * 
+    *
     * @param array Data Object Representation
     * @return DataObject
     */
    public static function save_object($structure) {
       if (empty($structure))
          return;
-      
+
       $modelClass = $structure['type'];
       $fields = $structure['fields'];
       $typeInfo = self::build_core_type_structures();
-      
+
       $validTypes = array_keys($typeInfo);
       if (!in_array($modelClass, $validTypes))
          return;
-      
+
       $obj = new $modelClass();
       $obj->write();
-      
+
       $saveChildObject = function($property, $childStructure) use (&$obj) {
          $fnName = "resolve{$property}Structure";
          if (method_exists($obj, $fnName))
             return $obj->$fnName($childStructure);
-         
+
          return QueryBuilderField::save_object($childStructure);
       };
-      
+
       $setProperties = function($cls, $parent) use (&$obj, &$fields, &$saveChildObject) {
          foreach (QueryBuilderField::get_database_property($cls, 'db') as $property => $type) {
             $value = QueryBuilderField::get_value($fields, $property, null);
-            
+
             switch(true) {
                case strtolower((string)$value) == 'true':
                   $value = 1;
@@ -343,31 +343,31 @@ class QueryBuilderField extends FormField {
                   $value = (int)$value;
                   break;
             }
-            
+
             $obj->$property = $value;
          }
-         
+
          foreach (QueryBuilderField::get_database_property($cls, 'has_one') as $property => $type) {
             $childStructure = QueryBuilderField::get_value($fields, $property);
             if (empty($childStructure))
                continue;
-            
+
             $child = $saveChildObject($property, $childStructure);
             if ($child) {
                $propertyID = "{$property}ID";
                $obj->$propertyID = $child->ID;
             }
          }
-         
+
          $hasMany = QueryBuilderField::get_database_property($cls, 'has_many');
          $manyMany = QueryBuilderField::get_database_property($cls, 'many_many');
          foreach (array_merge($hasMany, $manyMany) as $property => $type) {
             $obj->$property()->removeAll();
-            
+
             foreach (QueryBuilderField::get_value($fields, $property, array()) as $childStructure) {
                if (empty($childStructure))
                   continue;
-               
+
                $child = $saveChildObject($property, $childStructure);
                if ($child) {
                   $obj->$property()->add($child);
@@ -375,17 +375,17 @@ class QueryBuilderField extends FormField {
             }
          }
       };
-      
+
       self::map_ancestry($modelClass, $setProperties);
       $obj->write();
       return $obj;
    }
-   
-   
+
+
    /**
     * Return true if Object Representations for the given class
     * should traverse it's has_many relationships
-    * 
+    *
     * @param string $cls
     * @return bool
     */
@@ -393,12 +393,12 @@ class QueryBuilderField extends FormField {
       $relation = Config::inst()->get($cls, 'has_many');
       return !empty($relation);
    }
-   
-   
+
+
    /**
     * Return true if Object Representations for the given class
     * should traverse it's has_one relationships
-    * 
+    *
     * @param string $cls
     * @return bool
     */
@@ -410,27 +410,27 @@ class QueryBuilderField extends FormField {
       $traverse = Config::inst()->get($cls, 'traverse_has_one');
       return !empty($relation) && !empty($traverse) && $traverse;
    }
-   
-   
+
+
    /**
     * Return true if Object Representations for the given class
     * should traverse it's many_many relationships
-    * 
+    *
     * @param string $cls
     * @return bool
     */
    public static function traverse_many_many_relationship($cls) {
       if (is_object($cls))
          $cls = get_class($cls);
-      
+
       $relation = Config::inst()->get($cls, 'many_many');
       return in_array($cls, array('ViewAggregatingResultsRetriever')) && !empty($relation);
    }
-   
-   
+
+
    /**
     * Object Constructor. Create a new form field.
-    * 
+    *
     * @param string $name
     * @param string $title
     * @param QueryResultsRetriever $resultsRetriever
@@ -439,32 +439,32 @@ class QueryBuilderField extends FormField {
    public function __construct($name, $title, ViewResultsRetriever $resultsRetriever, $form = null) {
       $this->resultsRetriever = $resultsRetriever;
       $structure = $this->buildQueryRepr($resultsRetriever);
-      
+
       parent::__construct($name, $title, json_encode($structure), $form);
    }
-   
-   
+
+
    /**
-    * Create an array data structure to recursively represent the 
+    * Create an array data structure to recursively represent the
     * given data object.
-    * 
+    *
     * @param DataObject $obj
     * @return array
     */
    public function buildObjectStructure($obj) {
       $cls = get_class($obj);
       $field = $this;
-      
+
       $buildChildStructure = function(&$obj, &$name) use ($field) {
          $fnName = "get{$name}Structure";
          if (method_exists($obj, $fnName)) {
             return $obj->$fnName();
          }
-         
+
          $columnName = "{$name}ID";
          if (isset($obj->$columnName) && $obj->$columnName == 0)
             return null;
-         
+
          $property = $obj->$name();
          if ($property instanceof SS_List) {
             $output = array();
@@ -473,47 +473,47 @@ class QueryBuilderField extends FormField {
          } else {
             $output = $field->buildObjectStructure($property);
          }
-         
+
          return $output;
       };
-      
+
       $buildStructure = function($cls, $base) use ($obj, $buildChildStructure) {
          $structure = array(
             'type' => $cls,
             'fields' => array());
-         
+
          // List Database Fields
          foreach(QueryBuilderField::get_database_property($cls, 'db') as $name => $type) {
             $structure['fields'][$name] = $obj->$name;
          }
-         
+
          // HasOne Relationships
          foreach(QueryBuilderField::get_database_property($cls, 'has_one') as $name => $type) {
             $structure['fields'][$name] = $buildChildStructure($obj, $name);
          }
-         
+
          // HasMany Relationships
          foreach (QueryBuilderField::get_database_property($cls, 'has_many') as $name => $type) {
             $structure['fields'][$name] = $buildChildStructure($obj, $name);
          }
-         
+
          // HasMany Relationships
          foreach (QueryBuilderField::get_database_property($cls, 'many_many') as $name => $type) {
             $structure['fields'][$name] = $buildChildStructure($obj, $name);
          }
-         
+
          return $structure;
       };
-      
+
       return self::map_ancestry($cls, $buildStructure);
    }
-   
-   
+
+
    /**
     * Build a array representation of a ViewResultsRetriever. Includes both a
-    * representation of data and a description of the possible data object 
+    * representation of data and a description of the possible data object
     * types that could inhabit it.
-    * 
+    *
     * @param ViewResultsRetriever $query
     * @return array
     */
@@ -522,14 +522,14 @@ class QueryBuilderField extends FormField {
          'data' => $this->buildObjectStructure($query),
          'types' => self::build_core_type_structures(),
       );
-      
+
       return $repr;
    }
-   
-   
+
+
    /**
     * Build a new <input /> tag
-    * 
+    *
     * @return string
     */
    private function getInputTag() {
@@ -540,30 +540,30 @@ class QueryBuilderField extends FormField {
          'value' => $this->value,
          'tabindex' => $this->getAttribute('tabindex')
       );
-      
+
       return $this->createTag('input', $hiddenAttributes);
    }
-   
-   
+
+
    /**
     * Get a Read Only summary of the Query
-    * 
+    *
     * @return string
     */
    private function getReadOnlySummary() {
       $value = $this->resultsRetriever->getReadOnlySummary();
-      
+
       $attributes = array(
          'id' => $this->id(),
          'class' => 'readonly' . ($this->extraClass() ? $this->extraClass() : '')
       );
-      
+
       $containerSpan = $this->createTag('span', $attributes, $value);
       $hiddenInput = $this->getInputTag();
       return $containerSpan . "\n" . $hiddenInput;
    }
-   
-   
+
+
    /**
     * {@link FormField::performReadonlyTransformation()}
     */
@@ -572,8 +572,8 @@ class QueryBuilderField extends FormField {
       $read->setReadonly(true);
       return $read;
    }
-   
-   
+
+
    /**
     * {@link FormField::Field()}
     */
