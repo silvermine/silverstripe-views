@@ -22,29 +22,29 @@ class ViewAggregatingResultsRetriever extends ViewResultsRetriever {
    static $has_one = array(
       'Sorter' => 'ViewResultsSorter',
    );
-   
+
    static $traverse_has_one = true;
-   
+
    /**
-    * Augment the QueryBuilderField type description so that it includes an 
+    * Augment the QueryBuilderField type description so that it includes an
     * entry for the View class. Includes a multiple-choice view choosing dropdown.
     * Called by {@link QueryBuilderField::build_core_type_structures()}
-    * 
+    *
     * @param array &$structure
     */
    public static function augment_types(&$structure) {
       $options = array();
-      
+
       // TODO: SS3.1 - do we really need to show all views here or just ones in the same view collection as us?
       $views = View::get()
          ->innerJoin('ViewCollection', '"ViewCollection".ID = "View".ViewCollectionID')
          ->innerJoin('SiteTree', '"SiteTree".ViewCollectionID = "ViewCollection".ID')
          ->sort('"View".Name ASC')
       ;
-      
+
       foreach ($views as $view)
          $options[$view->ID] = "{$view->Name} &ndash; {$view->getPage()->Summary()}";
-      
+
       $viewStructure = array(
          'base' => null,
          'fields' => array(
@@ -55,10 +55,10 @@ class ViewAggregatingResultsRetriever extends ViewResultsRetriever {
             )
          )
       );
-      
+
       $structure['View'] = $viewStructure;
    }
-   
+
    /**
     * @see ViewResultsRetriever->count()
     */
@@ -84,11 +84,11 @@ class ViewAggregatingResultsRetriever extends ViewResultsRetriever {
       $html .= 'Sorts by: ' . ($this->Sorter() ? $this->Sorter()->getReadOnlySummary() : 'N/A');
       return $html;
    }
-   
+
    /**
     * Return an array representation of the Views relationship.
     * Called by {@link QueryBuilderField::buildObjectStructure()}
-    * 
+    *
     * @return array
     */
    public function getViewsStructure() {
@@ -113,13 +113,13 @@ class ViewAggregatingResultsRetriever extends ViewResultsRetriever {
       parent::onBeforeDelete();
       parent::Views()->removeAll();
    }
-   
+
    /**
     * Return the DataObject for a view defined in the given representation.
     * Called by {@link QueryBuilderField::save_object()}
-    * 
+    *
     * Input is the same as the output of {@link ViewAggregatingResultsRetriever::getViewsStructure()}
-    * 
+    *
     * @param array
     * @return View
     */
@@ -128,7 +128,7 @@ class ViewAggregatingResultsRetriever extends ViewResultsRetriever {
       $view = View::get_one('View', 'ID = ' . Convert::raw2sql($viewID));
       if (empty($view))
          return;
-      
+
       return $view;
    }
 

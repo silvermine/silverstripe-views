@@ -29,7 +29,7 @@ class QuerySort extends DataObject {
 
    public function updateQuery(&$query) {
       $field = ViewsStringTokenizers::tokenize($this->FieldName, $this);
-      
+
       // Handle possibility of more than one field being returned
       $fields = explode(",", $field);
       foreach ($fields as $field) {

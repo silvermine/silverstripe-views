@@ -34,7 +34,7 @@ class HandPickedResultsRetriever extends ViewResultsRetriever {
       'Title',
       'URLSegment',
    );
-   
+
    /**
     * {@link ViewResultsRetriever::count}
     */
@@ -47,7 +47,7 @@ class HandPickedResultsRetriever extends ViewResultsRetriever {
 
       return $results->count();
    }
-   
+
    /**
     * {@link ViewResultsRetriever::dumpPreservedFields}
     */
@@ -55,16 +55,16 @@ class HandPickedResultsRetriever extends ViewResultsRetriever {
       $pages = array();
       foreach($this->Pages() as $page)
          $pages[] = $page;
-      
+
       return array(
          'Pages' => $pages
       );
    }
-   
+
    /**
     * Return a QueryBuilder instance set up to query for objects
     * in $this->Pages()
-    * 
+    *
     * @return QueryBuilder
     */
    private function &getQuery() {
@@ -101,14 +101,14 @@ class HandPickedResultsRetriever extends ViewResultsRetriever {
       $html .= '</ul>';
       return $html;
    }
-   
+
    /**
     * Returns true if Pages can be translated
     */
    private function isTranslatable() {
       return call_user_func(self::$many_many['Pages'] . '::has_extension', 'Translatable');
    }
-   
+
    /**
     * {@link ViewResultsRetriever::loadPreservedFields}
     */

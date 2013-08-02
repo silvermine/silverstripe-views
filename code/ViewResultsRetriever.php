@@ -22,20 +22,20 @@ class ViewResultsRetriever extends DataObject {
    static $defaults = array(
       'Transformation' => 'None',
    );
-   
+
    /**
     * Return the max number of results possible
-    * 
+    *
     * @return integer
     */
    public function count() {
       throw new RuntimeException('The ' . get_class($this) . ' class needs to implement count().');
    }
-   
+
    /**
     * Used to dump fields the need to be preserved by, but
     * not modified by QueryBuilderField upon a save action.
-    * 
+    *
     * @return array
     */
    public function dumpPreservedFields() {
@@ -44,7 +44,7 @@ class ViewResultsRetriever extends DataObject {
 
    /**
     * Get the locale of the current page
-    * 
+    *
     * @return string
     */
    protected function getCurrentPageLocale() {
@@ -58,7 +58,7 @@ class ViewResultsRetriever extends DataObject {
 
    /**
     * Get the locale from the pre-defined query param
-    * 
+    *
     * @return string
     */
    protected function getQueryParamLocale() {
@@ -88,7 +88,7 @@ class ViewResultsRetriever extends DataObject {
       switch ($this->Transformation) {
          case self::TRANSFORMATION_TRANSLATE_PAGE_LOCALE:
             return $this->getCurrentPageLocale();
-         
+
          case self::TRANSFORMATION_TRANSLATE_QUERY_PARAM_LOCALE:
             return $this->getQueryParamLocale();
       }
@@ -97,7 +97,7 @@ class ViewResultsRetriever extends DataObject {
    /**
     * Used to load fields the need to be preserved by, but
     * not modified by QueryBuilderField upon a save action.
-    * 
+    *
     * @param array
     */
    public function loadPreservedFields($data) {
@@ -105,7 +105,7 @@ class ViewResultsRetriever extends DataObject {
 
    /**
     * Return the results
-    * 
+    *
     * @return SS_List
     */
    public function results() {

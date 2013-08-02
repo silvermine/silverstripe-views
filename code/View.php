@@ -103,10 +103,10 @@ class View extends DataObject {
 
       return $fields;
    }
-   
+
    /**
     * Return the SiteTree node that this view is attached to.
-    * 
+    *
     * @return SiteTree
     */
    public function getPage() {
@@ -127,16 +127,16 @@ class View extends DataObject {
 
    /**
     * Return the max number of results to get
-    * 
+    *
     * @return integer
     */
    private function getResultsLimit() {
       return $this->resultsPerPage;
    }
-   
+
    /**
     * Return the results offset
-    * 
+    *
     * @return integer
     */
    private function getResultsOffset() {
@@ -249,24 +249,24 @@ class View extends DataObject {
 
       return $results;
    }
-   
+
    /**
-    * Harness QueryBuilderField to deconstruct the JSON from a 
+    * Harness QueryBuilderField to deconstruct the JSON from a
     * saved ViewResultsRetreiver and save it to the DB.
-    * 
+    *
     * @param JSON Data
     */
    public function saveViewResultsRetriever($data) {
       $oldRetriever = $this->ResultsRetriever();
       $preservedData = $oldRetriever->dumpPreservedFields();
-      
+
       $resultsRetriever = QueryBuilderField::save($data);
       if (!is_object($resultsRetriever))
          return;
-      
+
       if ($oldRetriever)
          $oldRetriever->delete();
-      
+
       $resultsRetriever->loadPreservedFields($preservedData);
       $this->ResultsRetrieverID = $resultsRetriever->ID;
       $this->write();

@@ -72,13 +72,13 @@
  * @subpackage code
  */
 class QueryBuilder {
-   
+
    const ACTION_ADD_COLUMN = 'add-column';
    const ACTION_SELECT_OBJ = 'select-obj';
    const ACTION_SELECT_COLS = 'select-cols';
    const ACTION_ADD_ANYTHING = 'add-any';
    const ACTION_MAKE_SQL = 'make-sql';
-   
+
    const MODE_SELECT_OBJECTS = 'select-objects';
    const MODE_SELECT_COLUMNS = 'select-columns';
 
@@ -87,7 +87,7 @@ class QueryBuilder {
 
    const START_COMPOUND = '(';
    const END_COMPOUND = ')';
-   
+
    private $mode = null;
    private $distinct = false;
    private $objectName = null;
@@ -101,11 +101,11 @@ class QueryBuilder {
    private $hasPreviousWhereClause = false;
    private $limit = 0;
    private $offset = 0;
-   
+
    private $tableAliasCount = 0;
    private $subclassTablesJoined = false;
-   
-   
+
+
    /**
     * If $tableName is a class that has the Versioned extension, this will
     * return the appropriate table name for the class based on the current
@@ -125,20 +125,20 @@ class QueryBuilder {
       //       hard-codes the "live" stage.  This makes me think that it's
       //       unlikely that this function will break in very many scenarios
       //       (since it seems Versioned will also break in the same scenarios)
-      
+
       $defaultStage = 'Stage';
       $suffix = '';
       $versioned = ClassInfo::exists($tableName) &&
          is_subclass_of($tableName, 'DataObject') &&
          singleton($tableName)->hasExtension('Versioned');
-      
+
       if ($versioned && Versioned::current_stage() && (Versioned::current_stage() == Versioned::get_live_stage())) {
          $suffix = '_' . Versioned::current_stage();
       }
       return $tableName . $suffix;
    }
-   
-   
+
+
    /**
     * If using QB to select columns, use this function to add a column to the
     * list of those to be returned in the results.  Columns should always be
@@ -152,8 +152,8 @@ class QueryBuilder {
       array_push($this->columns, $column);
       return $this;
    }
-   
-   
+
+
    /**
     * Just a simple wrapper around addColumn() to add multiple columns in a
     * single function call.  You must pass this function an array.
@@ -168,8 +168,8 @@ class QueryBuilder {
       }
       return $this;
    }
-   
-   
+
+
    /**
     * Internal implementation function for adding a join of any type to the
     * internal joins data structure.
@@ -182,42 +182,42 @@ class QueryBuilder {
       if (array_key_exists($tableAlias, $this->joins)) {
          user_error("Join already existed for $tableAlias", E_USER_WARNING);
       }
-      
+
       $this->joins[$tableAlias] = array(
          'type'   => $type,
          'alias'  => $tableAlias,
          'clause' => $joinClause,
       );
    }
-   
-   
+
+
    /**
     * Assemble SQL segments into a functional query
-    * 
+    *
     * @param array $parts
     * @return string
     */
    private function assembleSQL($parts) {
       $sql = array();
       $sql[] = "SELECT {$parts['columns']} FROM {$parts['from']}";
-      
+
       if (!empty($parts['joins']))
          $sql[] = $parts['joins'];
-      
+
       if (!empty($parts['wheres']))
          $sql[] = "WHERE {$parts['wheres']}";
-      
+
       if (!empty($parts['sorts']))
          $sql[] = "ORDER BY {$parts['sorts']}";
-      
+
       if (!empty($parts['limit']))
          $sql[] = "LIMIT {$parts['limit']}";
-      
+
       $sql = implode(" ", $sql);
       return $sql;
    }
-   
-   
+
+
    /**
     * Tells QueryBuilder that the previous compound where started with
     * startCompoundWhere() is complete and this grouping can end.
@@ -235,12 +235,12 @@ class QueryBuilder {
       } else {
          array_push($this->wheres, self::END_COMPOUND);
       }
-      
+
       $lastChar = substr(end($this->wheres), -1);
       $this->hasPreviousWhereClause = ($lastChar !== self::START_COMPOUND);
    }
-   
-   
+
+
    /**
     * Execute the query that you have built and return the results as a
     * SS_List.  An SS_List is returned regardless of whether you are selecting
@@ -256,11 +256,11 @@ class QueryBuilder {
 
       return $this->fetchObjects();
    }
-   
-   
+
+
    /**
     * Run a query and retrieve specific columns from the result
-    * 
+    *
     * @param array $parts SQL Parts
     * @return SS_List
     */
@@ -272,7 +272,7 @@ class QueryBuilder {
          $split = explode('.', $col);
          $columns[] = array_pop($split);
       }
-      
+
       $rows = array();
       foreach ($query as $result) {
          $row = array();
@@ -281,14 +281,14 @@ class QueryBuilder {
          }
          $rows[] = $row;
       }
-      
+
       return new ArrayList($rows);
    }
-   
-   
+
+
    /**
     * Run a query and retreive an SS_List full of DataObjects
-    * 
+    *
     * @param array $parts SQL Parts
     * @return SS_List
     */
@@ -313,8 +313,8 @@ class QueryBuilder {
 
       return $dl;
    }
-   
-   
+
+
    /**
     * Returns the alias to be used in join clauses, etc, when needing to
     * reference the primary table that this query is selecting from.
@@ -324,8 +324,8 @@ class QueryBuilder {
    public function getPrimaryTableAlias() {
       return $this->tableNameAlias;
    }
-   
-   
+
+
    /**
     * Builds the various pieces of a SQL query based on the current QB
     * configuration.  Also builds a complete SQL query - even if objects are
@@ -344,21 +344,21 @@ class QueryBuilder {
    public function getSQLParts() {
       $this->verifyConfiguredFor(self::ACTION_MAKE_SQL);
       $parts = array();
-      
+
       // Columns
       $columns = array();
       foreach($this->columns as $column) {
          $columns[] = $column;
       }
-      
+
       if (empty($columns))
          $columns[] = "{$this->tableNameAlias}.ID";
       $columns = implode(", ", $columns);
       $parts['columns'] = $this->distinct ? "DISTINCT {$columns}" : $columns;
-      
+
       // From
       $parts['from'] = "{$this->tableName} {$this->tableNameAlias}";
-      
+
       // Joins
       $joins = array();
       foreach ($this->joins as $join) {
@@ -368,13 +368,13 @@ class QueryBuilder {
          $joins[] = "{$join['type']} JOIN {$table} {$join['alias']} {$clause}";
       }
       $parts['joins'] = implode("\n", $joins);
-      
+
       // Wheres
       $parts['wheres'] = implode("\n", $this->wheres);
-      
+
       // Sorts
       $parts['sorts'] = implode(", ", $this->sorts);
-      
+
       // Limit / Offset
       $parts['limit'] = $this->limit ?: "";
       if (!empty($this->limit) && !empty($this->offset)) {
@@ -383,7 +383,7 @@ class QueryBuilder {
             Convert::raw2sql($this->limit),
             Convert::raw2sql($this->offset));
       }
-      
+
       // Prepend Aliases
       foreach ($parts as $key => $sql) {
          $parts[$key] = $this->replaceTableNamesWithAliases($sql);
@@ -403,13 +403,13 @@ class QueryBuilder {
          $alias = end($keys);
          if (!$alias)
             return $match[0];
-         
+
          return "{$alias}.";
       };
-      
+
       return preg_replace_callback("/\"([\w]+)\"\./", $callback, $sql);
    }
-   
+
    /**
     * Creates a unique alias for a table.  This alias can be used as the first
     * parameter in calls to *join (i.e. innerJoin) to join to the table.  It
@@ -425,8 +425,8 @@ class QueryBuilder {
       $this->aliases[$alias] = $tableName;
       return $alias;
    }
-   
-   
+
+
    /**
     * Adds an inner join to another table.  $tableAlias should always be an
     * alias retrieved from getTableAlias().  All columns used in $joinClause
@@ -444,11 +444,11 @@ class QueryBuilder {
       $this->addJoin(self::JOIN_TYPE_INNER, $tableAlias, $joinClause);
       return $this;
    }
-   
-   
+
+
    /**
     * Join tables based on the inheritance tree of the given class
-    * 
+    *
     * @param string $class Name of a DataObject Class
     * @param string $parentAlias Alias of the parent table
     */
@@ -459,7 +459,7 @@ class QueryBuilder {
 
       $classes = ClassInfo::dataClassesFor($class);
       $baseClass = array_shift($classes);
-      
+
       foreach($classes as $class) {
          $table = self::get_table_name($class);
          $alias = $this->getTableAlias($table);
@@ -468,8 +468,8 @@ class QueryBuilder {
       }
       $this->subclassTablesJoined = true;
    }
-    
-    
+
+
    /**
     * Adds a left outer join to another table.  $tableAlias should always be an
     * alias retrieved from getTableAlias().  All columns used in $joinClause
@@ -487,8 +487,8 @@ class QueryBuilder {
       $this->addJoin(self::JOIN_TYPE_LEFT_OUTER, $tableAlias, $joinClause);
       return $this;
    }
-   
-   
+
+
    /**
     * Limits the query to $count rows.
     *
@@ -498,8 +498,8 @@ class QueryBuilder {
       $this->limit = $count;
       return $this;
    }
-   
-   
+
+
    /**
     * Offsets the query to $num rows.
     *
@@ -509,8 +509,8 @@ class QueryBuilder {
       $this->offset = $num;
       return $this;
    }
-   
-   
+
+
    /**
     * Add a sort ("ORDER BY") clause to the query.  The order by clauses are
     * added to the SQL in the order that they are added to QueryBuilder (by
@@ -525,8 +525,8 @@ class QueryBuilder {
       array_push($this->sorts, "{$field} " . ($ascending ? 'ASC' : 'DESC'));
       return $this;
    }
-   
-   
+
+
    /**
     * Initializes the QueryBuilder to select columns from the table specified
     * in $from.  If $from is an object class name and $resolveTableName is true
@@ -545,7 +545,7 @@ class QueryBuilder {
    public function selectColumns($from, $resolveTableName = true) {
       $this->verifyConfiguredFor(self::ACTION_SELECT_COLS);
       $this->mode = self::MODE_SELECT_COLUMNS;
-      
+
       $this->objectName = $from;
       $this->tableName = $resolveTableName ? self::get_table_name($from) : $from;
       $this->tableNameAlias = $this->getTableAlias($this->tableName);
@@ -553,11 +553,11 @@ class QueryBuilder {
       $this->joinSubclassTables($from, $this->tableNameAlias);
 
       $this->columns = array();
-      
+
       return $this->tableNameAlias;
    }
-   
-   
+
+
    /**
     * Initializes the QueryBuilder to select object instances using
     * DataObject::get.  $objectName should be the name of a class that extends
@@ -576,7 +576,7 @@ class QueryBuilder {
    public function selectObjects($objectName) {
       $this->verifyConfiguredFor(self::ACTION_SELECT_OBJ);
       $this->mode = self::MODE_SELECT_OBJECTS;
-      
+
       $this->objectName = $objectName;
       $this->tableNameAlias = self::get_table_name($objectName);
       $this->tableName = $this->tableNameAlias;
@@ -585,8 +585,8 @@ class QueryBuilder {
 
       return $this->tableNameAlias;
    }
-   
-   
+
+
    /**
     * Add a DISTINCT clause to the query.
     *
@@ -597,8 +597,8 @@ class QueryBuilder {
       $this->distinct = $distinct;
       return $this;
    }
-   
-   
+
+
    /**
     * Tells QueryBuilder to start a compound where clause and continue grouping
     * calls to where() until endCompoundWhere() is called.
@@ -608,11 +608,11 @@ class QueryBuilder {
       array_push($this->wheres, ($this->hasPreviousWhereClause ? $joinWord : '') . self::START_COMPOUND);
       $this->hasPreviousWhereClause = false;
    }
-   
-   
+
+
    /**
     * Translate the results of the query into another locale
-    * 
+    *
     * @param string locale
     * @return string Table Alias of non-translated version of primary table
     */
@@ -623,24 +623,24 @@ class QueryBuilder {
       }
 
       $groupTableName = $this->objectName . '_translationgroups';
-      
+
       $vernacularGroups = $this->getTableAlias($groupTableName);
       $this->innerJoin($vernacularGroups, "{$vernacularGroups}.OriginalID = {$this->tableNameAlias}.ID");
-      
+
       $masterGroups = $this->getTableAlias($groupTableName);
       $this->innerJoin($masterGroups, "{$masterGroups}.TranslationGroupID = {$vernacularGroups}.TranslationGroupID");
-      
+
       $master = $this->getTableAlias($this->tableName);
       $this->innerJoin($master, "{$master}.ID = {$masterGroups}.OriginalID");
-      
+
       $this->joinSubclassTables($this->objectName, $master);
-      
+
       $this->where(sprintf("{$this->tableNameAlias}.Locale = '%s'", Convert::raw2sql($locale)));
-      
+
       return $master;
    }
-   
-   
+
+
    /**
     * Internal helper function to make sure that the QueryBuilder functions
     * have been called in the proper order.
@@ -682,8 +682,8 @@ class QueryBuilder {
             break;
       }
    }
-   
-   
+
+
    /**
     * Add a condition that is used in the "WHERE" clause of the query.
     * All column names in the clause should be prefixed with a valid table
@@ -699,14 +699,14 @@ class QueryBuilder {
     */
    public function where($clause, $conjunctive = true) {
       $this->verifyConfiguredFor(self::ACTION_ADD_ANYTHING);
-      
+
       if ($this->hasPreviousWhereClause) {
          $clause = ($conjunctive ? ' AND ' : ' OR ') . $clause;
       }
-      
+
       $this->wheres[] = $clause;
       $this->hasPreviousWhereClause = true;
-      
+
       return $this;
    }
 }
