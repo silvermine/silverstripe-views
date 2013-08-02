@@ -165,6 +165,15 @@
 }
 
 /* sprites for up/down arrows */
-button.gridfield-button-moveitemdown span.btn-icon-arrow-down { height: 16px; width: 10px; background: url('../images/link_arrows.png') 0 -48px no-repeat; margin-right: 4px; }
-button.gridfield-button-moveitemup span.btn-icon-arrow-up     { height: 16px; width: 10px; background: url('../images/link_arrows.png') 0 -32px no-repeat; margin-right: 4px; }
+button.gridfield-button-moveitemtop .ui-button-text,
+button.gridfield-button-moveitemup .ui-button-text,
+button.gridfield-button-moveitemdown .ui-button-text,
+button.gridfield-button-moveitembottom .ui-button-text {
+   padding: 0.7em;
+   margin-right: 0.3em;
+}
+button.gridfield-button-moveitemtop span.btn-icon-arrow-up      { background: url('../images/link_arrows.png') 0  6px  no-repeat; }
+button.gridfield-button-moveitemup span.btn-icon-arrow-up       { background: url('../images/link_arrows.png') 0 -14px no-repeat; }
+button.gridfield-button-moveitemdown span.btn-icon-arrow-down   { background: url('../images/link_arrows.png') 0 -35px no-repeat; }
+button.gridfield-button-moveitembottom span.btn-icon-arrow-down { background: url('../images/link_arrows.png') 0 -54px no-repeat; }
 

@@ -137,7 +137,7 @@ class HandPickedResultsRetriever extends ViewResultsRetriever {
     * @return SS_List or null the pages associated with this results retriever
     */
    public function Pages() {
-      return parent::Pages(null, 'SortOrder ASC');
+      return parent::Pages()->sort('SortOrder ASC');
    }
 
    /**
@@ -164,8 +164,10 @@ class HandPickedResultsRetriever extends ViewResultsRetriever {
          ->removeComponentsByType('GridFieldEditButton')
          ->removeComponentsByType('GridFieldDeleteAction')
          ->removeComponentsByType('GridFieldAddNewButton')
-         ->addComponent(new GridFieldUpDownSortAction('SortOrder', $up = true))
-         ->addComponent(new GridFieldUpDownSortAction('SortOrder', $up = false))
+         ->addComponent(GridFieldUpDownSortAction::create('SortOrder')->toTop())
+         ->addComponent(GridFieldUpDownSortAction::create('SortOrder')->up())
+         ->addComponent(GridFieldUpDownSortAction::create('SortOrder')->down())
+         ->addComponent(GridFieldUpDownSortAction::create('SortOrder')->toBottom())
          ->addComponent(new GridFieldDeleteAction($removeRelation = true))
       ;
       $autocompleter = $config->getComponentByType('GridFieldAddExistingAutocompleter');
@@ -176,7 +178,7 @@ class HandPickedResultsRetriever extends ViewResultsRetriever {
       $picker = new GridField(
          'Pages',
          _t('Views.HandPickedPagesLabel', 'Pages'),
-         $this->owner->Pages()->sort(array('SortOrder ASC', 'ID ASC')),
+         $this->Pages(),
          $config
       );
       $fields->addFieldToTab('Root.Main', $picker);

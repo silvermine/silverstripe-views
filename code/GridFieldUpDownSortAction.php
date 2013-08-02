@@ -14,13 +14,10 @@
  */
 class GridFieldUpDownSortAction implements GridField_ColumnProvider, GridField_ActionProvider {
 
-   /**
-    * If this is set to true, this {@link GridField_ActionProvider} will
-    * move the item up, otherwise down.
-    *
-    * @var boolean
-    */
-   private $directionIsUp = true;
+   const MODE_TOP    = 1;
+   const MODE_UP     = 2;
+   const MODE_DOWN   = 3;
+   const MODE_BOTTOM = 4;
 
    /**
     * The name of the column in the extraFields for this many-many that handles
@@ -30,13 +27,38 @@ class GridFieldUpDownSortAction implements GridField_ColumnProvider, GridField_A
     */
    private $sortColumn = null;
 
+   private $mode = self::MODE_TOP;
+
    /**
-    *
-    * @param boolean $directionIsUp - true if moving up, otherwise down
+    * @param string $sortColumn the name of the column that holds sort integer
     */
-   public function __construct($sortColumn, $directionIsUp = true) {
+   public function __construct($sortColumn) {
       $this->sortColumn = $sortColumn;
-      $this->directionIsUp = $directionIsUp;
+   }
+
+   public static function create($sortColumn) {
+      return new self($sortColumn);
+   }
+
+   public function setMode($mode) {
+      $this->mode = $mode;
+      return $this;
+   }
+
+   public function toTop() {
+      return $this->setMode(self::MODE_TOP);
+   }
+
+   public function up() {
+      return $this->setMode(self::MODE_UP);
+   }
+
+   public function down() {
+      return $this->setMode(self::MODE_DOWN);
+   }
+
+   public function toBottom() {
+      return $this->setMode(self::MODE_BOTTOM);
    }
 
    /**
@@ -93,7 +115,7 @@ class GridFieldUpDownSortAction implements GridField_ColumnProvider, GridField_A
     * @return array
     */
    public function getActions($gridField) {
-      return array('moveitemup', 'moveitemdown');
+      return array('moveitem');
    }
 
    /**
@@ -108,42 +130,62 @@ class GridFieldUpDownSortAction implements GridField_ColumnProvider, GridField_A
       $ids   = $list->column('ID');
       $pos   = array_search($record->ID, $ids);
 
-      if($this->directionIsUp) {
-         if (!$record->canEdit()) return;
+      if (!$record->canEdit()) return;
 
-         $field = GridField_FormAction::create(
-                     $gridField,
-                     'MoveItemUp' . $record->ID,
-                     false,
-                     'moveitemup',
-                     array('RecordID' => $record->ID)
-                  )
-            ->addExtraClass('gridfield-button-moveitemup')
-            ->setAttribute('title', _t('GridAction.MoveItemUp', 'Move Up'))
-            ->setAttribute('data-icon', 'arrow-up')
-         ;
+      $field = GridField_FormAction::create(
+         $gridField,
+         'moveitem' . $record->ID,
+         false,
+         'moveitem',
+         array('RecordID' => $record->ID, 'mode' => $this->mode)
+      );
 
-         if ($pos === false || $pos == 0) {
-            $field->setReadonly(true);
-         }
-      } else {
-         if (!$record->canEdit()) return;
+      if ($pos === false) {
+         $field->setReadonly(true);
+      }
 
-         $field = GridField_FormAction::create(
-                     $gridField,
-                     'MoveItemDown' . $record->ID,
-                     false,
-                     'moveitemdown',
-                     array('RecordID' => $record->ID)
-                  )
-            ->addExtraClass('gridfield-button-moveitemdown')
-            ->setAttribute('title', _t('GridAction.MoveItemDown', 'Move Down'))
-            ->setAttribute('data-icon', 'arrow-down')
-         ;
+      switch ($this->mode) {
+         case self::MODE_TOP:
+            $field
+               ->addExtraClass('gridfield-button-moveitemtop')
+               ->setAttribute('title', _t('GridAction.MoveItemTop', 'Move Top'))
+               ->setAttribute('data-icon', 'arrow-up')
+            ;
+            if ($pos == 0) {
+               $field->setReadonly(true);
+            }
+            break;
+         case self::MODE_UP:
+            $field
+               ->addExtraClass('gridfield-button-moveitemup')
+               ->setAttribute('title', _t('GridAction.MoveItemUp', 'Move Up'))
+               ->setAttribute('data-icon', 'arrow-up')
+            ;
+            if ($pos == 0) {
+               $field->setReadonly(true);
+            }
+            break;
+         case self::MODE_DOWN:
+            $field
+               ->addExtraClass('gridfield-button-moveitemdown')
+               ->setAttribute('title', _t('GridAction.MoveItemDown', 'Move Down'))
+               ->setAttribute('data-icon', 'arrow-down')
+            ;
+            if ($pos == (count($ids) - 1)) {
+               $field->setReadonly(true);
+            }
+            break;
+         case self::MODE_BOTTOM:
+            $field
+               ->addExtraClass('gridfield-button-moveitembottom')
+               ->setAttribute('title', _t('GridAction.MoveItemBottom', 'Move Bottom'))
+               ->setAttribute('data-icon', 'arrow-down')
+            ;
+            if ($pos == (count($ids) - 1)) {
+               $field->setReadonly(true);
+            }
+            break;
 
-         if ($pos === false || $pos == (count($ids) - 1)) {
-            $field->setReadonly(true);
-         }
       }
       return $field->Field();
    }
@@ -158,41 +200,70 @@ class GridFieldUpDownSortAction implements GridField_ColumnProvider, GridField_A
     * @return void
     */
    public function handleAction(GridField $gridField, $actionName, $arguments, $data) {
-      if($actionName == 'moveitemup' || $actionName == 'moveitemdown') {
-         $list = $gridField->getList()->sort($this->sortColumn . ' ASC');
-         $item = $list->byID($arguments['RecordID']);
+      if($actionName != 'moveitem') {
+         return;
+      }
+      $list = $gridField->getList()->sort($this->sortColumn . ' ASC');
+      $item = $list->byID($arguments['RecordID']);
+      $mode = $arguments['mode'];
 
-         if(!$item) {
-            return;
-         }
+      if(!$item) {
+         return;
+      }
 
-         if(!$item->canEdit()) {
-            throw new ValidationException(_t('Views.MoveItemSort', 'You do not have permission to move this item.'));
-         }
+      if(!$item->canEdit()) {
+         throw new ValidationException(_t('Views.MoveItemSort', 'You do not have permission to move this item.'));
+      }
 
-         $ids   = $list->column('ID');
-         $pos   = array_search($item->ID, $ids);
+      $ids   = $list->column('ID');
+      $pos   = array_search($item->ID, $ids);
 
-         if ($pos === false) {
-            throw new ValidationException(_t('Views.InvalidID', 'Could not find ID\'s position in the array.'));
-         }
+      if ($pos === false) {
+         throw new ValidationException(_t('Views.InvalidID', 'Could not find ID\'s position in the array.'));
+      }
 
-         if($actionName == 'moveitemup') {
+      $oldIDs = $ids;
+      switch ($mode) {
+         case self::MODE_TOP:
+            if ($pos == 0) {
+               return;
+            }
+            $ids = array($item->ID);
+            foreach ($oldIDs as $id) {
+               if ($id != $item->ID) {
+                  $ids[] = $id;
+               }
+            }
+            break;
+         case self::MODE_UP:
             if ($pos == 0) {
                return;
             }
             $ids[$pos] = $ids[$pos - 1];
             $ids[$pos - 1] = $item->ID;
-         } else {
+            break;
+         case self::MODE_DOWN:
             if ($pos == (count($ids) - 1)) {
                return;
             }
             $ids[$pos] = $ids[$pos + 1];
             $ids[$pos + 1] = $item->ID;
-         }
-
-         $this->updatePositions($list, $ids);
+            break;
+         case self::MODE_BOTTOM:
+            if ($pos == (count($ids) - 1)) {
+               return;
+            }
+            $ids = array();
+            foreach ($oldIDs as $id) {
+               if ($id != $item->ID) {
+                  $ids[] = $id;
+               }
+            }
+            $ids[] = $item->ID;
+            break;
       }
+
+      $this->updatePositions($list, $ids);
    }
 
    protected function updatePositions($dataList, $ids) {
