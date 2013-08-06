@@ -47,7 +47,7 @@ class RSSContentControllerExtension extends Extension {
       $response = $controller->getResponse() ?: new SS_HTTPResponse();
 
       $params = $controller->request->allParams();
-      $viewName = isset($params['ID']) ?: null;
+      $viewName = isset($params['ID']) ? $params['ID']: null;
       $view = $page && $viewName && $page->hasExtension('ViewHost') ?
          $page->GetView($viewName) :
          false;
