@@ -164,6 +164,8 @@ class HandPickedResultsRetriever extends ViewResultsRetriever {
          ->removeComponentsByType('GridFieldEditButton')
          ->removeComponentsByType('GridFieldDeleteAction')
          ->removeComponentsByType('GridFieldAddNewButton')
+         ->removeComponentsByType('GridFieldAddExistingAutocompleter')
+         ->addComponent(new AddPageToHandPickedResultsRetrieverAutocompleter('buttons-before-left'))
          ->addComponent(GridFieldUpDownSortAction::create('SortOrder')->toTop())
          ->addComponent(GridFieldUpDownSortAction::create('SortOrder')->up())
          ->addComponent(GridFieldUpDownSortAction::create('SortOrder')->down())
