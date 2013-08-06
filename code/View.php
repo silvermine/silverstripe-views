@@ -81,12 +81,12 @@ class View extends DataObject {
                   'RSSAutoLink',
                   _t('Views.RSSAutoLink.Label', 'RSS Auto Link'),
                   array(
-                     self::RSS_AUTO_LINK_NONE => _t('Views.RSSAutoLink.' . self::RSS_AUTO_LINK_NONE . '.Label', 'None'),
-                     self::RSS_AUTO_LINK_PAGE_ONLY => _t('Views.RSSAutoLink.' . self::RSS_AUTO_LINK_PAGE_ONLY . '.Label', 'Page only'),
-                     self::RSS_AUTO_LINK_PAGE_AND_CHILDREN => _t('Views.RSSAutoLink.' . self::RSS_AUTO_LINK_PAGE_AND_CHILDREN . '.Label', 'Page and children'),
-                     self::RSS_AUTO_LINK_CHILDREN => _t('Views.RSSAutoLink.' . self::RSS_AUTO_LINK_CHILDREN . '.Label', 'Direct children only'),
-                     self::RSS_AUTO_LINK_PAGE_AND_DESCENDANTS => _t('Views.RSSAutoLink.' . self::RSS_AUTO_LINK_PAGE_AND_DESCENDANTS . '.Label', 'Page and descendants'),
-                     self::RSS_AUTO_LINK_DESCENDANTS => _t('Views.RSSAutoLink.' . self::RSS_AUTO_LINK_DESCENDANTS . '.Label', 'All descendants'),
+                     self::RSS_AUTO_LINK_NONE => _t('Views.RSSAutoLink.None.Label', 'None'),
+                     self::RSS_AUTO_LINK_PAGE_ONLY => _t('Views.RSSAutoLink.PageOnly.Label', 'Page only'),
+                     self::RSS_AUTO_LINK_PAGE_AND_CHILDREN => _t('Views.RSSAutoLink.PageAndChildren.Label', 'Page and children'),
+                     self::RSS_AUTO_LINK_CHILDREN => _t('Views.RSSAutoLink.Children.Label', 'Direct children only'),
+                     self::RSS_AUTO_LINK_PAGE_AND_DESCENDANTS => _t('Views.RSSAutoLink.PageAndDescendants.Label', 'Page and descendants'),
+                     self::RSS_AUTO_LINK_DESCENDANTS => _t('Views.RSSAutoLink.Descendants.Label', 'All descendants'),
                   )
                )
             )
