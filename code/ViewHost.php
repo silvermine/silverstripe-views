@@ -33,6 +33,10 @@ class ViewHost extends DataExtension {
       $this->includeRSSAutoLinkTags();
    }
 
+   public function onTranslatableCreate($writeToDB) {
+      $this->owner->ViewCollectionID = 0;
+   }
+
    /**
     * Given a ViewHost this will take all views on that host and pass each to
     * the callback so that it has the opportunity to add it to the list of
