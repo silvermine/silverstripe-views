@@ -42,6 +42,21 @@ class QueryPredicate extends DataObject {
       return $html;
    }
 
+   /**
+    * Updates the QueryBuilder object that is passed in with whatever query requirements
+    * this predicate has.
+    *
+    * NOTE: This method should be used by callers of this class, although it delegates
+    * implementation to updateQueryImpl which is what should be overridden by subclasses.
+    *
+    * The updateQueryImpl method will not be called on subclasses if the predicate
+    * conditions are not met. Subclasses should not need to worry about predicate conditions
+    * at all since they are handled here.
+    *
+    * @param QueryBuilder $query the query that is being built for this results retriever
+    * @param boolean $conjunctive true if this is part of a conjunctive ("AND") predicate, false for disjunctive ("OR")
+    * @return boolean true if you made a modification to the query
+    */
    public function updateQuery(&$query, $conjunctive) {
       foreach ($this->PredicateConditions() as $cond) {
          if (!$cond->conditionIsMet()) {
@@ -69,6 +84,20 @@ class QueryPredicate extends DataObject {
       }
    }
 
+   /**
+    * Updates the QueryBuilder object that is passed in with whatever query requirements
+    * this predicate has.
+    *
+    * NOTE: Callers of this class should call updateQuery instead. Subclasses of QueryPredicate
+    * should override this updateQueryImpl method (and not override updateQuery).
+    *
+    * This method will not be called if predicate conditions were not met.
+    *
+    * @see QueryPredicate->updateQuery($query, $conjunctive)
+    * @param QueryBuilder $query the query that is being built for this results retriever
+    * @param boolean $conjunctive true if this is part of a conjunctive ("AND") predicate, false for disjunctive ("OR")
+    * @return boolean true if you made a modification to the query
+    */
    public function updateQueryImpl(&$query, $conjunctive) {
       throw new RuntimeException(get_class($this) . ' needs to implement QueryPredicate->updateQueryImpl(&$query, $conjunctive)');
    }
