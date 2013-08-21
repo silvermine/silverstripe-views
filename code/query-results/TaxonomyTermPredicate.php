@@ -97,10 +97,6 @@ class TaxonomyTermPredicate extends QueryPredicate {
    }
 
    public function updateQueryImpl(&$query, $conjunctive) {
-      // TODO: this is hard-coded to use SiteTree, but should be more flexible
-      // this is really a problem throughout query results retriever et al right now
-      // in general, query results retrievers should have a 'type' parameter
-      // that specifies what type of object they are querying for
       $mainTable = $query->getPrimaryTableAlias();
       $stvt = $query->getTableAlias('SiteTree_VocabularyTerms');
 
