@@ -29,15 +29,8 @@ class QueryParamPredicateCondition extends PredicateCondition {
     * @see PredicateCondition#conditionIsMet()
     */
    public function conditionIsMet() {
-      $present = false;
-      if (Controller::curr() && Controller::curr()->getRequest()) {
-         $present = array_key_exists($this->QueryParamName, Controller::curr()->getRequest()->getVars());
-
-         if ($present) {
-            $val = Controller::curr()->getRequest()->getVar($this->QueryParamName);
-            $present = !empty($val);
-         }
-      }
+      $value = QueryParamTokenizer::get_value($this->QueryParamName);
+      $present = !empty($value);
 
       return $this->PresenceRequired ? $present : !$present;
    }
