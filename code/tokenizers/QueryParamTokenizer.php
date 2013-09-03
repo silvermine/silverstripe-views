@@ -11,23 +11,12 @@
  */
 class QueryParamTokenizer extends ViewsStringTokenizer {
 
-   private static $values = array();
-
    public static function get_value($queryParamName) {
-      if (array_key_exists($queryParamName, self::$values)) {
-         $value = self::$values[$queryParamName];
-         return empty($value) ? null : Convert::raw2sql($value);
-      }
-
       if (Controller::curr() && Controller::curr()->getRequest()) {
          return Convert::raw2sql(Controller::curr()->getRequest()->getVar($queryParamName));
       }
 
       return null;
-   }
-
-   public static function set_value($queryParamName, $value) {
-      self::$values[$queryParamName] = $value;
    }
 
    /**
