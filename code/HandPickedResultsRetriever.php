@@ -41,9 +41,14 @@ class HandPickedResultsRetriever extends ViewResultsRetriever {
    public function count() {
       $qb = $this->getQuery();
 
+      $enabled = Translatable::locale_filter_enabled();
       Translatable::disable_locale_filter();
+
       $results = $qb->execute();
-      Translatable::enable_locale_filter();
+
+      if ($enabled) {
+         Translatable::enable_locale_filter();
+      }
 
       return $results->count();
    }
@@ -147,9 +152,14 @@ class HandPickedResultsRetriever extends ViewResultsRetriever {
       // Build a query to retrieve translations of the selected pages
       $qb = $this->getQuery();
 
+      $enabled = Translatable::locale_filter_enabled();
       Translatable::disable_locale_filter();
+
       $results = $qb->execute();
-      Translatable::enable_locale_filter();
+
+      if ($enabled) {
+         Translatable::enable_locale_filter();
+      }
 
       return $results;
    }

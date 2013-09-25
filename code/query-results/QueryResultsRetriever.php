@@ -35,9 +35,14 @@ class QueryResultsRetriever extends ViewResultsRetriever {
 
       $qb = $this->getQuery($root);
 
+      $enabled = Translatable::locale_filter_enabled();
       Translatable::disable_locale_filter();
+
       $results = $qb->execute();
-      Translatable::enable_locale_filter();
+
+      if ($enabled) {
+         Translatable::enable_locale_filter();
+      }
 
       return $results->count();
    }
@@ -130,9 +135,14 @@ class QueryResultsRetriever extends ViewResultsRetriever {
 
       $qb = $this->getQuery($root);
 
+      $enabled = Translatable::locale_filter_enabled();
       Translatable::disable_locale_filter();
+
       $results = $qb->execute();
-      Translatable::enable_locale_filter();
+
+      if ($enabled) {
+         Translatable::enable_locale_filter();
+      }
 
       return $results;
    }
