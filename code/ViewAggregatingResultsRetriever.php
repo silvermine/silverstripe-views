@@ -81,7 +81,7 @@ class ViewAggregatingResultsRetriever extends ViewResultsRetriever {
          $html .= '<hr />';
       }
       $html .= '</div>';
-      $html .= 'Sorts by: ' . ($this->Sorter() ? $this->Sorter()->getReadOnlySummary() : 'N/A');
+      $html .= 'Sorts by: ' . ($this->SorterID ? $this->Sorter()->getReadOnlySummary() : 'N/A');
       return $html;
    }
 
