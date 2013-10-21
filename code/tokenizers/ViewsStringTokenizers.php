@@ -104,7 +104,7 @@ class ViewsStringTokenizers {
    public static function tokenize($string, &$owner) {
       return preg_replace_callback(
          self::$token_regex,
-         function(&$matches) use (&$owner) {
+         function($matches) use (&$owner) {
             $tokenName = $matches[1];
             $tokenParams = explode(ViewsStringTokenizers::$token_param_separator, $matches[2]);
             $tokenizer = ViewsStringTokenizers::get_tokenizer($tokenName);
