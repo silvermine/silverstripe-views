@@ -15,7 +15,7 @@ class FieldPredicate extends QueryPredicate {
 
    static $db = array(
       'FieldName' => 'VARCHAR(128)',
-      'Qualifier' => "ENUM('equals,notequal,like,in,notin,gt,gte,lt,lte', 'equals')",
+      'Qualifier' => "ENUM('equals,notequal,like,in,notin,gt,gte,lt,lte,is,isnot', 'equals')",
       'IsRawSQL'  => 'BOOLEAN',
    );
 
@@ -29,14 +29,16 @@ class FieldPredicate extends QueryPredicate {
 
    static $qualifier_symbols = array(
       'equals'   => '=',
-      'gt'       => '>',
-      'gte'      => '>=',
-      'lt'       => '<',
-      'lte'      => '<=',
       'notequal' => '<>',
       'like'     => 'LIKE',
       'in'       => 'IN',
       'notin'    => 'NOT IN',
+      'gt'       => '>',
+      'gte'      => '>=',
+      'lt'       => '<',
+      'lte'      => '<=',
+      'is'       => 'IS',
+      'isnot'    => 'IS NOT',
    );
 
    private function buildWhere($translateSQLValues = true) {
@@ -55,6 +57,8 @@ class FieldPredicate extends QueryPredicate {
          case 'equals':
          case 'notequal':
          case 'like':
+         case 'is':
+         case 'isnot':
             $value = $this->Values()->first()->getSQLValue($translateSQLValues);
             $values = $this->IsRawSQL ? $value : sprintf("'%s'", $value);
             break;
