@@ -102,9 +102,9 @@ class QueryBuilderField extends FormField {
       // List Database Fields
       $fields = self::get_class_fields($cls);
 
-      // Describe Database Fields
-      foreach($fields as $name => $type)
+      foreach($fields as $name => $type) {
          $structure['fields'][$name] = self::get_input_type($cls, $name, $type);
+      }
 
       return $structure;
    }
@@ -120,6 +120,18 @@ class QueryBuilderField extends FormField {
     */
    public static function get_class_fields($cls) {
       $fields = QueryBuilderField::get_database_property($cls, 'db');
+
+      // Describe Database Fields
+      if (!empty($fields)) {
+         $description = DB::query("DESCRIBE {$cls}");
+
+         while ($column = $description->nextRecord()) {
+            if (array_key_exists($column['Field'], $fields)) {
+               $fields[$column['Field']] = $column['Type'];
+            }
+         }
+      }
+
       $fields = array_merge($fields, QueryBuilderField::get_database_property($cls, 'has_one'));
       $fields = array_merge($fields, QueryBuilderField::get_database_property($cls, 'has_many'));
       $fields = array_merge($fields, QueryBuilderField::get_database_property($cls, 'many_many'));
@@ -136,14 +148,17 @@ class QueryBuilderField extends FormField {
     * @return array('NameOfField' => 'FieldType')
     */
    public static function get_database_property($cls, $prop) {
-      if ($prop == 'has_one' && !QueryBuilderField::traverse_has_one_relationship($cls))
+      if ($prop == 'has_one' && !QueryBuilderField::traverse_has_one_relationship($cls)) {
          return array();
+      }
 
-      if ($prop == 'has_many' && !QueryBuilderField::traverse_has_many_relationship($cls))
+      if ($prop == 'has_many' && !QueryBuilderField::traverse_has_many_relationship($cls)) {
          return array();
+      }
 
-      if ($prop == 'many_many' && !QueryBuilderField::traverse_many_many_relationship($cls))
+      if ($prop == 'many_many' && !QueryBuilderField::traverse_many_many_relationship($cls)) {
          return array();
+      }
 
       return Config::inst()->get($cls, $prop, Config::UNINHERITED) ?: array();
    }
@@ -172,15 +187,22 @@ class QueryBuilderField extends FormField {
       $options = array();
 
       switch (true) {
-         case (preg_match('/BOOL/', $dbType)):
+         case (preg_match('/BOOL|TINYINT/i', $dbType)):
             $type = 'bool';
             break;
 
-         case (preg_match('/ENUM\([\'\"]([^\'\"]*)[\'\"](,[\s]*[\'\"]([^\'\"]*)[\'\"])*\)/', $dbType, $match)):
+         case (preg_match('/INT/i', $dbType)):
+            $type = 'int';
+            break;
+
+         case (preg_match('/ENUM\(((\'([A-Za-z]+)\',?)+)\)/i', $dbType, $match)):
             $type = 'select';
             $options = $match[1];
             $options = explode(',', $options);
-            $default = isset($match[3]) ? $match[3] : reset($options);
+            foreach ($options as &$option) {
+               $option = trim($option, "'");
+            }
+            $default = reset($options);
             break;
 
          case class_exists($dbType):
@@ -191,7 +213,7 @@ class QueryBuilderField extends FormField {
             $options = array_values(ClassInfo::subclassesFor($dbType));
             break;
 
-         case (preg_match('/VARCHAR/', $dbType)):
+         case (preg_match('/VARCHAR/i', $dbType)):
          default:
             $type = 'text';
             break;
