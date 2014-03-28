@@ -1,0 +1,22 @@
+{
+   "name": "silvermine/views",
+   "type": "silverstripe-module",
+   "description": "SilverStripe Views Module",
+   "homepage": "https://github.com/silvermine/silverstripe-views",
+   "license": "MIT",
+   "keywords": ["silverstripe", "views"],
+   "authors": [
+      {
+         "name": "Silvermine",
+         "homepage": "https://github.com/silvermine"
+      }
+   ],
+   "require": {
+      "php": ">=5.3.2",
+      "composer/installers": "*",
+      "silverstripe/framework": "3.1.*"
+   },
+   "autoload": {
+      "classmap": ["code/"]
+   }
+}
