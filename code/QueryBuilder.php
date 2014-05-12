@@ -250,8 +250,7 @@ class QueryBuilder {
     */
    public function execute() {
       if ($this->mode == self::MODE_SELECT_COLUMNS) {
-         $sql = $this->getSQLParts();
-         return $this->fetchColumns($sql);
+         return $this->fetchColumns();
       }
 
       return $this->fetchObjects();
@@ -261,10 +260,10 @@ class QueryBuilder {
    /**
     * Run a query and retrieve specific columns from the result
     *
-    * @param array $parts SQL Parts
     * @return SS_List
     */
-   private function fetchColumns($parts) {
+   private function fetchColumns() {
+      $parts = $this->getSQLParts();
       $query = DB::query($parts['complete']);
 
       $columns = array();
@@ -288,8 +287,7 @@ class QueryBuilder {
 
    /**
     * Run a query and retreive an SS_List full of DataObjects
-    *
-    * @param array $parts SQL Parts
+
     * @return SS_List
     */
    private function fetchObjects() {
