@@ -394,13 +394,29 @@ class QueryBuilder {
 
    private function replaceTableNamesWithAliases($sql) {
       $aliases = $this->aliases;
-      $callback = function($match) use ($aliases) {
+      $primary = $this->getPrimaryTableAlias();
+
+      $callback = function($match) use ($aliases, $primary, $sql) {
          $tableName = $match[1];
          $tableName = QueryBuilder::get_table_name($tableName);
+
+         // Primary table?
+         if ($primary == $tableName) {
+            return "{$primary}.";
+         }
+
+         // TODO: Figure out someway to deal with ambiguous JOINs. This will bite you if
+         // a view exists that contains more than one reference to a table. Just using
+         // the first instance right now since thats most likely the one you want.
          $keys = array_keys($aliases, $tableName);
-         $alias = end($keys);
-         if (!$alias)
+         if (count($keys) > 1) {
+            SS_Log::log("Ambiguous table[{$tableName}] detected when processing: {$sql}", SS_Log::WARN);
+         }
+
+         $alias = reset($keys);
+         if (!$alias) {
             return $match[0];
+         }
 
          return "{$alias}.";
       };
