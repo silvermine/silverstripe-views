@@ -35,6 +35,10 @@ class ViewHost extends DataExtension {
 
    public function onTranslatableCreate($writeToDB) {
       $this->owner->ViewCollectionID = 0;
+
+      if ($writeToDB) {
+         $this->owner->write();
+      }
    }
 
    /**
