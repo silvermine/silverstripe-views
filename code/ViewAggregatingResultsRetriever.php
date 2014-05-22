@@ -35,7 +35,11 @@ class ViewAggregatingResultsRetriever extends ViewResultsRetriever {
    public static function augment_types(&$structure) {
       $options = array();
 
-      // TODO: SS3.1 - do we really need to show all views here or just ones in the same view collection as us?
+      // TODO: when doing aggregation, you should have the ability to sort child views
+      // instead of sorting them by name
+      // That will give you the ability to say "show all results from this view before
+      // any results from the other view" if you configure each view with its own sorting
+      // and don't configure a sorter.
       $views = View::get()
          ->innerJoin('ViewCollection', '"ViewCollection".ID = "View".ViewCollectionID')
          ->innerJoin('SiteTree', '"SiteTree".ViewCollectionID = "ViewCollection".ID')
