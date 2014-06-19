@@ -62,9 +62,12 @@ class ViewResultsRetriever extends DataObject {
     * @return string
     */
    protected function getQueryParamLocale() {
+      $locale = null;
+
       if ($this->QueryParamName) {
          $locale = QueryParamTokenizer::get_value($this->QueryParamName);
       }
+
       if ($locale !== null && i18n::validate_locale($locale)) {
          return $locale;
       }
