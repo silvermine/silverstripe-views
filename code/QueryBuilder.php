@@ -474,12 +474,15 @@ class QueryBuilder {
       $classes = ClassInfo::dataClassesFor($class);
       $baseClass = array_shift($classes);
 
-      foreach($classes as $class) {
-         $table = self::get_table_name($class);
-         $alias = $this->getTableAlias($table);
-         $clause = "{$alias}.ID = {$parentAlias}.ID";
-         $this->addJoin(self::JOIN_TYPE_LEFT_OUTER, $alias, $clause);
+      foreach($classes as $subClass) {
+         if ($subClass !== $class) {
+            $table = self::get_table_name($subClass);
+            $alias = $this->getTableAlias($table);
+            $clause = "{$alias}.ID = {$parentAlias}.ID";
+            $this->addJoin(self::JOIN_TYPE_LEFT_OUTER, $alias, $clause);
+         }
       }
+
       $this->subclassTablesJoined = true;
    }
 
