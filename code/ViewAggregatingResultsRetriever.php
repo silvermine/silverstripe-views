@@ -155,15 +155,4 @@ class ViewAggregatingResultsRetriever extends ViewResultsRetriever {
 
       return $all;
    }
-
-   /**
-    * @see ViewResultsRetriever->updateCMSFields()
-    */
-   public function updateCMSFields(&$view, &$fields) {
-      parent::updateCMSFields($view, $fields);
-   }
-
-   protected function shouldAddQueryBuilder() {
-      return true;
-   }
 }
