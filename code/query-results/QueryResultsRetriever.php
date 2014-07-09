@@ -150,9 +150,5 @@ class QueryResultsRetriever extends ViewResultsRetriever {
    public function Sorts() {
       return parent::Sorts()->sort('ID');
    }
-
-   protected function shouldAddQueryBuilder() {
-      return true;
-   }
 }
 

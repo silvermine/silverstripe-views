@@ -143,18 +143,12 @@ class ViewResultsRetriever extends DataObject {
     * @param FieldList the fields for this view form
     */
    public function updateCMSFields(&$view, &$fields) {
-      if ($this->shouldAddQueryBuilder()) {
-         $editor = new QueryBuilderField(
-            __CLASS__,
-            _t('Views.QueryBuilder.Label', 'QueryBuilder'),
-            $this
-         );
+      $editor = new QueryBuilderField(
+         __CLASS__,
+         _t('Views.QueryBuilder.Label', 'QueryBuilder'),
+         $this
+      );
 
-         $fields->addFieldToTab('Root.QueryEditor', $editor);
-      }
-   }
-
-   protected function shouldAddQueryBuilder() {
-      return false;
+      $fields->addFieldToTab('Root.QueryEditor', $editor);
    }
 }
