@@ -20,9 +20,10 @@ class ViewHost extends DataExtension {
    const TRAVERSAL_LEVEL_SITE_CONFIG = 20000;
    const TRAVERSAL_LEVEL_DEFAULT_LOCALE_SITE_CONFIG = 20001;
 
-   static $has_one = array(
+   public static $has_one = array(
       'ViewCollection' => 'ViewCollection',
    );
+
 
    /**
     * This function is called by ContentController while it is initalizing

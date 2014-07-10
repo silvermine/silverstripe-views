@@ -12,11 +12,11 @@
  */
 class CompoundPredicateCondition extends PredicateCondition {
 
-   static $db = array(
+   public static $db = array(
       'IsConjunctive' => 'BOOLEAN',
    );
 
-   static $has_many = array(
+   public static $has_many = array(
       'Conditions' => 'PredicateCondition',
    );
 

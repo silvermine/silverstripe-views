@@ -11,10 +11,11 @@
  */
 class SimpleViewResultsSorter extends ViewResultsSorter {
 
-   static $db = array(
+   public static $db = array(
       'SortFieldName'   => 'VARCHAR(64)',
       'SortIsAscending' => 'BOOLEAN',
    );
+
 
    /**
     * @see ViewResultsSorter->sort(SS_List)

@@ -11,10 +11,11 @@
  */
 class QueryParamPredicateCondition extends PredicateCondition {
 
-   static $db = array(
+   public static $db = array(
       'QueryParamName' => 'VARCHAR(32)',
       'PresenceRequired' => 'BOOLEAN',
    );
+
 
    /**
     * @see PredicateCondition#getReadOnlySummary()

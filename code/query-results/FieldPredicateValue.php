@@ -10,13 +10,13 @@
  */
 class FieldPredicateValue extends DataObject {
 
-   static $value_tokens = array();
+   public static $value_tokens = array();
 
-   static $db = array(
+   public static $db = array(
       'Value' => 'VARCHAR(256)',
    );
 
-   static $has_one = array(
+   public static $has_one = array(
       'Predicate' => 'FieldPredicate',
    );
 

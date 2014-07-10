@@ -11,11 +11,11 @@
  */
 class ViewAggregatingResultsRetriever extends ViewResultsRetriever {
 
-   static $db = array(
+   public static $db = array(
       'DeDupeFieldName' => 'VARCHAR(64)',
    );
 
-   static $many_many = array(
+   public static $many_many = array(
       'Views' => 'View',
    );
 

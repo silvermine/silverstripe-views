@@ -11,14 +11,15 @@
  */
 class QuerySort extends DataObject {
 
-   static $db = array(
+   public static $db = array(
       'FieldName' => 'VARCHAR(64)',
       'IsAscending' => 'BOOLEAN',
    );
 
-   static $has_one = array(
+   public static $has_one = array(
       'ResultsRetriever' => 'QueryResultsRetriever',
    );
+
 
    /**
     * @see QueryResultsRetriever#getReadOnlySummary

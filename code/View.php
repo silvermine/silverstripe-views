@@ -37,27 +37,27 @@ class View extends DataObject {
    // automatically appears on all descendants of the host page - no matter their depth (but not on the host page itself)
    const RSS_AUTO_LINK_DESCENDANTS = 'Descendants';
 
-   static $db = array(
+   public static $db = array(
       'Name'        => 'VARCHAR(32)',
       'RSSEnabled'  => 'BOOLEAN',
       'RSSAutoLink' => "ENUM('None,PageOnly,PageAndChildren,Children,PageAndDescendants,Descendants')",
       'RSSItems'    => 'Int',
    );
 
-   static $defaults = array(
+   public static $defaults = array(
       'RSSItems'    => 20,
    );
 
-   static $has_one = array(
+   public static $has_one = array(
       'ResultsRetriever' => 'ViewResultsRetriever',
       'ViewCollection'   => 'ViewCollection',
    );
 
-   static $default_sort = 'Name';
+   public static $default_sort = 'Name';
 
-   static $reset_pagination_for_bad_value = true;
+   public static $reset_pagination_for_bad_value = true;
 
-   static $summary_fields = array(
+   public static $summary_fields = array(
       'Name' => 'View Name',
       'ResultsRetrieverReadOnlySummary' => 'Results Retriever Summary',
    );
@@ -67,10 +67,11 @@ class View extends DataObject {
    private $resultsPerPage = 0;
    private $paginationURLParam = 'start';
 
+
    /**
     * @see DataObject->getCMSFields()
     */
-   function getCMSFields() {
+   public function getCMSFields() {
       $fields = new FieldList(
          new TabSet('Root',
             new Tab('Main',

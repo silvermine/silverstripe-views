@@ -11,13 +11,14 @@
  */
 class CompoundPredicate extends QueryPredicate {
 
-   static $db = array(
+   public static $db = array(
       'IsConjunctive' => 'BOOLEAN',
    );
 
-   static $has_many = array(
+   public static $has_many = array(
       'Predicates' => 'QueryPredicate',
    );
+
 
    /**
     * @see QueryResultsRetriever#getReadOnlySummary

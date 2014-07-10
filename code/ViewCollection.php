@@ -18,9 +18,10 @@
  */
 class ViewCollection extends DataObject {
 
-   static $has_many = array(
+   public static $has_many = array(
       'Views' => 'View',
    );
+
 
    /**
     * Deletes the associated child objects before deleting this object.

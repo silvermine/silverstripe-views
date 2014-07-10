@@ -12,15 +12,16 @@
  */
 class TaxonomyTermPredicate extends QueryPredicate {
 
-   static $db = array(
+   public static $db = array(
       'Inclusive' => 'BOOLEAN',
    );
 
-   static $has_one = array(
+   public static $has_one = array(
       'Term' => 'VocabularyTerm',
    );
 
-   static $traverse_has_one = true;
+   public static $traverse_has_one = true;
+
 
    /**
     * Modifies TaxonomyTerm input to use a multiple choice select

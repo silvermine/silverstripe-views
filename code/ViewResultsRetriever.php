@@ -14,14 +14,15 @@ class ViewResultsRetriever extends DataObject {
    const TRANSFORMATION_TRANSLATE_PAGE_LOCALE = 'TranslatePageLocale';
    const TRANSFORMATION_TRANSLATE_QUERY_PARAM_LOCALE = 'TranslateQueryLocale';
 
-   static $db = array(
+   public static $db = array(
       'Transformation' => "ENUM('None,TranslatePageLocale,TranslateQueryLocale')",
       'QueryParamName' => 'VARCHAR(32)',
    );
 
-   static $defaults = array(
+   public static $defaults = array(
       'Transformation' => 'None',
    );
+
 
    /**
     * Return the max number of results possible

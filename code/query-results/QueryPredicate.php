@@ -13,16 +13,16 @@
  */
 class QueryPredicate extends DataObject {
 
-   static $db = array(
-   );
+   public static $db = array();
 
-   static $has_one = array(
+   public static $has_one = array(
       'CompoundParent' => 'CompoundPredicate',
    );
 
-   static $has_many = array(
+   public static $has_many = array(
       'PredicateConditions' => 'PredicateCondition',
    );
+
 
    protected function getConditionsReadOnlySummary($linePrefix = '') {
       $conditions = $this->PredicateConditions();

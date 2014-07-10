@@ -13,21 +13,21 @@
  */
 class FieldPredicate extends QueryPredicate {
 
-   static $db = array(
+   public static $db = array(
       'FieldName' => 'VARCHAR(128)',
       'Qualifier' => "ENUM('equals,notequal,like,in,notin,gt,gte,lt,lte,is,isnot', 'equals')",
       'IsRawSQL'  => 'BOOLEAN',
    );
 
-   static $defaults = array(
+   public static $defaults = array(
       'IsRawSQL' => false,
    );
 
-   static $has_many = array(
+   public static $has_many = array(
       'Values' => 'FieldPredicateValue',
    );
 
-   static $qualifier_symbols = array(
+   public static $qualifier_symbols = array(
       'equals'   => '=',
       'notequal' => '<>',
       'like'     => 'LIKE',

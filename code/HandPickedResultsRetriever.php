@@ -12,17 +12,17 @@
  */
 class HandPickedResultsRetriever extends ViewResultsRetriever {
 
-   static $db = array();
+   public static $db = array();
 
-   static $defaults = array(
+   public static $defaults = array(
       'Transformation' => 'TranslatePageLocale',
    );
 
-   static $many_many = array(
+   public static $many_many = array(
       'Pages' => 'SiteTree',
    );
 
-   static $many_many_extraFields = array(
+   public static $many_many_extraFields = array(
       'Pages' => array(
          'SortOrder' => 'Int',
       ),

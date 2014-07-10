@@ -15,7 +15,7 @@
  */
 class PredicateCondition extends DataObject {
 
-   static $has_one = array(
+   public static $has_one = array(
       'CompoundParent' => 'PredicateCondition',
       'QueryPredicate' => 'QueryPredicate',
    );

@@ -12,17 +12,18 @@
  */
 class QueryResultsRetriever extends ViewResultsRetriever {
 
-   static $db = array();
+   public static $db = array();
 
-   static $has_one = array(
+   public static $has_one = array(
       'RootPredicate' => 'QueryPredicate',
    );
 
-   static $has_many = array(
+   public static $has_many = array(
       'Sorts' => 'QuerySort',
    );
 
-   static $traverse_has_one = true;
+   public static $traverse_has_one = true;
+
 
    /**
     * {@link ViewResultsRetriever::count}
