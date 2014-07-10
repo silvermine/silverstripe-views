@@ -1,7 +1,3 @@
-.querybuilder .middleColumn {
-   background: transparent !important;
-}
-
 .querybuilder > label {
    display: none !important;
 }
@@ -116,13 +112,10 @@
    margin: 0;
 }
 
-.ViewResultsRetriever .ViewsModel {
-   background: rgba(189, 186, 207, 0.25);
-}
-
 .ViewResultsRetriever .objectSet,
-.viewsImportExport div {
-   background: rgba(204, 222, 243, 0.35);
+.viewsImportExport div,
+.ViewResultsRetriever .ViewsModel {
+   background: rgba(204, 222, 243, 0.2);
 }
 
 .ViewResultsRetriever h4 + .ViewsModel {
