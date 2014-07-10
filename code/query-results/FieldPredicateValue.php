@@ -20,9 +20,11 @@ class FieldPredicateValue extends DataObject {
       'Predicate' => 'FieldPredicate',
    );
 
+
    public static function add_value_token($identifier, $retriever) {
       self::$value_tokens[$identifier] = $retriever;
    }
+
 
    public function getSQLValue($translateSQLValues = true) {
       if ($translateSQLValues) {

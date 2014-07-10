@@ -34,6 +34,7 @@ class ViewHost extends DataExtension {
       $this->includeRSSAutoLinkTags();
    }
 
+
    public function onTranslatableCreate($writeToDB) {
       $this->owner->ViewCollectionID = 0;
 
@@ -41,6 +42,7 @@ class ViewHost extends DataExtension {
          $this->owner->write();
       }
    }
+
 
    /**
     * Given a ViewHost this will take all views on that host and pass each to
@@ -85,6 +87,7 @@ class ViewHost extends DataExtension {
       return true;
    }
 
+
    /**
     * Internal function used to get a SiteConfig object.
     *
@@ -98,6 +101,7 @@ class ViewHost extends DataExtension {
 
       return $config;
    }
+
 
    /**
     * Used by templates in a control block to retrieve a view by name.
@@ -137,6 +141,7 @@ class ViewHost extends DataExtension {
       return $view;
    }
 
+
    /**
     * Used by templates in a conditional block to see if there is a view with a
     * given name defined on this page (or, if traversing, a translation or
@@ -149,6 +154,7 @@ class ViewHost extends DataExtension {
    public function HasView($name, $traverse = true) {
       return ($this->GetView($name, $resultsPerPage = 0, $paginationURLParam = 'start', $traverse) != null);
    }
+
 
    /**
     * Used by templates in a conditional block to see if there is a view with a
@@ -168,6 +174,7 @@ class ViewHost extends DataExtension {
       $results = $view->Results();
       return $results->exists();
    }
+
 
    /**
     * Just a helper function for templates because SS template parsing doesn't
@@ -221,6 +228,7 @@ class ViewHost extends DataExtension {
          RSSFeed::linkToFeed($url);
       }
    }
+
 
    /**
     * Used internally to traverse views through the hierarchy of the site to
@@ -299,6 +307,7 @@ class ViewHost extends DataExtension {
       return $views;
    }
 
+
    /**
     * @see DataExtension->updateCMSFields()
     */
@@ -320,6 +329,7 @@ class ViewHost extends DataExtension {
       );
       $fields->addFieldToTab('Root.Views', $viewsGrid);
    }
+
 
    /**
     * Accessor for retrieving all views attached to the owning data object.

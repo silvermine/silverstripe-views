@@ -28,6 +28,7 @@ class QuerySort extends DataObject {
       return $this->FieldName . ' ' . ($this->IsAscending ? 'ASC' : 'DESC');
    }
 
+
    public function updateQuery(&$query) {
       $field = ViewsStringTokenizers::tokenize($this->FieldName, $this);
 

@@ -61,6 +61,7 @@ class GridFieldUpDownSortAction implements GridField_ColumnProvider, GridField_A
       return $this->setMode(self::MODE_BOTTOM);
    }
 
+
    /**
     * Add a column 'Actions' if nothing else has
     *
@@ -73,6 +74,7 @@ class GridFieldUpDownSortAction implements GridField_ColumnProvider, GridField_A
       }
    }
 
+
    /**
     * Return any special attributes that will be used for FormField::create_tag()
     *
@@ -84,6 +86,7 @@ class GridFieldUpDownSortAction implements GridField_ColumnProvider, GridField_A
    public function getColumnAttributes($gridField, $record, $columnName) {
       return array('class' => 'col-buttons');
    }
+
 
    /**
     * Add the title
@@ -98,6 +101,7 @@ class GridFieldUpDownSortAction implements GridField_ColumnProvider, GridField_A
       }
    }
 
+
    /**
     * Which columns are handled by this component
     *
@@ -108,6 +112,7 @@ class GridFieldUpDownSortAction implements GridField_ColumnProvider, GridField_A
       return array('Actions');
    }
 
+
    /**
     * Which GridField actions are this component handling
     *
@@ -117,6 +122,7 @@ class GridFieldUpDownSortAction implements GridField_ColumnProvider, GridField_A
    public function getActions($gridField) {
       return array('moveitem');
    }
+
 
    /**
     *
@@ -189,6 +195,7 @@ class GridFieldUpDownSortAction implements GridField_ColumnProvider, GridField_A
       }
       return $field->Field();
    }
+
 
    /**
     * Handle the actions and apply any changes to the GridField
@@ -266,6 +273,7 @@ class GridFieldUpDownSortAction implements GridField_ColumnProvider, GridField_A
       $this->updatePositions($list, $ids);
    }
 
+
    protected function updatePositions($dataList, $ids) {
       $val = 1;
       foreach ($ids as $id) {
@@ -294,6 +302,7 @@ class GridFieldUpDownSortAction implements GridField_ColumnProvider, GridField_A
       }
       throw new Exception(sprintf('Could not find the table for sort field %s.', $this->sortColumn));
    }
+
 
    protected function updatePersistedSortValue($dataList, $id, $val) {
       $table = $this->getSortTable($dataList);

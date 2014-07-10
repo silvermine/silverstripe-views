@@ -20,9 +20,11 @@ class PredicateCondition extends DataObject {
       'QueryPredicate' => 'QueryPredicate',
    );
 
+
    public function getReadOnlySummary($linePrefix = '') {
       throw new RuntimeException(get_class($this) . ' needs to implement PredicateCondition->getReadOnlySummary($linePrefix = \'\')');
    }
+
 
    public function conditionIsMet() {
       throw new RuntimeException(get_class($this) . ' needs to implement PredicateCondition->conditionIsMet()');

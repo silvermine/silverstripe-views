@@ -14,6 +14,7 @@ class RSSContentControllerExtension extends Extension {
 
    private static $allowed_actions = array('rss');
 
+
    /**
     * Create the RSS feed for a given view.  This function is designed to be
     * overridden by any client code that wants to customize the behavior of the
@@ -28,6 +29,7 @@ class RSSContentControllerExtension extends Extension {
       $items = $view->Results();
       return new RSSFeed($items, $controller->request->getURL(), _t('Views.' . $view->Name . 'RSSTitle'));
    }
+
 
    /**
     * This is registered as an allowed_action on controllers that have the

@@ -37,6 +37,7 @@ class CompoundPredicateCondition extends PredicateCondition {
       return $html;
    }
 
+
    /**
     * @see PredicateCondition#conditionIsMet()
     */
@@ -58,6 +59,7 @@ class CompoundPredicateCondition extends PredicateCondition {
       }
       return false;
    }
+
 
    /**
     * Deletes the associated child objects before deleting this object.

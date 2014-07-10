@@ -33,6 +33,7 @@ class ViewResultsRetriever extends DataObject {
       throw new RuntimeException('The ' . get_class($this) . ' class needs to implement count().');
    }
 
+
    /**
     * Used to dump fields the need to be preserved by, but
     * not modified by QueryBuilderField upon a save action.
@@ -42,6 +43,7 @@ class ViewResultsRetriever extends DataObject {
    public function dumpPreservedFields() {
       return array();
    }
+
 
    /**
     * Get the locale of the current page
@@ -56,6 +58,7 @@ class ViewResultsRetriever extends DataObject {
 
       return $currentPage->Locale;
    }
+
 
    /**
     * Get the locale from the pre-defined query param
@@ -76,6 +79,7 @@ class ViewResultsRetriever extends DataObject {
       return $this->getCurrentPageLocale();
    }
 
+
    /**
     * All subclasses should implement this function, which provides a read-only
     * summary of the results retriever in an HTML format.  This can be used to
@@ -87,6 +91,7 @@ class ViewResultsRetriever extends DataObject {
    public function getReadOnlySummary() {
       return 'The ' . get_class($this) . ' class needs to implement getReadOnlySummary().';
    }
+
 
    protected function getTransformedResultsLocale() {
       switch ($this->Transformation) {
@@ -121,6 +126,7 @@ class ViewResultsRetriever extends DataObject {
       return $results;
    }
 
+
    /**
     * All subclasses must implement this function, which is their way of
     * performing their one job - retrieving results.  This function is called
@@ -135,6 +141,7 @@ class ViewResultsRetriever extends DataObject {
    protected function resultsImpl() {
       throw new RuntimeException('The ' . get_class($this) . ' class needs to implement resultsImpl(int, int).');
    }
+
 
    /**
     * All subclasses should implement this function, which provides them a way

@@ -70,6 +70,7 @@ class QueryResultsRetriever extends ViewResultsRetriever {
       return $html;
    }
 
+
    /**
     * Return an instance of QueryBuilder set up using the given query predicate
     *
@@ -96,6 +97,7 @@ class QueryResultsRetriever extends ViewResultsRetriever {
       return $qb;
    }
 
+
    /**
     * Return true if SiteTree is translatable
     *
@@ -104,6 +106,7 @@ class QueryResultsRetriever extends ViewResultsRetriever {
    private function isTranslatable() {
       return SiteTree::has_extension('Translatable');
    }
+
 
    /**
     * Deletes all related objects that have a one-to-one relationship with this

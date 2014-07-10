@@ -25,6 +25,7 @@ class SimpleViewResultsSorter extends ViewResultsSorter {
       return $results;
    }
 
+
    /**
     * @see ViewResultsSorter->getReadOnlySummar()
     */

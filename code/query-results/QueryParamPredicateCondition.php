@@ -26,6 +26,7 @@ class QueryParamPredicateCondition extends PredicateCondition {
          " present in URL<br />";
    }
 
+
    /**
     * @see PredicateCondition#conditionIsMet()
     */

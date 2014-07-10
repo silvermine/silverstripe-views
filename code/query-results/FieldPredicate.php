@@ -41,6 +41,7 @@ class FieldPredicate extends QueryPredicate {
       'isnot'    => 'IS NOT',
    );
 
+
    private function buildWhere($translateSQLValues = true) {
       if (!array_key_exists($this->Qualifier, self::$qualifier_symbols)) {
          $this->Qualifier = 'equals';
@@ -81,12 +82,14 @@ class FieldPredicate extends QueryPredicate {
       return sprintf("%s %s %s", $this->FieldName, self::$qualifier_symbols[$this->Qualifier], $values);
    }
 
+
    /**
     * @see QueryResultsRetriever#getReadOnlySummary
     */
    public function getReadOnlySummaryImpl($linePrefix = '') {
       return htmlentities($this->buildWhere(false));
    }
+
 
    /**
     * Deletes the associated child objects before deleting this object.
@@ -100,6 +103,7 @@ class FieldPredicate extends QueryPredicate {
          $value->delete();
       }
    }
+
 
    public function updateQueryImpl(&$query, $conjunctive) {
       $query->where($this->buildWhere(), $conjunctive);

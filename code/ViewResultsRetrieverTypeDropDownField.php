@@ -16,10 +16,10 @@ class ViewResultsRetrieverTypeDropDownField extends DropDownField {
     * maxlength
     */
    public function __construct() {
-
       parent::__construct('ResultsRetrieverType', _t('Views.ResultsRetrieverTypeLabel', 'Results Retriever Type'), $this->validTypes());
       $this->setEmptyString(_t('Views.ViewResultsRetrieverTypeChooseOne', 'Choose One'));
    }
+
 
    public function validate($validator) {
       $class = $this->dataValue();
@@ -33,6 +33,7 @@ class ViewResultsRetrieverTypeDropDownField extends DropDownField {
       }
    }
 
+
    public function saveInto(DataObjectInterface $record) {
       $validation = $record->validate();
       if (!$validation->valid()) {
@@ -45,6 +46,7 @@ class ViewResultsRetrieverTypeDropDownField extends DropDownField {
       $rr->write();
       $record->ResultsRetrieverID = $rr->ID;
    }
+
 
    public function validTypes() {
       $types = ClassInfo::subclassesFor('ViewResultsRetriever');

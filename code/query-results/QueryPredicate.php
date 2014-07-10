@@ -36,6 +36,7 @@ class QueryPredicate extends DataObject {
       return '';
    }
 
+
    public function getReadOnlySummary($linePrefix = '') {
       $html = $this->getConditionsReadOnlySummary($linePrefix);
       $html .= $this->getReadOnlySummaryImpl($linePrefix);
@@ -67,9 +68,11 @@ class QueryPredicate extends DataObject {
       return $this->updateQueryImpl($query, $conjunctive);
    }
 
+
    public function getReadOnlySummaryImpl($linePrefix = '') {
       throw new RuntimeException(get_class($this) . ' needs to implement QueryPredicate->getReadOnlySummaryImpl($linePrefix = \'\')');
    }
+
 
    /**
     * Deletes the associated child objects before deleting this object.
@@ -83,6 +86,7 @@ class QueryPredicate extends DataObject {
          $condition->delete();
       }
    }
+
 
    /**
     * Updates the QueryBuilder object that is passed in with whatever query requirements
@@ -102,4 +106,3 @@ class QueryPredicate extends DataObject {
       throw new RuntimeException(get_class($this) . ' needs to implement QueryPredicate->updateQueryImpl(&$query, $conjunctive)');
    }
 }
-

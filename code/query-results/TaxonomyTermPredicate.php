@@ -49,6 +49,7 @@ class TaxonomyTermPredicate extends QueryPredicate {
       );
    }
 
+
    /**
     * @see QueryResultsRetriever#getReadOnlySummary
     */
@@ -61,6 +62,7 @@ class TaxonomyTermPredicate extends QueryPredicate {
          return "Does not have vocabulary term '{$term->Term}' from vocabulary '{$term->Vocabulary()->Name}'";
       }
    }
+
 
    /**
     * Returns the representation of the current taxonomy term.
@@ -75,6 +77,7 @@ class TaxonomyTermPredicate extends QueryPredicate {
       $term = $this->Term();
       return "{$term->Vocabulary()->MachineName}.{$term->MachineName}";
    }
+
 
    /**
     * Return the DataObject for a term defined in the given representation.
@@ -96,6 +99,7 @@ class TaxonomyTermPredicate extends QueryPredicate {
 
       return $term;
    }
+
 
    public function updateQueryImpl(&$query, $conjunctive) {
       $mainTable = $query->getPrimaryTableAlias();

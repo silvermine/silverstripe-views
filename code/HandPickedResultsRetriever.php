@@ -35,6 +35,7 @@ class HandPickedResultsRetriever extends ViewResultsRetriever {
       'URLSegment',
    );
 
+
    /**
     * {@link ViewResultsRetriever::count}
     */
@@ -53,6 +54,7 @@ class HandPickedResultsRetriever extends ViewResultsRetriever {
       return $results->count();
    }
 
+
    /**
     * {@link ViewResultsRetriever::dumpPreservedFields}
     */
@@ -65,6 +67,7 @@ class HandPickedResultsRetriever extends ViewResultsRetriever {
          'Pages' => $pages
       );
    }
+
 
    /**
     * Return a QueryBuilder instance set up to query for objects
@@ -94,6 +97,7 @@ class HandPickedResultsRetriever extends ViewResultsRetriever {
       return $qb;
    }
 
+
    /**
     * @see ViewResultsRetriever->getReadOnlySummary()
     */
@@ -106,6 +110,7 @@ class HandPickedResultsRetriever extends ViewResultsRetriever {
       $html .= '</ul>';
       return $html;
    }
+
 
    /**
     * Returns true if Pages can be translated
@@ -126,6 +131,7 @@ class HandPickedResultsRetriever extends ViewResultsRetriever {
       }
    }
 
+
    /**
     * Deletes the associated many_many rows for hand-picked pages before
     * deleting this results retriever.
@@ -137,6 +143,7 @@ class HandPickedResultsRetriever extends ViewResultsRetriever {
       parent::Pages()->removeAll();
    }
 
+
    /**
     * Override the default Pages implementation to sort the pages in the
     * correct sort order (based on the many_many_extraFields column).
@@ -146,6 +153,7 @@ class HandPickedResultsRetriever extends ViewResultsRetriever {
    public function Pages() {
       return parent::Pages()->sort('SortOrder ASC');
    }
+
 
    /**
     * @see ViewResultsRetriever->resultsImpl()
@@ -165,6 +173,7 @@ class HandPickedResultsRetriever extends ViewResultsRetriever {
 
       return $results;
    }
+
 
    /**
     * @see ViewResultsRetriever->updateCMSFields()

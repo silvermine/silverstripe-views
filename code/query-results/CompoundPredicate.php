@@ -37,6 +37,7 @@ class CompoundPredicate extends QueryPredicate {
       return $html;
    }
 
+
    /**
     * Deletes the associated child objects before deleting this object.
     *
@@ -49,6 +50,7 @@ class CompoundPredicate extends QueryPredicate {
          $predicate->delete();
       }
    }
+
 
    public function updateQueryImpl(&$query, $conjunctive) {
       $preds = $this->Predicates();
