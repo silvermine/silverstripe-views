@@ -96,6 +96,10 @@ class ViewAggregatingResultsRetriever extends ViewResultsRetriever {
    protected function onBeforeDelete() {
       parent::onBeforeDelete();
       parent::Views()->removeAll();
+
+      if ($this->SorterID) {
+         $this->Sorter()->delete();
+      }
    }
 
 
