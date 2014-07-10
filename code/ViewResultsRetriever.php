@@ -97,14 +97,15 @@ class ViewResultsRetriever extends DataObject {
       }
    }
 
+
    /**
     * Used to load fields the need to be preserved by, but
     * not modified by QueryBuilderField upon a save action.
     *
     * @param array
     */
-   public function loadPreservedFields($data) {
-   }
+   public function loadPreservedFields($data) {}
+
 
    /**
     * Return the results
@@ -143,18 +144,7 @@ class ViewResultsRetriever extends DataObject {
     * @param FieldList the fields for this view form
     */
    public function updateCMSFields(&$view, &$fields) {
-      if ($this->shouldAddQueryBuilder()) {
-         $editor = new QueryBuilderField(
-            __CLASS__,
-            _t('Views.QueryBuilder.Label', 'QueryBuilder'),
-            $this
-         );
-
-         $fields->addFieldToTab('Root.QueryEditor', $editor);
-      }
-   }
-
-   protected function shouldAddQueryBuilder() {
-      return false;
+      $editor = new QueryBuilderField('ViewResultsRetriever', $this, $allowExport = false);
+      $fields->addFieldToTab('Root.QueryEditor', $editor);
    }
 }

@@ -147,12 +147,23 @@ class QueryResultsRetriever extends ViewResultsRetriever {
       return $results;
    }
 
+
    public function Sorts() {
       return parent::Sorts()->sort('ID');
    }
 
-   protected function shouldAddQueryBuilder() {
-      return true;
+
+   /**
+    * All subclasses should implement this function, which provides them a way
+    * of adding fields to the "add/edit view" CMS form.  These fields will be
+    * what the user uses to modify this results retriever.
+    *
+    * @param View reference to the view that contains this results retriever
+    * @param FieldList the fields for this view form
+    */
+   public function updateCMSFields(&$view, &$fields) {
+      $editor = new QueryBuilderField('ViewResultsRetriever', $this);
+      $fields->addFieldToTab('Root.QueryEditor', $editor);
    }
 }
 

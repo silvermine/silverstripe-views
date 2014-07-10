@@ -119,9 +119,11 @@ class HandPickedResultsRetriever extends ViewResultsRetriever {
     */
    public function loadPreservedFields($data) {
       $pages = array_key_exists('Pages', $data) ? $data['Pages'] : array();
+      $i = 0;
       $this->Pages()->removeAll();
-      foreach($pages as $page)
-         $this->Pages()->add($page);
+      foreach ($pages as $page) {
+         $this->Pages()->add($page, array('SortOrder' => ++$i));
+      }
    }
 
    /**
@@ -175,26 +177,26 @@ class HandPickedResultsRetriever extends ViewResultsRetriever {
          ->removeComponentsByType('GridFieldDeleteAction')
          ->removeComponentsByType('GridFieldAddNewButton')
          ->removeComponentsByType('GridFieldAddExistingAutocompleter')
-         ->addComponent(new AddPageToHandPickedResultsRetrieverAutocompleter('buttons-before-left'))
+         ->addComponent(new AddPageToSortedManyManyAutocompleter('HandPickedResultsRetrieverID', 'SortOrder', 'buttons-before-left'))
          ->addComponent(GridFieldUpDownSortAction::create('SortOrder')->toTop())
          ->addComponent(GridFieldUpDownSortAction::create('SortOrder')->up())
          ->addComponent(GridFieldUpDownSortAction::create('SortOrder')->down())
          ->addComponent(GridFieldUpDownSortAction::create('SortOrder')->toBottom())
-         ->addComponent(new GridFieldDeleteAction($removeRelation = true))
-      ;
+         ->addComponent(new GridFieldDeleteAction($removeRelation = true));
+
       $autocompleter = $config->getComponentByType('GridFieldAddExistingAutocompleter');
       $autocompleter->setSearchList($this->createSearchDataList());
       $autocompleter->setResultsFormat($this->config()->get('autocomplete_format'));
       $autocompleter->setSearchFields($this->config()->get('autocomplete_search_fields'));
 
-      $picker = new GridField(
+      $fields->addFieldToTab('Root.QueryEditor', new GridField(
          'Pages',
-         _t('Views.HandPickedPagesLabel', 'Pages'),
+         _t('Views.HandPickedPages.Label', 'Pages'),
          $this->Pages(),
          $config
-      );
-      $fields->addFieldToTab('Root.Main', $picker);
+      ));
    }
+
 
    protected function createSearchDataList() {
       $list = DataList::create('SiteTree');

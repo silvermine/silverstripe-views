@@ -19,49 +19,18 @@ class ViewAggregatingResultsRetriever extends ViewResultsRetriever {
       'Views' => 'View',
    );
 
-   static $has_one = array(
+   public static $many_many_extraFields = array(
+      'Views' => array(
+         'SortOrder' => 'Int',
+      ),
+   );
+
+   public static $has_one = array(
       'Sorter' => 'ViewResultsSorter',
    );
 
-   static $traverse_has_one = true;
+   public static $traverse_has_one = true;
 
-   /**
-    * Augment the QueryBuilderField type description so that it includes an
-    * entry for the View class. Includes a multiple-choice view choosing dropdown.
-    * Called by {@link QueryBuilderField::build_core_type_structures()}
-    *
-    * @param array &$structure
-    */
-   public static function augment_types(&$structure) {
-      $options = array();
-
-      // TODO: when doing aggregation, you should have the ability to sort child views
-      // instead of sorting them by name
-      // That will give you the ability to say "show all results from this view before
-      // any results from the other view" if you configure each view with its own sorting
-      // and don't configure a sorter.
-      $views = View::get()
-         ->innerJoin('ViewCollection', '"ViewCollection".ID = "View".ViewCollectionID')
-         ->innerJoin('SiteTree', '"SiteTree".ViewCollectionID = "ViewCollection".ID')
-         ->sort('"View".Name ASC')
-      ;
-
-      foreach ($views as $view)
-         $options[$view->ID] = "{$view->Name} &ndash; {$view->getPage()->Summary()}";
-
-      $viewStructure = array(
-         'base' => null,
-         'fields' => array(
-            'ID' => array(
-               'type' => 'select',
-               'default' => '',
-               'options' => $options
-            )
-         )
-      );
-
-      $structure['View'] = $viewStructure;
-   }
 
    /**
     * @see ViewResultsRetriever->count()
@@ -73,6 +42,22 @@ class ViewAggregatingResultsRetriever extends ViewResultsRetriever {
       }
       return $count;
    }
+
+
+   /**
+    * @see ViewResultsRetriever->dumpPreservedFields()
+    */
+   public function dumpPreservedFields() {
+      $views = array();
+      foreach($this->Views() as $view) {
+         $views[] = $view;
+      }
+
+      return array(
+         'Views' => $views
+      );
+   }
+
 
    /**
     * @see ViewResultsRetriever->getReadOnlySummary()
@@ -89,23 +74,18 @@ class ViewAggregatingResultsRetriever extends ViewResultsRetriever {
       return $html;
    }
 
-   /**
-    * Return an array representation of the Views relationship.
-    * Called by {@link QueryBuilderField::buildObjectStructure()}
-    *
-    * @return array
-    */
-   public function getViewsStructure() {
-      $viewIDs = array();
-      foreach ($this->Views() as $view) {
-         $viewIDs[] = array(
-            'type' => get_class($view),
-            'fields' => array('ID' => $view->ID)
-         );
-      }
 
-      return $viewIDs;
+   /**
+    * @see ViewResultsRetriever->loadPreservedFields()
+    */
+   public function loadPreservedFields($data) {
+      $views = array_key_exists('Views', $data) ? $data['Views'] : array();
+      $i = 0;
+      $this->Views()->removeAll();
+      foreach($views as $view)
+         $this->Views()->add($view, array('SortOrder' => ++$i));
    }
+
 
    /**
     * Deletes the associated many_many rows for hand-picked pages before
@@ -118,27 +98,7 @@ class ViewAggregatingResultsRetriever extends ViewResultsRetriever {
       parent::Views()->removeAll();
    }
 
-   /**
-    * Return the DataObject for a view defined in the given representation.
-    * Called by {@link QueryBuilderField::save_object()}
-    *
-    * Input is the same as the output of {@link ViewAggregatingResultsRetriever::getViewsStructure()}
-    *
-    * @param array
-    * @return View
-    */
-   public function resolveViewsStructure($view) {
-      $viewID = $view['fields']['ID'];
-      $view = View::get_one('View', 'ID = ' . Convert::raw2sql($viewID));
-      if (empty($view))
-         return;
 
-      return $view;
-   }
-
-   /**
-    * @see ViewResultsRetriever->resultsImpl()
-    */
    protected function resultsImpl() {
       $all = new ArrayList(array());
       foreach ($this->Views() as $view) {
@@ -156,14 +116,42 @@ class ViewAggregatingResultsRetriever extends ViewResultsRetriever {
       return $all;
    }
 
-   /**
-    * @see ViewResultsRetriever->updateCMSFields()
-    */
+
    public function updateCMSFields(&$view, &$fields) {
       parent::updateCMSFields($view, $fields);
+
+      $config = GridFieldConfig_RelationEditor::create($itemsPerPage = 20)
+         ->removeComponentsByType('GridFieldEditButton')
+         ->removeComponentsByType('GridFieldDeleteAction')
+         ->removeComponentsByType('GridFieldAddNewButton')
+         ->removeComponentsByType('GridFieldAddExistingAutocompleter')
+         ->addComponent(new AddPageToSortedManyManyAutocompleter('ViewAggregatingResultsRetrieverID', 'SortOrder', 'buttons-before-left'))
+         ->addComponent(GridFieldUpDownSortAction::create('SortOrder')->toTop())
+         ->addComponent(GridFieldUpDownSortAction::create('SortOrder')->up())
+         ->addComponent(GridFieldUpDownSortAction::create('SortOrder')->down())
+         ->addComponent(GridFieldUpDownSortAction::create('SortOrder')->toBottom())
+         ->addComponent(new GridFieldDeleteAction($removeRelation = true));
+
+      $autocompleter = $config->getComponentByType('GridFieldAddExistingAutocompleter');
+      $autocompleter->setSearchList(View::get());
+      $autocompleter->setResultsFormat('$Summary');
+      $autocompleter->setSearchFields(array('Name'));
+
+      $fields->addFieldToTab('Root.QueryEditor', new GridField(
+         'Views',
+         _t('Views.AggViews.Label', 'Views'),
+         $this->Views(),
+         $config
+      ));
    }
 
-   protected function shouldAddQueryBuilder() {
-      return true;
+
+   /**
+    * Sort the Views relationship correctly
+    *
+    * @return SS_List or null the pages associated with this results retriever
+    */
+   public function Views() {
+      return parent::Views()->sort('SortOrder ASC');
    }
 }

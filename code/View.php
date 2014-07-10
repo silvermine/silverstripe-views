@@ -299,4 +299,9 @@ class View extends DataObject {
       $this->paginationURLParam = $paginationURLParam;
       return $this;
    }
+
+
+   public function Summary() {
+      return "{$this->Name} [{$this->getPage()->Title}]";
+   }
 }

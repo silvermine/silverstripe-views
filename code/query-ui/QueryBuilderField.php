@@ -14,6 +14,8 @@ class QueryBuilderField extends FormField {
    protected $readonly = false;
    protected $disabled = false;
    private $resultsRetriever = null;
+   private $allowExport = true;
+
 
    /**
     * array_merge_recursive does indeed merge arrays, but it converts values with duplicate
@@ -134,7 +136,6 @@ class QueryBuilderField extends FormField {
 
       $fields = array_merge($fields, QueryBuilderField::get_database_property($cls, 'has_one'));
       $fields = array_merge($fields, QueryBuilderField::get_database_property($cls, 'has_many'));
-      $fields = array_merge($fields, QueryBuilderField::get_database_property($cls, 'many_many'));
 
       return $fields;
    }
@@ -144,7 +145,7 @@ class QueryBuilderField extends FormField {
     * Given a class, return the fields matching the kind of relationship provided.
     *
     * @param class $cls DataObject Class
-    * @param string $prop [db, has_one, has_many, many_many]
+    * @param string $prop [db, has_one, has_many]
     * @return array('NameOfField' => 'FieldType')
     */
    public static function get_database_property($cls, $prop) {
@@ -153,10 +154,6 @@ class QueryBuilderField extends FormField {
       }
 
       if ($prop == 'has_many' && !QueryBuilderField::traverse_has_many_relationship($cls)) {
-         return array();
-      }
-
-      if ($prop == 'many_many' && !QueryBuilderField::traverse_many_many_relationship($cls)) {
          return array();
       }
 
@@ -382,8 +379,7 @@ class QueryBuilderField extends FormField {
          }
 
          $hasMany = QueryBuilderField::get_database_property($cls, 'has_many');
-         $manyMany = QueryBuilderField::get_database_property($cls, 'many_many');
-         foreach (array_merge($hasMany, $manyMany) as $property => $type) {
+         foreach ($hasMany as $property => $type) {
             $obj->$property()->removeAll();
 
             foreach (QueryBuilderField::get_value($fields, $property, array()) as $childStructure) {
@@ -435,34 +431,17 @@ class QueryBuilderField extends FormField {
 
 
    /**
-    * Return true if Object Representations for the given class
-    * should traverse it's many_many relationships
-    *
-    * @param string $cls
-    * @return bool
-    */
-   public static function traverse_many_many_relationship($cls) {
-      if (is_object($cls))
-         $cls = get_class($cls);
-
-      $relation = Config::inst()->get($cls, 'many_many');
-      return in_array($cls, array('ViewAggregatingResultsRetriever')) && !empty($relation);
-   }
-
-
-   /**
     * Object Constructor. Create a new form field.
     *
-    * @param string $name
-    * @param string $title
     * @param QueryResultsRetriever $resultsRetriever
-    * @param object $form Optional
     */
-   public function __construct($name, $title, ViewResultsRetriever $resultsRetriever, $form = null) {
+   public function __construct($name, ViewResultsRetriever $resultsRetriever, $allowExport = true) {
       $this->resultsRetriever = $resultsRetriever;
+      $this->allowExport = $allowExport;
+
       $structure = $this->buildQueryRepr($resultsRetriever);
 
-      parent::__construct($name, $title, json_encode($structure), $form);
+      parent::__construct($name, false, json_encode($structure));
    }
 
 
@@ -516,11 +495,6 @@ class QueryBuilderField extends FormField {
 
          // HasMany Relationships
          foreach (QueryBuilderField::get_database_property($cls, 'has_many') as $name => $type) {
-            $structure['fields'][$name] = $buildChildStructure($obj, $name);
-         }
-
-         // HasMany Relationships
-         foreach (QueryBuilderField::get_database_property($cls, 'many_many') as $name => $type) {
             $structure['fields'][$name] = $buildChildStructure($obj, $name);
          }
 
@@ -605,7 +579,11 @@ class QueryBuilderField extends FormField {
       }
 
       $html = "<div class='viewsQueryBuilder'></div>";
-      $html .= "<div class='viewsImportExport'></div>";
+
+      if ($this->allowExport) {
+         $html .= "<div class='viewsImportExport'></div>";
+      }
+
       $html .= $this->getInputTag();
       return $html;
    }

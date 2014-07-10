@@ -9,11 +9,18 @@
  * @package silverstripe-views
  * @subpackage code
  */
-class AddPageToHandPickedResultsRetrieverAutocompleter extends GridFieldAddExistingAutocompleter {
+class AddPageToSortedManyManyAutocompleter extends GridFieldAddExistingAutocompleter {
+   private $foreignColumn = '';
+   private $sortColumn = '';
 
-   public function __construct($targetFragment = 'before', $searchFields = null) {
+
+   public function __construct($foreignColumn, $sortColumn, $targetFragment = 'before', $searchFields = null) {
+      $this->foreignColumn = $foreignColumn;
+      $this->sortColumn = $sortColumn;
+
       parent::__construct($targetFragment, $searchFields);
    }
+
 
    /**
     * Add the page, but also fix the sort order.
@@ -32,8 +39,11 @@ class AddPageToHandPickedResultsRetrieverAutocompleter extends GridFieldAddExist
          // this results retriever so that a second addition would not
          // result in two pages having a zero value for SortOrder
          $sql = sprintf(
-            'UPDATE %s SET SortOrder = SortOrder + 1 WHERE HandPickedResultsRetrieverID = %d',
+            'UPDATE %s SET %s = %s + 1 WHERE %s = %d',
             $dataList->getJoinTable(),
+            $this->sortColumn,
+            $this->sortColumn,
+            $this->foreignColumn,
             $dataList->getForeignID()
          );
          DB::query($sql);

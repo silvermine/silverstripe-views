@@ -547,8 +547,8 @@
                return;
             }
 
-            exportLink = importExport.find('.export a').get(0);
-            URL.revokeObjectURL(exportLink.href);
+            exportLink = importExport.find('.export a');
+            URL.revokeObjectURL(exportLink.attr('href'));
 
             blob = new Blob([json], {"type": "application\/json"});
             exportLink.href = URL.createObjectURL(blob);
