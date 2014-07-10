@@ -21,8 +21,8 @@ class SimpleViewResultsSorter extends ViewResultsSorter {
     * @see ViewResultsSorter->sort(SS_List)
     */
    public function sort(SS_List &$results) {
-      $results->sort($this->SortFieldName, ($this->SortIsAscending ? 'ASC' : 'DESC'));
-      return $results;
+      // ArrayList sort return a copy of itself rather than mutating
+      return $results->sort($this->SortFieldName, ($this->SortIsAscending ? 'ASC' : 'DESC'));
    }
 
 
