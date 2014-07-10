@@ -52,7 +52,7 @@ class QueryResultsRetriever extends ViewResultsRetriever {
     * @see ViewResultsRetriever#getReadOnlySummary
     */
    public function getReadOnlySummary() {
-      Requirements::css('views/code/css/views.css');
+      Requirements::css('views/css/views.css');
 
       $html = '<span class="viewsReadOnlyQuerySummary">';
       if ($this->RootPredicate()->ID) {
