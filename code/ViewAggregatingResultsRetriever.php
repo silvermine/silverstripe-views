@@ -106,7 +106,9 @@ class ViewAggregatingResultsRetriever extends ViewResultsRetriever {
    protected function resultsImpl() {
       $all = new ArrayList(array());
       foreach ($this->Views() as $view) {
-         $all->merge($view->Results());
+         // Call results directly form the results retriever to get around
+         // the pagination logic in View.
+         $all->merge($view->ResultsRetriever()->results());
       }
 
       if ($this->DeDupeFieldName) {
