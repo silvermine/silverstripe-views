@@ -13,21 +13,21 @@
  */
 class FieldPredicate extends QueryPredicate {
 
-   static $db = array(
+   public static $db = array(
       'FieldName' => 'VARCHAR(128)',
       'Qualifier' => "ENUM('equals,notequal,like,in,notin,gt,gte,lt,lte,is,isnot', 'equals')",
       'IsRawSQL'  => 'BOOLEAN',
    );
 
-   static $defaults = array(
+   public static $defaults = array(
       'IsRawSQL' => false,
    );
 
-   static $has_many = array(
+   public static $has_many = array(
       'Values' => 'FieldPredicateValue',
    );
 
-   static $qualifier_symbols = array(
+   public static $qualifier_symbols = array(
       'equals'   => '=',
       'notequal' => '<>',
       'like'     => 'LIKE',
@@ -40,6 +40,7 @@ class FieldPredicate extends QueryPredicate {
       'is'       => 'IS',
       'isnot'    => 'IS NOT',
    );
+
 
    private function buildWhere($translateSQLValues = true) {
       if (!array_key_exists($this->Qualifier, self::$qualifier_symbols)) {
@@ -81,12 +82,14 @@ class FieldPredicate extends QueryPredicate {
       return sprintf("%s %s %s", $this->FieldName, self::$qualifier_symbols[$this->Qualifier], $values);
    }
 
+
    /**
     * @see QueryResultsRetriever#getReadOnlySummary
     */
    public function getReadOnlySummaryImpl($linePrefix = '') {
       return htmlentities($this->buildWhere(false));
    }
+
 
    /**
     * Deletes the associated child objects before deleting this object.
@@ -100,6 +103,7 @@ class FieldPredicate extends QueryPredicate {
          $value->delete();
       }
    }
+
 
    public function updateQueryImpl(&$query, $conjunctive) {
       $query->where($this->buildWhere(), $conjunctive);

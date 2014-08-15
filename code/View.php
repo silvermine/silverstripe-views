@@ -37,27 +37,27 @@ class View extends DataObject {
    // automatically appears on all descendants of the host page - no matter their depth (but not on the host page itself)
    const RSS_AUTO_LINK_DESCENDANTS = 'Descendants';
 
-   static $db = array(
+   public static $db = array(
       'Name'        => 'VARCHAR(32)',
       'RSSEnabled'  => 'BOOLEAN',
       'RSSAutoLink' => "ENUM('None,PageOnly,PageAndChildren,Children,PageAndDescendants,Descendants')",
       'RSSItems'    => 'Int',
    );
 
-   static $defaults = array(
+   public static $defaults = array(
       'RSSItems'    => 20,
    );
 
-   static $has_one = array(
+   public static $has_one = array(
       'ResultsRetriever' => 'ViewResultsRetriever',
       'ViewCollection'   => 'ViewCollection',
    );
 
-   static $default_sort = 'Name';
+   public static $default_sort = 'Name';
 
-   static $reset_pagination_for_bad_value = true;
+   public static $reset_pagination_for_bad_value = true;
 
-   static $summary_fields = array(
+   public static $summary_fields = array(
       'Name' => 'View Name',
       'ResultsRetrieverReadOnlySummary' => 'Results Retriever Summary',
    );
@@ -67,10 +67,11 @@ class View extends DataObject {
    private $resultsPerPage = 0;
    private $paginationURLParam = 'start';
 
+
    /**
     * @see DataObject->getCMSFields()
     */
-   function getCMSFields() {
+   public function getCMSFields() {
       $fields = new FieldList(
          new TabSet('Root',
             new Tab('Main',
@@ -104,6 +105,7 @@ class View extends DataObject {
       return $fields;
    }
 
+
    /**
     * Return the SiteTree node that this view is attached to.
     *
@@ -113,17 +115,20 @@ class View extends DataObject {
       return SiteTree::get_one('SiteTree', '"ViewCollectionID" = ' . Convert::raw2sql($this->ViewCollection()->ID));
    }
 
+
    public function getReadOnlySummary() {
       $html = '<strong>View name: ' . $this->Name . '</strong><br />';
       $html .= $this->getResultsRetrieverReadOnlySummary();
       return $html;
    }
 
+
    public function getResultsRetrieverReadOnlySummary() {
       $html = '<strong>Type: ' . get_class($this->ResultsRetriever()) . '</strong><br />';
       $html .= $this->ResultsRetriever()->getReadOnlySummary();
       return DBField::create_field('HTMLText', $html);
    }
+
 
    /**
     * Return the max number of results to get
@@ -133,6 +138,7 @@ class View extends DataObject {
    private function getResultsLimit() {
       return $this->resultsPerPage;
    }
+
 
    /**
     * Return the results offset
@@ -159,6 +165,7 @@ class View extends DataObject {
       return $offset;
    }
 
+
    /**
     * @todo add a unique-per-hosting-object validation rule to "Name"
     *       (can probably use UniqueTextField for this)
@@ -175,6 +182,7 @@ class View extends DataObject {
 
       return $result;
    }
+
 
    /**
     * Returns a URL relative to the owner.  The owner must have been set (this
@@ -200,6 +208,7 @@ class View extends DataObject {
       return $url;
    }
 
+
    /**
     * Deletes the associated results retriever before deleting this view.
     *
@@ -210,6 +219,7 @@ class View extends DataObject {
 
       $this->ResultsRetriever()->delete();
    }
+
 
    /**
     * Helper function for templates so they can call the Results function from
@@ -250,6 +260,7 @@ class View extends DataObject {
       return $results;
    }
 
+
    /**
     * Harness QueryBuilderField to deconstruct the JSON from a
     * saved ViewResultsRetreiver and save it to the DB.
@@ -272,6 +283,7 @@ class View extends DataObject {
       $this->write();
    }
 
+
    /**
     * When a ViewHost retrieves a view from the database it should call
     * setOwner on the view and pass its own owner in so that the View can use
@@ -282,6 +294,7 @@ class View extends DataObject {
    public function setOwner($owner) {
       $this->owner = $owner;
    }
+
 
    /**
     * When a view is retrieved by a template, the template can specify
@@ -298,5 +311,10 @@ class View extends DataObject {
       $this->resultsPerPage = $resultsPerPage;
       $this->paginationURLParam = $paginationURLParam;
       return $this;
+   }
+
+
+   public function Summary() {
+      return "{$this->Name} [{$this->getPage()->Title}]";
    }
 }

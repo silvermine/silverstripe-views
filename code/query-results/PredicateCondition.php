@@ -15,14 +15,16 @@
  */
 class PredicateCondition extends DataObject {
 
-   static $has_one = array(
+   public static $has_one = array(
       'CompoundParent' => 'PredicateCondition',
       'QueryPredicate' => 'QueryPredicate',
    );
 
+
    public function getReadOnlySummary($linePrefix = '') {
       throw new RuntimeException(get_class($this) . ' needs to implement PredicateCondition->getReadOnlySummary($linePrefix = \'\')');
    }
+
 
    public function conditionIsMet() {
       throw new RuntimeException(get_class($this) . ' needs to implement PredicateCondition->conditionIsMet()');

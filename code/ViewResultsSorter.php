@@ -22,6 +22,7 @@ class ViewResultsSorter extends DataObject {
       throw new Exception(get_class($this) . ' must implement ViewResultsSorter->sort(SS_List)');
    }
 
+
    /**
     * All subclasses should implement this function, which provides a read-only
     * summary of the results retriever in an HTML format.  This can be used to

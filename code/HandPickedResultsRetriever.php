@@ -12,17 +12,17 @@
  */
 class HandPickedResultsRetriever extends ViewResultsRetriever {
 
-   static $db = array();
+   public static $db = array();
 
-   static $defaults = array(
+   public static $defaults = array(
       'Transformation' => 'TranslatePageLocale',
    );
 
-   static $many_many = array(
+   public static $many_many = array(
       'Pages' => 'SiteTree',
    );
 
-   static $many_many_extraFields = array(
+   public static $many_many_extraFields = array(
       'Pages' => array(
          'SortOrder' => 'Int',
       ),
@@ -34,6 +34,7 @@ class HandPickedResultsRetriever extends ViewResultsRetriever {
       'Title',
       'URLSegment',
    );
+
 
    /**
     * {@link ViewResultsRetriever::count}
@@ -53,6 +54,7 @@ class HandPickedResultsRetriever extends ViewResultsRetriever {
       return $results->count();
    }
 
+
    /**
     * {@link ViewResultsRetriever::dumpPreservedFields}
     */
@@ -65,6 +67,7 @@ class HandPickedResultsRetriever extends ViewResultsRetriever {
          'Pages' => $pages
       );
    }
+
 
    /**
     * Return a QueryBuilder instance set up to query for objects
@@ -94,6 +97,7 @@ class HandPickedResultsRetriever extends ViewResultsRetriever {
       return $qb;
    }
 
+
    /**
     * @see ViewResultsRetriever->getReadOnlySummary()
     */
@@ -107,6 +111,7 @@ class HandPickedResultsRetriever extends ViewResultsRetriever {
       return $html;
    }
 
+
    /**
     * Returns true if Pages can be translated
     */
@@ -119,10 +124,13 @@ class HandPickedResultsRetriever extends ViewResultsRetriever {
     */
    public function loadPreservedFields($data) {
       $pages = array_key_exists('Pages', $data) ? $data['Pages'] : array();
+      $i = 0;
       $this->Pages()->removeAll();
-      foreach($pages as $page)
-         $this->Pages()->add($page);
+      foreach ($pages as $page) {
+         $this->Pages()->add($page, array('SortOrder' => ++$i));
+      }
    }
+
 
    /**
     * Deletes the associated many_many rows for hand-picked pages before
@@ -135,6 +143,7 @@ class HandPickedResultsRetriever extends ViewResultsRetriever {
       parent::Pages()->removeAll();
    }
 
+
    /**
     * Override the default Pages implementation to sort the pages in the
     * correct sort order (based on the many_many_extraFields column).
@@ -144,6 +153,7 @@ class HandPickedResultsRetriever extends ViewResultsRetriever {
    public function Pages() {
       return parent::Pages()->sort('SortOrder ASC');
    }
+
 
    /**
     * @see ViewResultsRetriever->resultsImpl()
@@ -164,6 +174,7 @@ class HandPickedResultsRetriever extends ViewResultsRetriever {
       return $results;
    }
 
+
    /**
     * @see ViewResultsRetriever->updateCMSFields()
     */
@@ -175,26 +186,26 @@ class HandPickedResultsRetriever extends ViewResultsRetriever {
          ->removeComponentsByType('GridFieldDeleteAction')
          ->removeComponentsByType('GridFieldAddNewButton')
          ->removeComponentsByType('GridFieldAddExistingAutocompleter')
-         ->addComponent(new AddPageToHandPickedResultsRetrieverAutocompleter('buttons-before-left'))
+         ->addComponent(new AddPageToSortedManyManyAutocompleter('HandPickedResultsRetrieverID', 'SortOrder', 'buttons-before-left'))
          ->addComponent(GridFieldUpDownSortAction::create('SortOrder')->toTop())
          ->addComponent(GridFieldUpDownSortAction::create('SortOrder')->up())
          ->addComponent(GridFieldUpDownSortAction::create('SortOrder')->down())
          ->addComponent(GridFieldUpDownSortAction::create('SortOrder')->toBottom())
-         ->addComponent(new GridFieldDeleteAction($removeRelation = true))
-      ;
+         ->addComponent(new GridFieldDeleteAction($removeRelation = true));
+
       $autocompleter = $config->getComponentByType('GridFieldAddExistingAutocompleter');
       $autocompleter->setSearchList($this->createSearchDataList());
       $autocompleter->setResultsFormat($this->config()->get('autocomplete_format'));
       $autocompleter->setSearchFields($this->config()->get('autocomplete_search_fields'));
 
-      $picker = new GridField(
+      $fields->addFieldToTab('Root.QueryEditor', new GridField(
          'Pages',
-         _t('Views.HandPickedPagesLabel', 'Pages'),
+         _t('Views.HandPickedPages.Label', 'Pages'),
          $this->Pages(),
          $config
-      );
-      $fields->addFieldToTab('Root.Main', $picker);
+      ));
    }
+
 
    protected function createSearchDataList() {
       $list = DataList::create('SiteTree');

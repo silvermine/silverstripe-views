@@ -11,14 +11,15 @@
  */
 class QuerySort extends DataObject {
 
-   static $db = array(
+   public static $db = array(
       'FieldName' => 'VARCHAR(64)',
       'IsAscending' => 'BOOLEAN',
    );
 
-   static $has_one = array(
+   public static $has_one = array(
       'ResultsRetriever' => 'QueryResultsRetriever',
    );
+
 
    /**
     * @see QueryResultsRetriever#getReadOnlySummary
@@ -26,6 +27,7 @@ class QuerySort extends DataObject {
    public function getReadOnlySummary() {
       return $this->FieldName . ' ' . ($this->IsAscending ? 'ASC' : 'DESC');
    }
+
 
    public function updateQuery(&$query) {
       $field = ViewsStringTokenizers::tokenize($this->FieldName, $this);

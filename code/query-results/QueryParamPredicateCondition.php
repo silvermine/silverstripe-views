@@ -11,10 +11,11 @@
  */
 class QueryParamPredicateCondition extends PredicateCondition {
 
-   static $db = array(
+   public static $db = array(
       'QueryParamName' => 'VARCHAR(32)',
       'PresenceRequired' => 'BOOLEAN',
    );
+
 
    /**
     * @see PredicateCondition#getReadOnlySummary()
@@ -24,6 +25,7 @@ class QueryParamPredicateCondition extends PredicateCondition {
          ($this->PresenceRequired ? "MUST BE" : "MUST NOT BE") .
          " present in URL<br />";
    }
+
 
    /**
     * @see PredicateCondition#conditionIsMet()

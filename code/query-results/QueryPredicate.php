@@ -13,16 +13,16 @@
  */
 class QueryPredicate extends DataObject {
 
-   static $db = array(
-   );
+   public static $db = array();
 
-   static $has_one = array(
+   public static $has_one = array(
       'CompoundParent' => 'CompoundPredicate',
    );
 
-   static $has_many = array(
+   public static $has_many = array(
       'PredicateConditions' => 'PredicateCondition',
    );
+
 
    protected function getConditionsReadOnlySummary($linePrefix = '') {
       $conditions = $this->PredicateConditions();
@@ -35,6 +35,7 @@ class QueryPredicate extends DataObject {
       }
       return '';
    }
+
 
    public function getReadOnlySummary($linePrefix = '') {
       $html = $this->getConditionsReadOnlySummary($linePrefix);
@@ -67,9 +68,11 @@ class QueryPredicate extends DataObject {
       return $this->updateQueryImpl($query, $conjunctive);
    }
 
+
    public function getReadOnlySummaryImpl($linePrefix = '') {
       throw new RuntimeException(get_class($this) . ' needs to implement QueryPredicate->getReadOnlySummaryImpl($linePrefix = \'\')');
    }
+
 
    /**
     * Deletes the associated child objects before deleting this object.
@@ -83,6 +86,7 @@ class QueryPredicate extends DataObject {
          $condition->delete();
       }
    }
+
 
    /**
     * Updates the QueryBuilder object that is passed in with whatever query requirements
@@ -102,4 +106,3 @@ class QueryPredicate extends DataObject {
       throw new RuntimeException(get_class($this) . ' needs to implement QueryPredicate->updateQueryImpl(&$query, $conjunctive)');
    }
 }
-

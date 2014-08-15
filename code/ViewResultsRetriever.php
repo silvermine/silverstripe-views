@@ -14,14 +14,15 @@ class ViewResultsRetriever extends DataObject {
    const TRANSFORMATION_TRANSLATE_PAGE_LOCALE = 'TranslatePageLocale';
    const TRANSFORMATION_TRANSLATE_QUERY_PARAM_LOCALE = 'TranslateQueryLocale';
 
-   static $db = array(
+   public static $db = array(
       'Transformation' => "ENUM('None,TranslatePageLocale,TranslateQueryLocale')",
       'QueryParamName' => 'VARCHAR(32)',
    );
 
-   static $defaults = array(
+   public static $defaults = array(
       'Transformation' => 'None',
    );
+
 
    /**
     * Return the max number of results possible
@@ -32,6 +33,7 @@ class ViewResultsRetriever extends DataObject {
       throw new RuntimeException('The ' . get_class($this) . ' class needs to implement count().');
    }
 
+
    /**
     * Used to dump fields the need to be preserved by, but
     * not modified by QueryBuilderField upon a save action.
@@ -41,6 +43,7 @@ class ViewResultsRetriever extends DataObject {
    public function dumpPreservedFields() {
       return array();
    }
+
 
    /**
     * Get the locale of the current page
@@ -55,6 +58,7 @@ class ViewResultsRetriever extends DataObject {
 
       return $currentPage->Locale;
    }
+
 
    /**
     * Get the locale from the pre-defined query param
@@ -75,6 +79,7 @@ class ViewResultsRetriever extends DataObject {
       return $this->getCurrentPageLocale();
    }
 
+
    /**
     * All subclasses should implement this function, which provides a read-only
     * summary of the results retriever in an HTML format.  This can be used to
@@ -87,6 +92,7 @@ class ViewResultsRetriever extends DataObject {
       return 'The ' . get_class($this) . ' class needs to implement getReadOnlySummary().';
    }
 
+
    protected function getTransformedResultsLocale() {
       switch ($this->Transformation) {
          case self::TRANSFORMATION_TRANSLATE_PAGE_LOCALE:
@@ -97,14 +103,15 @@ class ViewResultsRetriever extends DataObject {
       }
    }
 
+
    /**
     * Used to load fields the need to be preserved by, but
     * not modified by QueryBuilderField upon a save action.
     *
     * @param array
     */
-   public function loadPreservedFields($data) {
-   }
+   public function loadPreservedFields($data) {}
+
 
    /**
     * Return the results
@@ -118,6 +125,7 @@ class ViewResultsRetriever extends DataObject {
       $results = (!$results || empty($results)) ? new ArrayList(array()) : $results;
       return $results;
    }
+
 
    /**
     * All subclasses must implement this function, which is their way of
@@ -134,6 +142,7 @@ class ViewResultsRetriever extends DataObject {
       throw new RuntimeException('The ' . get_class($this) . ' class needs to implement resultsImpl(int, int).');
    }
 
+
    /**
     * All subclasses should implement this function, which provides them a way
     * of adding fields to the "add/edit view" CMS form.  These fields will be
@@ -143,18 +152,7 @@ class ViewResultsRetriever extends DataObject {
     * @param FieldList the fields for this view form
     */
    public function updateCMSFields(&$view, &$fields) {
-      if ($this->shouldAddQueryBuilder()) {
-         $editor = new QueryBuilderField(
-            __CLASS__,
-            _t('Views.QueryBuilder.Label', 'QueryBuilder'),
-            $this
-         );
-
-         $fields->addFieldToTab('Root.QueryEditor', $editor);
-      }
-   }
-
-   protected function shouldAddQueryBuilder() {
-      return false;
+      $editor = new QueryBuilderField('ViewResultsRetriever', $this, $allowExport = false);
+      $fields->addFieldToTab('Root.QueryEditor', $editor);
    }
 }

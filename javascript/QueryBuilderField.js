@@ -2,7 +2,7 @@
    "use strict";
 
    var $ = jQuery,
-       ViewsModel;
+       ViewsModel, chosenOptions;
 
 
    ViewsModel = {
@@ -31,6 +31,7 @@
              container = this.buildInputContainer(property);
 
          input.addClass(property);
+         input.addClass('dropdown');
 
          yesOptionLabel = yesOptionLabel || "Yes";
          yesOption.html(yesOptionLabel);
@@ -80,6 +81,7 @@
       buildInputLabel: function(property, name) {
          var label = $('<label></label>');
          label.addClass(property);
+         label.addClass('left');
          label.html(name);
          return label;
       },
@@ -99,6 +101,7 @@
              container = this.buildInputContainer(property);
 
          input.addClass(property);
+         input.addClass('text');
 
          input.val(this[property]);
          input.keyup(function() {
@@ -128,6 +131,7 @@
              choice, key, value;
 
          input.addClass(property);
+         input.addClass('dropdown');
 
          for (key in choices) {
             if (choices.hasOwnProperty(key)) {
@@ -150,6 +154,7 @@
 
          container.append(label);
          container.append(input);
+
          return container;
       },
 
@@ -481,6 +486,13 @@
    };
 
 
+   chosenOptions = {
+      disable_search_threshold: 10,
+      allow_single_deselect: true,
+      width: "auto"
+   };
+
+
 
    // Instantiate Query Editors and tie there edits to
    // the hidden JSON form they power.
@@ -509,6 +521,7 @@
             form = query.html();
             ui = field.parent().find('div.viewsQueryBuilder');
             ui.html(form);
+            ui.find('select.dropdown').chosen(chosenOptions);
          };
 
          loadRepr();
@@ -547,8 +560,8 @@
                return;
             }
 
-            exportLink = importExport.find('.export a').get(0);
-            URL.revokeObjectURL(exportLink.href);
+            exportLink = importExport.find('.export a');
+            URL.revokeObjectURL(exportLink.attr('href'));
 
             blob = new Blob([json], {"type": "application\/json"});
             exportLink.href = URL.createObjectURL(blob);
@@ -560,6 +573,8 @@
          $(document).bind('redrawQueryBuilder', function() {
             var form = query.html();
             ui.html(form);
+            ui.find('select.dropdown').chosen(chosenOptions);
+
             save();
          });
 

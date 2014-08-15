@@ -12,17 +12,18 @@
  */
 class QueryResultsRetriever extends ViewResultsRetriever {
 
-   static $db = array();
+   public static $db = array();
 
-   static $has_one = array(
+   public static $has_one = array(
       'RootPredicate' => 'QueryPredicate',
    );
 
-   static $has_many = array(
+   public static $has_many = array(
       'Sorts' => 'QuerySort',
    );
 
-   static $traverse_has_one = true;
+   public static $traverse_has_one = true;
+
 
    /**
     * {@link ViewResultsRetriever::count}
@@ -51,7 +52,7 @@ class QueryResultsRetriever extends ViewResultsRetriever {
     * @see ViewResultsRetriever#getReadOnlySummary
     */
    public function getReadOnlySummary() {
-      Requirements::css('views/code/css/views.css');
+      Requirements::css('views/css/views.css');
 
       $html = '<span class="viewsReadOnlyQuerySummary">';
       if ($this->RootPredicate()->ID) {
@@ -68,6 +69,7 @@ class QueryResultsRetriever extends ViewResultsRetriever {
       $html .= '</span>';
       return $html;
    }
+
 
    /**
     * Return an instance of QueryBuilder set up using the given query predicate
@@ -95,6 +97,7 @@ class QueryResultsRetriever extends ViewResultsRetriever {
       return $qb;
    }
 
+
    /**
     * Return true if SiteTree is translatable
     *
@@ -103,6 +106,7 @@ class QueryResultsRetriever extends ViewResultsRetriever {
    private function isTranslatable() {
       return SiteTree::has_extension('Translatable');
    }
+
 
    /**
     * Deletes all related objects that have a one-to-one relationship with this
@@ -147,12 +151,23 @@ class QueryResultsRetriever extends ViewResultsRetriever {
       return $results;
    }
 
+
    public function Sorts() {
       return parent::Sorts()->sort('ID');
    }
 
-   protected function shouldAddQueryBuilder() {
-      return true;
+
+   /**
+    * All subclasses should implement this function, which provides them a way
+    * of adding fields to the "add/edit view" CMS form.  These fields will be
+    * what the user uses to modify this results retriever.
+    *
+    * @param View reference to the view that contains this results retriever
+    * @param FieldList the fields for this view form
+    */
+   public function updateCMSFields(&$view, &$fields) {
+      $editor = new QueryBuilderField('ViewResultsRetriever', $this);
+      $fields->addFieldToTab('Root.QueryEditor', $editor);
    }
 }
 

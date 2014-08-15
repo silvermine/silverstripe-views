@@ -11,13 +11,14 @@
  */
 class CompoundPredicate extends QueryPredicate {
 
-   static $db = array(
+   public static $db = array(
       'IsConjunctive' => 'BOOLEAN',
    );
 
-   static $has_many = array(
+   public static $has_many = array(
       'Predicates' => 'QueryPredicate',
    );
+
 
    /**
     * @see QueryResultsRetriever#getReadOnlySummary
@@ -36,6 +37,7 @@ class CompoundPredicate extends QueryPredicate {
       return $html;
    }
 
+
    /**
     * Deletes the associated child objects before deleting this object.
     *
@@ -48,6 +50,7 @@ class CompoundPredicate extends QueryPredicate {
          $predicate->delete();
       }
    }
+
 
    public function updateQueryImpl(&$query, $conjunctive) {
       $preds = $this->Predicates();

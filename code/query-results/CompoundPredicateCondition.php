@@ -12,11 +12,11 @@
  */
 class CompoundPredicateCondition extends PredicateCondition {
 
-   static $db = array(
+   public static $db = array(
       'IsConjunctive' => 'BOOLEAN',
    );
 
-   static $has_many = array(
+   public static $has_many = array(
       'Conditions' => 'PredicateCondition',
    );
 
@@ -36,6 +36,7 @@ class CompoundPredicateCondition extends PredicateCondition {
       $html .= $end;
       return $html;
    }
+
 
    /**
     * @see PredicateCondition#conditionIsMet()
@@ -58,6 +59,7 @@ class CompoundPredicateCondition extends PredicateCondition {
       }
       return false;
    }
+
 
    /**
     * Deletes the associated child objects before deleting this object.
