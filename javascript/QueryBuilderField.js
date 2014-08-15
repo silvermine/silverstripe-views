@@ -564,8 +564,8 @@
             URL.revokeObjectURL(exportLink.attr('href'));
 
             blob = new Blob([json], {"type": "application\/json"});
-            exportLink.href = URL.createObjectURL(blob);
-            exportLink.download = "silverstripe-" + (new Date()).getTime() + ".view";
+            exportLink.attr('href', URL.createObjectURL(blob));
+            exportLink.attr('download', "silverstripe-" + (new Date()).getTime() + ".view");
          };
 
          $('input, select').live('change', save);
