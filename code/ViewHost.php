@@ -318,7 +318,14 @@ class ViewHost extends DataExtension {
       if (!$this->owner->ViewCollection()->ID) {
          $vcID = $this->owner->ViewCollection()->write();
          $this->owner->ViewCollectionID = $vcID;
+
+         // If the current_stage is Live, the record isn't published, and we run write(),
+         // Silverstripe will INSERT a bad row into SiteTree_Live. Therefore, we insure we're
+         // writing to the unpublished stage.
+         $stage = Versioned::current_stage();
+         Versioned::reading_stage('Stage');
          $this->owner->write();
+         Versioned::reading_stage($stage);
       }
       $config = GridFieldConfig_RecordEditor::create($itemsPerPage = 20);
       $viewsGrid = new GridField(
