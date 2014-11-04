@@ -65,7 +65,7 @@ class View extends DataObject {
    // these are transient - set by the template when using the view
    private $owner;
    private $resultsPerPage = 0;
-   private $paginationURLParam = 'start';
+   private $paginationURLParam;
 
 
    /**
@@ -156,7 +156,7 @@ class View extends DataObject {
       if (!$request)
          return $offset;
 
-      $startParam = $request->getVar($this->paginationURLParam);
+      $startParam = $request->getVar($this->URLParam());
       if(!$startParam)
          return $offset;
 
@@ -252,7 +252,7 @@ class View extends DataObject {
          $results = new PaginatedList($results, $request);
       }
 
-      $results->setPaginationGetVar($this->paginationURLParam);
+      $results->setPaginationGetVar($this->URLParam());
       $results->setPageLength($limit);
       $results->setPageStart($offset);
       $results->setTotalItems($totalItems);
@@ -316,5 +316,13 @@ class View extends DataObject {
 
    public function Summary() {
       return "{$this->Name} [{$this->getPage()->Title}]";
+   }
+
+
+   /**
+    * Get the Pagination URL Param
+    */
+   public function URLParam() {
+      return $this->paginationURLParam ?: strtolower($this->Name);
    }
 }

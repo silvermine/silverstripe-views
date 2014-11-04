@@ -111,11 +111,11 @@ class ViewHost extends DataExtension {
     *
     * @param string $name the name of the view to find
     * @param int $resultsPerPage (optional, default 0) - zero for unlimited results, otherwise how many to show per page
-    * @param string $paginationURLParam the query string key to use for pagination (default: start)
+    * @param string $paginationURLParam the query string key to use for pagination (defaults to ViewName)
     * @param boolean $traverse traverse hierarchy looking for view? (default: true)
     * @return View the found view or null if not found
     */
-   public function GetView($name, $resultsPerPage = 0, $paginationURLParam = 'start', $traverse = true) {
+   public function GetView($name, $resultsPerPage = 0, $paginationURLParam = null, $traverse = true) {
       $view = null;
 
       $callback = function($host, $view, &$allViews, $traversalLevel) use(&$name, $traverse) {
@@ -152,7 +152,7 @@ class ViewHost extends DataExtension {
     * @return View the found view or null if not found
     */
    public function HasView($name, $traverse = true) {
-      return ($this->GetView($name, $resultsPerPage = 0, $paginationURLParam = 'start', $traverse) != null);
+      return ($this->GetView($name, $resultsPerPage = 0, null, $traverse) != null);
    }
 
 
@@ -166,7 +166,7 @@ class ViewHost extends DataExtension {
     * @return View the found view or null if not found
     */
    public function HasViewWithResults($name, $traverse = true) {
-      $view = $this->GetView($name, $resultsPerPage = 0, $paginationURLParam = 'start', $traverse);
+      $view = $this->GetView($name, $resultsPerPage = 0, null, $traverse);
       if ($view == null) {
          return false;
       }
