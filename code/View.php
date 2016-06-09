@@ -13,7 +13,7 @@
  * @package silverstripe-views
  * @subpackage code
  */
-class View extends DataObject {
+class View extends DataObject implements PermissionProvider {
 
    /**
     * RSS auto-link settings control which pages an RSS feed is automatically
@@ -316,5 +316,30 @@ class View extends DataObject {
 
    public function Summary() {
       return "{$this->Name} [{$this->getPage()->Title}]";
+   }
+
+   public function canView($member = null) {
+      return Permission::check(array('ADMIN', 'VIEW_VIEWS'), 'any', $member);
+   }
+
+   public function canEdit($member = null) {
+      return Permission::check(array('ADMIN', 'EDIT_VIEWS'), 'any', $member);
+   }
+
+   public function providePermissions() {
+      return array(
+         'VIEW_VIEWS' => array(
+            'name' => _t('View.VIEW_ALL_DESCRIPTION', 'View any view'),
+            'category' => _t('Permissions.VIEWS_CATEGORY', 'Views permissions'),
+            'sort' => -100,
+            'help' => _t('View.VIEW_ALL_HELP', 'Ability to see any view on the site')
+         ),
+         'EDIT_VIEWS' => array(
+            'name' => _t('View.EDIT_ALL_DESCRIPTION', 'Edit any view'),
+            'category' => _t('Permissions.VIEWS_CATEGORY', 'Views permissions'),
+            'sort' => -50,
+            'help' => _t('View.EDIT_ALL_HELP', 'Ability to edit any view on the site')
+         )
+      );
    }
 }
