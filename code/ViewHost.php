@@ -328,7 +328,7 @@ class ViewHost extends DataExtension {
          Versioned::reading_stage($stage);
       }
       $config = GridFieldConfig_RecordEditor::create($itemsPerPage = 20);
-      $viewsGrid = new GridField(
+      $viewsGrid = GridField::create(
          'Views',
          _t('Views.ViewsLabel', 'Views'),
          $this->owner->ViewCollection()->Views(),
