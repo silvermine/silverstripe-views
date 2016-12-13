@@ -102,6 +102,8 @@ class View extends DataObject implements PermissionProvider {
          $fields->addFieldToTab('Root.Main', new ViewResultsRetrieverTypeDropDownField());
       }
 
+      $this->extend('updateCMSFields', $fields);
+
       return $fields;
    }
 
@@ -235,6 +237,8 @@ class View extends DataObject implements PermissionProvider {
       // we will add pagination criteria to this below ... this query is for
       // "all" results so we get an accurate count, etc
       $results = $retriever->results();
+
+      $this->extend('modifyViewResults', $results);
 
       $totalItems = $results->count();
       $offset = $this->getResultsOffset();
