@@ -475,7 +475,7 @@ class QueryBuilder {
       $baseClass = array_shift($classes);
 
       foreach($classes as $subClass) {
-         if ($subClass !== $class) {
+         if ($subClass !== $class && !is_subclass_of($subClass, 'TestOnly')) {
             $table = self::get_table_name($subClass);
             $alias = $this->getTableAlias($table);
             $clause = "{$alias}.ID = {$parentAlias}.ID";
