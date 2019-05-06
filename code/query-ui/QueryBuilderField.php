@@ -127,7 +127,7 @@ class QueryBuilderField extends FormField {
       if (!empty($fields)) {
          $description = DB::query("DESCRIBE {$cls}");
 
-         while ($column = $description->nextRecord()) {
+         foreach ($description as $column) {
             if (array_key_exists($column['Field'], $fields)) {
                $fields[$column['Field']] = $column['Type'];
             }
