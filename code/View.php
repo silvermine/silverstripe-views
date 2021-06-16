@@ -38,7 +38,7 @@ class View extends DataObject implements PermissionProvider {
    const RSS_AUTO_LINK_DESCENDANTS = 'Descendants';
 
    public static $db = array(
-      'Name'        => 'VARCHAR(32)',
+      'Name'        => 'VARCHAR(64)',
       'RSSEnabled'  => 'BOOLEAN',
       'RSSAutoLink' => "ENUM('None,PageOnly,PageAndChildren,Children,PageAndDescendants,Descendants')",
       'RSSItems'    => 'Int',
