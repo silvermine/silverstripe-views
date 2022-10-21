@@ -54,7 +54,7 @@ class RSSContentControllerExtension extends Extension {
          $page->GetView($viewName) :
          false;
 
-      if ($view) {
+      if ($view && $params['URLSegment'] == $page->URLSegment) {
          $view->setTransientPaginationConfig($view->RSSItems, 'startItem');
          $rss = $this->createFeed($view, $controller, $response);
          $body = $rss->outputToBrowser();
