@@ -306,13 +306,24 @@ class GridFieldUpDownSortAction implements GridField_ColumnProvider, GridField_A
    protected function updatePositions($dataList, $ids) {
       $val = 1;
       foreach ($ids as $id) {
-         $data = $dataList->getExtraData($this->sortColumn, $id);
-         $current = $data[$this->sortColumn];
+         $current = $this->getCurrentSortOrder($dataList, $id);
          if ($current != $val) {
             $this->updatePersistedSortValue($dataList, $id, $val);
          }
          $val++;
       }
+   }
+
+
+   protected function getCurrentSortOrder($dataList, $id) {
+      // Use "extra data" for many-to-many relationships
+      if ($dataList instanceof ManyManyList) {
+         $data = $dataList->getExtraData($this->sortColumn, $id);
+         return $data[$this->sortColumn];
+      }
+      // Normal DataLists
+      $obj = $dataList->byID($id);
+      return $obj->getField($this->sortColumn);
    }
 
 
