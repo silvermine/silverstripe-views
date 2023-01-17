@@ -27,17 +27,26 @@ class GridFieldUpDownSortAction implements GridField_ColumnProvider, GridField_A
     */
    private $sortColumn = null;
 
+   /**
+    * By default this assumes that the SortOrder is ascending. Enable inverted mode
+    * to support descending-sorted lists.
+    *
+    * @var boolean
+    */
+   private $inverted = false;
+
    private $mode = self::MODE_TOP;
 
    /**
     * @param string $sortColumn the name of the column that holds sort integer
     */
-   public function __construct($sortColumn) {
+   public function __construct($sortColumn, $inverted = false) {
       $this->sortColumn = $sortColumn;
+      $this->inverted = $inverted;
    }
 
-   public static function create($sortColumn) {
-      return new self($sortColumn);
+   public static function create($sortColumn, $inverted = false) {
+      return new self($sortColumn, $inverted);
    }
 
    public function setMode($mode) {
@@ -132,9 +141,10 @@ class GridFieldUpDownSortAction implements GridField_ColumnProvider, GridField_A
     * @return string - the HTML for the column
     */
    public function getColumnContent($gridField, $record, $columnName) {
-      $list  = $gridField->getList()->sort($this->sortColumn . ' ASC');
-      $ids   = $list->column('ID');
-      $pos   = array_search($record->ID, $ids);
+      $dir = $this->inverted ? ' DESC' : ' ASC';
+      $list = $gridField->getList()->sort($this->sortColumn . $dir);
+      $ids = $list->column('ID');
+      $pos = array_search($record->ID, $ids);
 
       if (!$record->canEdit()) return;
 
@@ -214,6 +224,11 @@ class GridFieldUpDownSortAction implements GridField_ColumnProvider, GridField_A
       $item = $list->byID($arguments['RecordID']);
       $mode = $arguments['mode'];
 
+      // Rewrite mode to account for inverted behavior
+      if ($this->inverted) {
+         $mode = $this->invertMode($mode);
+      }
+
       if(!$item) {
          return;
       }
@@ -222,8 +237,8 @@ class GridFieldUpDownSortAction implements GridField_ColumnProvider, GridField_A
          throw new ValidationException(_t('Views.MoveItemSort', 'You do not have permission to move this item.'));
       }
 
-      $ids   = $list->column('ID');
-      $pos   = array_search($item->ID, $ids);
+      $ids = $list->column('ID');
+      $pos = array_search($item->ID, $ids);
 
       if ($pos === false) {
          throw new ValidationException(_t('Views.InvalidID', 'Could not find ID\'s position in the array.'));
@@ -274,16 +289,41 @@ class GridFieldUpDownSortAction implements GridField_ColumnProvider, GridField_A
    }
 
 
+   protected function invertMode($mode) {
+      switch ($mode) {
+         case self::MODE_TOP:
+            return self::MODE_BOTTOM;
+         case self::MODE_UP:
+            return self::MODE_DOWN;
+         case self::MODE_DOWN:
+            return self::MODE_UP;
+         case self::MODE_BOTTOM:
+            return self::MODE_TOP;
+      }
+   }
+
+
    protected function updatePositions($dataList, $ids) {
       $val = 1;
       foreach ($ids as $id) {
-         $data = $dataList->getExtraData($this->sortColumn, $id);
-         $current = $data[$this->sortColumn];
+         $current = $this->getCurrentSortOrder($dataList, $id);
          if ($current != $val) {
             $this->updatePersistedSortValue($dataList, $id, $val);
          }
          $val++;
       }
+   }
+
+
+   protected function getCurrentSortOrder($dataList, $id) {
+      // Use "extra data" for many-to-many relationships
+      if ($dataList instanceof ManyManyList) {
+         $data = $dataList->getExtraData($this->sortColumn, $id);
+         return $data[$this->sortColumn];
+      }
+      // Normal DataLists
+      $obj = $dataList->byID($id);
+      return $obj->getField($this->sortColumn);
    }
 
 
